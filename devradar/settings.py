@@ -37,6 +37,10 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'programmers.apps.ProgrammersConfig',
+    'comments.apps.CommentsConfig',
+    'services.apps.ServicesConfig',
+    'categories.apps.CategoriesConfig'
 ]
 
 MIDDLEWARE = [
@@ -49,7 +53,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-ROOT_URLCONF = 'DevRadar.urls'
+ROOT_URLCONF = 'devradar.urls'
 
 TEMPLATES = [
     {
@@ -67,7 +71,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'DevRadar.wsgi.application'
+WSGI_APPLICATION = 'devradar.wsgi.application'
 
 
 # Database
