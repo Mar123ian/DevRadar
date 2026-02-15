@@ -14,6 +14,8 @@ class CreateType(CreateView):
 class DeleteType(DeleteView):
     model = Type
     template_name = 'categories/forms/delete_type_form.html'
+    slug_field = 'slug'
+    slug_url_kwarg = 'type_slug'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -28,6 +30,8 @@ class CreateTechnology(CreateView):
 class DeleteTechnology(DeleteView):
     model = Technology
     template_name = 'categories/forms/delete_technology_form.html'
+    slug_field = 'slug'
+    slug_url_kwarg = 'technology_slug'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

@@ -9,7 +9,7 @@ class Programmer(CreatedAndUpdatedAtMixin, models.Model):
     first_name  = models.CharField(max_length=100, error_messages={'max_length': 'Максималната дължина е 100 символа!'})
     last_name   = models.CharField(max_length=100, error_messages={'max_length': 'Максималната дължина е 100 символа!'})
     email = models.EmailField(unique=True, error_messages={'unique': 'Програмист с този имейл вече съществува!'})
-    phone_number = models.CharField(max_length=15, error_messages={'max_length': 'Максималната дължина е 15 символа!'})
+    phone_number = models.CharField(unique=True, max_length=15, error_messages={'max_length': 'Максималната дължина е 15 символа!', 'unique': 'Програмист с този тел. номер вече съществува!'})
     slug = models.SlugField(unique=True, blank=True)
 
     def __str__(self):

@@ -32,9 +32,11 @@ class ProgrammerForm(forms.ModelForm):
         }
 
         help_texts = {
-            'name': 'Въведете име на типа услуга',
-            'description': 'Въведете описание на типа услуга',
-            'image': 'Изберете изображение за типа услуга',
+            'first_name': 'Въведете собствено име на програмиста',
+            'last_name': 'Въведете фамилно име на програмиста',
+            'email': 'Въведете имейл на програмиста',
+            'phone_number': 'Въведете телефонен номер на програмиста',
+
         }
 
 class CreateProgrammerForm(ProgrammerForm):
