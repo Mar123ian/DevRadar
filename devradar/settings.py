@@ -40,7 +40,8 @@ INSTALLED_APPS = [
     'programmers.apps.ProgrammersConfig',
     'comments.apps.CommentsConfig',
     'services.apps.ServicesConfig',
-    'categories.apps.CategoriesConfig'
+    'categories.apps.CategoriesConfig',
+    'core.apps.CoreConfig'
 ]
 
 MIDDLEWARE = [

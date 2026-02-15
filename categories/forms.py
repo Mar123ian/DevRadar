@@ -1,6 +1,7 @@
 from django import forms
 
 from categories.models import Type, Technology
+from core.mixins import DisableFieldsMixin
 
 
 class TypeForm(forms.ModelForm):
@@ -14,38 +15,58 @@ class TypeForm(forms.ModelForm):
             'image': 'Изображение',
         }
 
+        error_messages = {
+            'name': {
+                'required': 'Полето е задължително!'
+            },
+            'description': {
+                'required': 'Полето е задължително!'
+            },
+            'image': {
+                'required': 'Полето е задължително!'
+            }
+        }
+
+        help_texts = {
+            'name': 'Въведете име на типа услуга',
+            'description': 'Въведете описание на типа услуга',
+            'image': 'Изберете изображение за типа услуга',
+        }
+
 class CreateTypeForm(TypeForm):
     pass
 
-class DeleteTypeForm(TypeForm):
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-        for field in self.fields:
-            self.fields[field].widget.attrs['disabled'] = True
-            self.fields[field].required = False
+class DeleteTypeForm(DisableFieldsMixin, TypeForm):
+    pass
 
 class TechnologyForm(forms.ModelForm):
     model = Technology
-    fields = ['name', 'description', 'image']
+    fields = ['name', 'image']
 
     class Meta:
         labels = {
             'name': 'Име',
-            'description': 'Описание',
             'image': 'Изображение',
+        }
+
+        error_messages = {
+            'name': {
+                'required': 'Полето е задължително!'
+            },
+            'image': {
+                'required': 'Полето е задължително!'
+            }
+        }
+
+        help_texts = {
+            'name': 'Въведете име на технологията',
+            'image': 'Изберете изображение за технологията',
         }
 
 class CreateTechnologyForm(TechnologyForm):
     pass
 
-class DeleteTechnologyForm(TechnologyForm):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-        for field in self.fields:
-            self.fields[field].widget.attrs['disabled'] = True
-            self.fields[field].required = False
+class DeleteTechnologyForm(DisableFieldsMixin, TechnologyForm):
+    pass
 
 
