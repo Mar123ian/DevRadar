@@ -5,10 +5,12 @@ from services.models import Service
 
 
 class ServiceForm(forms.ModelForm):
-    model = Service
-    fields = ['name', 'programmer', 'description', 'image', 'type', 'technologies', 'min_price', 'max_price']
 
     class Meta:
+        model = Service
+
+        fields = ['name', 'programmer', 'description', 'image', 'type', 'technologies', 'min_price', 'max_price']
+
         labels = {
             'name': 'Име',
             'programmer': 'Програмист',
@@ -67,7 +69,7 @@ class ServiceForm(forms.ModelForm):
 
         if programmer.services.filter(id=service.id).exists():
             self.add_error('service',"Този програмист вече е предложил същата услуга!")
-            
+
         return cleaned_data
 
 

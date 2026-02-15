@@ -5,10 +5,13 @@ from core.mixins import DisableFieldsMixin
 
 
 class TypeForm(forms.ModelForm):
-    model = Type
-    fields = ['name', 'description', 'image']
+
 
     class Meta:
+        model = Type
+
+        fields = ['name', 'description', 'image']
+
         labels = {
             'name': 'Име',
             'description': 'Описание',
@@ -40,10 +43,12 @@ class DeleteTypeForm(DisableFieldsMixin, TypeForm):
     pass
 
 class TechnologyForm(forms.ModelForm):
-    model = Technology
-    fields = ['name', 'image']
 
     class Meta:
+        model = Technology
+
+        fields = ['name', 'image']
+
         labels = {
             'name': 'Име',
             'image': 'Изображение',

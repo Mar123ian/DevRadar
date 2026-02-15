@@ -5,10 +5,13 @@ from programmers.models import Programmer
 
 
 class ProgrammerForm(forms.ModelForm):
-    model = Programmer
-    fields = ['first_name', 'last_name', 'email', 'phone_number']
+
 
     class Meta:
+        model = Programmer
+
+        fields = ['first_name', 'last_name', 'email', 'phone_number']
+
         labels = {
             'first_name': 'Собствено име',
             'last_name': 'Фамилно име',

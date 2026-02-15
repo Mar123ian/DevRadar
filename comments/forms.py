@@ -4,10 +4,13 @@ from comments.models import Comment
 
 
 class CommentForm(forms.ModelForm):
-    model = Comment
-    fields = ['author', 'content']
+
 
     class Meta:
+        model = Comment
+
+        fields = ['author', 'content']
+
         labels = {
             'author': 'Автор',
             'content': 'Съдържание',
