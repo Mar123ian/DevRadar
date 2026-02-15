@@ -10,11 +10,12 @@ class ProgrammerForm(forms.ModelForm):
     class Meta:
         model = Programmer
 
-        fields = ['first_name', 'last_name', 'email', 'phone_number']
+        fields = ['first_name', 'last_name', 'image', 'email', 'phone_number']
 
         labels = {
             'first_name': 'Собствено име',
             'last_name': 'Фамилно име',
+            'image': 'Изображение',
             'email': 'Имейл',
             'phone_number': 'Телефонен номер',
         }
@@ -31,6 +32,9 @@ class ProgrammerForm(forms.ModelForm):
             },
             'phone_number': {
                 'required': 'Полето е задължително!'
+            },
+            'image': {
+                'required': 'Полето е задължително!'
             }
         }
 
@@ -39,6 +43,7 @@ class ProgrammerForm(forms.ModelForm):
             'last_name': 'Въведете фамилно име на програмиста',
             'email': 'Въведете имейл на програмиста',
             'phone_number': 'Въведете телефонен номер на програмиста',
+            'image': 'Снимка на програмиста'
 
         }
 

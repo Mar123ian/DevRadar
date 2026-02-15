@@ -23,6 +23,6 @@ urlpatterns = [
     path('comments/', include('comments.urls')),
     path('services/', include('services.urls')),
     path('programmers/', include('programmers.urls')),
-
+    path('', include('core.urls'))
 
 ]
