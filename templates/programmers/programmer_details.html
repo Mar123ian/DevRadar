@@ -1,0 +1,10 @@
+<img src="{{ programmer.image.url }}" alt="{{ programmer.get_full_name }}">
+<p>{{ programmer.get_full_name }}</p>
+<p>{{ programmer.email }}</p>
+<p>{{ programmer.phone_number }}</p>
+
+{% for service in programmer.services.all %}
+    {% include 'services/service_short_details.html' %}
+{% empty %}
+    <p>No services found.</p>
+{% endfor %}

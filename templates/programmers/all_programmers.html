@@ -1,0 +1,6 @@
+{% for programmer in programmers %}
+    <img src="{{ programmer.image.url }}" alt="{{ programmer.get_full_name }}">
+    <p>{{ programmer.get_full_name }}</p>
+{% empty %}
+    <p>There are no programmers yet.</p>
+{% endfor %}
