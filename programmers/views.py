@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from django.views.generic import CreateView, DeleteView
+from django.views.generic import CreateView, DeleteView, ListView, DetailView
 
 from programmers.forms import CreateProgrammerForm, DeleteProgrammerForm
 from programmers.models import Programmer
@@ -21,3 +21,18 @@ class DeleteProgrammer(DeleteView):
         context = super().get_context_data(**kwargs)
         context['form'] = DeleteProgrammerForm(instance=self.get_object())
         return context
+    
+class AllProgrammers(ListView):
+    model = Programmer
+    template_name = 'programmers/all_programmers.html'
+    context_object_name = 'programmers'
+
+class ProgrammerDetails(DetailView):
+    model = Programmer
+    template_name = 'programmers/programmer_details.html'
+    context_object_name = 'programmer'
+    slug_field = 'slug'
+    slug_url_kwarg = 'programmer_slug'
+
+    def get_queryset(self):
+        return super().get_queryset().prefetch_related('services')

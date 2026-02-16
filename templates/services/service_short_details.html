@@ -1,0 +1,5 @@
+<a href="{% url 'service_details' service.slug %}">
+    <img src="{{ service.image.url }}" alt="{{ service.name }}">
+    <h2>{{ service.name }}</h2>
+    <p>{{ service.description }}</p>
+</a>

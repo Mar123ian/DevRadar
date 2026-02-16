@@ -1,0 +1,18 @@
+<img src="{{ service.image.url }}" alt="{{ service.name }}">
+<h2>{{ service.name }}</h2>
+<p>{{ service.type.name }}</p>
+<p>{{ service.description }}</p>
+<p>{{ service.programmer.name }}</p>
+
+{% for technology in service.technologies.all %}
+    {% include 'categories/technology_details.html' %}
+{% endfor %}
+
+{% include 'comments/forms/create_comment_form.html' %}
+<p>{{ service.min_price }} - {{ service.max_price }}</p>
+
+{% for comment in service.comments.all %}
+    {% include 'comments/comment_details.html' %}
+{% empty %}
+    <p>No comments yet.</p>
+{% endfor %}

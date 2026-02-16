@@ -1,0 +1,12 @@
+<div class="all_types">
+    <h1>All Types</h1>
+    {% for type in types %}
+        <a href="{% url 'type_details' type.slug %}">
+        <img src="{{ type.image.url }}" alt="{{ type.name }}">
+        <h2>{{ type.name }}</h2>
+        <p>{{ type.description }}</p>
+        </a>
+    {% empty %}
+        <p>No types found.</p>
+    {% endfor %}
+</div>

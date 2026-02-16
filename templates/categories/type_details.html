@@ -1,0 +1,11 @@
+<div class="type">
+    <img src="{{ type.image.url }}" alt="{{ type.name }}">
+    <h1>{{ type.name }}</h1>
+    <p>{{ type.description }}</p>
+
+    {% for service in type.services.all %}
+        {% include 'services/service_short_details.html' %}
+    {% empty %}
+        <p>No services found.</p>
+    {% endfor %}
+</div>
