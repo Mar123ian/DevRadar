@@ -1,4 +1,5 @@
 from django.shortcuts import render
+from django.urls import reverse
 from django.views.generic import CreateView, DeleteView, ListView, DetailView
 
 from programmers.forms import CreateProgrammerForm, DeleteProgrammerForm
@@ -11,6 +12,9 @@ class CreateProgrammer(CreateView):
     form_class = CreateProgrammerForm
     template_name = 'programmers/forms/create_programmer_form.html'
 
+    def get_success_url(self):
+        return reverse('all_programmers')
+
 class DeleteProgrammer(DeleteView):
     model = Programmer
     template_name = 'programmers/forms/delete_programmer_form.html'
@@ -21,6 +25,9 @@ class DeleteProgrammer(DeleteView):
         context = super().get_context_data(**kwargs)
         context['form'] = DeleteProgrammerForm(instance=self.get_object())
         return context
+
+    def get_success_url(self):
+        return reverse('all_programmers')
     
 class AllProgrammers(ListView):
     model = Programmer

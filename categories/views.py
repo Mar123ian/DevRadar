@@ -1,4 +1,5 @@
 from django.shortcuts import render
+from django.urls import reverse
 from django.views.generic import CreateView, DeleteView, ListView, DetailView
 
 from categories.forms import CreateTypeForm, DeleteTypeForm, CreateTechnologyForm, DeleteTechnologyForm
@@ -11,6 +12,9 @@ class CreateType(CreateView):
     form_class = CreateTypeForm
     template_name = 'categories/forms/create_type_form.html'
 
+    def get_success_url(self):
+        return reverse('all_types')
+
 class DeleteType(DeleteView):
     model = Type
     template_name = 'categories/forms/delete_type_form.html'
@@ -22,10 +26,16 @@ class DeleteType(DeleteView):
         context['form'] = DeleteTypeForm(instance=self.get_object())
         return context
 
+    def get_success_url(self):
+        return reverse('all_types')
+
 class CreateTechnology(CreateView):
     model = Technology
     form_class = CreateTechnologyForm
     template_name = 'categories/forms/create_technology_form.html'
+
+    def get_success_url(self):
+        return reverse('all_technologies')
 
 class DeleteTechnology(DeleteView):
     model = Technology
@@ -37,6 +47,9 @@ class DeleteTechnology(DeleteView):
         context = super().get_context_data(**kwargs)
         context['form'] = DeleteTechnologyForm(instance=self.get_object())
         return context
+
+    def get_success_url(self):
+        return reverse('all_technologies')
 
 class AllTypes(ListView):
     model = Type

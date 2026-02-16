@@ -10,3 +10,4 @@ class CreateComment(CreateView):
     model = Comment
     form_class = CreateCommentForm
     template_name = 'comments/forms/create_comment_form.html'
+

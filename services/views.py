@@ -14,6 +14,9 @@ class CreateService(CreateView):
     form_class = CreateServiceForm
     template_name = 'services/forms/create_service_form.html'
 
+    def get_success_url(self):
+        return reverse('all_services')
+
 class DeleteService(DeleteView):
     model = Service
     template_name = 'services/forms/delete_service_form.html'
@@ -24,6 +27,9 @@ class DeleteService(DeleteView):
         context = super().get_context_data(**kwargs)
         context['form'] = DeleteServiceForm(instance=self.get_object())
         return context
+
+    def get_success_url(self):
+        return reverse('all_services')
     
 class AllServices(ListView):
     model = Service
