@@ -1,0 +1,13 @@
+<div class="search-and-filter">
+    <form method="get">
+        {{ form }}
+        <button type="submit">Search</button>
+    </form>
+</div>
+
+
+{% for service in services %}
+    {% include 'services/service_short_details.html' %}
+{% empty %}
+    <p>No services found.</p>
+{% endfor %}

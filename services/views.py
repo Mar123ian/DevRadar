@@ -4,7 +4,7 @@ from django.views.generic import CreateView, DeleteView, ListView, DetailView
 from django.views.generic.edit import FormMixin
 
 from comments.forms import CreateCommentForm
-from services.forms import CreateServiceForm, DeleteServiceForm
+from services.forms import CreateServiceForm, DeleteServiceForm, SearchAndFilterServicesForm
 from services.models import Service
 
 
@@ -29,6 +29,40 @@ class AllServices(ListView):
     model = Service
     template_name = 'services/all_services.html'
     context_object_name = 'services'
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        self.form = SearchAndFilterServicesForm(self.request.GET)
+
+        if self.form.is_valid():
+            query = self.form.cleaned_data['search_query'].strip()
+            service_type = self.form.cleaned_data['type']
+            technologies = self.form.cleaned_data['technologies']
+            min_price = self.form.cleaned_data['min_price']
+            max_price = self.form.cleaned_data['max_price']
+
+
+            if query:
+                queryset = queryset.filter(title__icontains=query)
+
+            if service_type:
+                queryset = queryset.filter(type=service_type)
+
+            if technologies:
+                queryset = queryset.filter(technologies__in=technologies)
+
+            if min_price:
+                queryset = queryset.filter(min_price__gte=min_price)
+
+            if max_price:
+                queryset = queryset.filter(max_price__lte=max_price)
+
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['form'] = self.form
+        return context
 
 class ServiceDetails(FormMixin, DetailView):
     model = Service
