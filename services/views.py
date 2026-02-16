@@ -4,7 +4,7 @@ from django.views.generic import CreateView, DeleteView, ListView, DetailView
 from django.views.generic.edit import FormMixin
 
 from comments.forms import CreateCommentForm
-from services.forms import CreateServiceForm, DeleteServiceForm, SearchAndFilterServicesForm
+from services.forms import CreateServiceForm, DeleteServiceForm, SearchSortAndFilterServicesForm
 from services.models import Service
 
 
@@ -29,10 +29,11 @@ class AllServices(ListView):
     model = Service
     template_name = 'services/all_services.html'
     context_object_name = 'services'
+    paginate_by = 3
 
     def get_queryset(self):
-        queryset = super().get_queryset()
-        self.form = SearchAndFilterServicesForm(self.request.GET)
+        queryset = super().get_queryset().select_related('programmer', 'type').prefetch_related('technologies', 'comments')
+        self.form = SearchSortAndFilterServicesForm(self.request.GET)
 
         if self.form.is_valid():
             query = self.form.cleaned_data['search_query'].strip()
@@ -40,6 +41,7 @@ class AllServices(ListView):
             technologies = self.form.cleaned_data['technologies']
             min_price = self.form.cleaned_data['min_price']
             max_price = self.form.cleaned_data['max_price']
+            desc_price = self.form.cleaned_data['desc_price']
 
 
             if query:
@@ -51,13 +53,16 @@ class AllServices(ListView):
             if technologies:
                 queryset = queryset.filter(technologies__in=technologies)
 
-            if min_price:
+            if min_price is not None:
                 queryset = queryset.filter(min_price__gte=min_price)
 
-            if max_price:
+            if max_price is not None:
                 queryset = queryset.filter(max_price__lte=max_price)
 
-        return queryset
+            if desc_price:
+                return queryset.order_by('-min_price')
+
+        return queryset.distinct().order_by('min_price')
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

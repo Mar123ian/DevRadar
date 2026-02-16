@@ -1,3 +1,5 @@
+{% load simple_tags %}
+
 <div class="search-and-filter">
     <form method="get">
         {{ form }}
@@ -11,3 +13,15 @@
 {% empty %}
     <p>No services found.</p>
 {% endfor %}
+
+<div class="pagination">
+
+    {% if page_obj.has_previous %}
+        <a href="?{% get_parameters %}page={{ page_obj.previous_page_number }}">Предишна</a>
+    {% endif %}
+
+    {% if page_obj.has_next %}
+        <a href="?{% get_parameters %}page={{ page_obj.next_page_number }}">Следващa</a>
+    {% endif %}
+
+</div>

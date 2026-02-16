@@ -80,9 +80,10 @@ class CreateServiceForm(ServiceForm):
 class DeleteServiceForm(DisableFieldsMixin, ServiceForm):
     pass
 
-class SearchAndFilterServicesForm(forms.Form):
-    search_query = forms.CharField(required=False)
+class SearchSortAndFilterServicesForm(forms.Form):
+    search_query = forms.CharField(required=False, max_length=255, error_messages={'max_length': 'Максималната дължина е 255 символа!'})
     type = forms.ModelChoiceField(queryset=Type.objects.all(), required=False)
     technologies = forms.ModelMultipleChoiceField(queryset=Technology.objects.all(), required=False)
     min_price = forms.DecimalField(required=False, decimal_places=2, max_digits=10, error_messages={'max_digits': 'Максималната дължина е 10 цифри!', 'decimal_places': 'Максималната дължина след десетичната запетая е 2 цифри!'})
     max_price = forms.DecimalField(required=False, decimal_places=2, max_digits=10, error_messages={'max_digits': 'Максималната дължина е 10 цифри!', 'decimal_places': 'Максималната дължина след десетичната запетая е 2 цифри!'})
+    desc_price = forms.BooleanField(required=False, initial=False)
