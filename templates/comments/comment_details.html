@@ -1,5 +1,15 @@
-<div class="comment-details">
-    <h3>{{ comment.author }}</h3>
-    <p>{{ comment.content }}</p>
-    <p>Created at: {{ comment.created_at }}</p>
-</div>
+<article class="comments-details">
+
+    <h3 class="comments-details__author">
+        {{ comment.author }}
+    </h3>
+
+    <p class="comments-details__content">
+        {{ comment.content }}
+    </p>
+
+    <p class="comments-details__timestamp">
+        Created at: {{ comment.created_at }}
+    </p>
+
+</article>

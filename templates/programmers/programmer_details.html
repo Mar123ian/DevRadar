@@ -1,10 +1,40 @@
-<img src="{{ programmer.image.url }}" alt="{{ programmer.get_full_name }}">
-<p>{{ programmer.get_full_name }}</p>
-<p>{{ programmer.email }}</p>
-<p>{{ programmer.phone_number }}</p>
+{% extends 'core/base.html' %}
 
-{% for service in programmer.services.all %}
-    {% include 'services/service_short_details.html' %}
-{% empty %}
-    <p>No services found.</p>
-{% endfor %}
+{% block main_content %}
+<article class="programmer-details">
+
+    <div class="programmer-details__header">
+        <img
+            src="{{ programmer.image.url }}"
+            alt="{{ programmer.get_full_name }}"
+            class="programmer-details__image"
+        >
+        <h1 class="programmer-details__name">
+            {{ programmer.get_full_name }}
+        </h1>
+        <p class="programmer-details__email">
+            {{ programmer.email }}
+        </p>
+        <p class="programmer-details__phone">
+            {{ programmer.phone_number }}
+        </p>
+    </div>
+
+    <section class="programmer-details__services">
+        <h2 class="programmer-details__services-title">Services</h2>
+
+        <div class="programmer-details__services-list">
+            {% for service in programmer.services.all %}
+                <div class="programmer-details__service-item">
+                    {% include 'services/service_short_details.html' %}
+                </div>
+            {% empty %}
+                <p class="programmer-details__no-services">
+                    No services found.
+                </p>
+            {% endfor %}
+        </div>
+    </section>
+
+</article>
+{% endblock %}

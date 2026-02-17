@@ -1,11 +1,37 @@
-<div class="type">
-    <img src="{{ type.image.url }}" alt="{{ type.name }}">
-    <h1>{{ type.name }}</h1>
-    <p>{{ type.description }}</p>
+{% extends 'core/base.html' %}
 
-    {% for service in type.services.all %}
-        {% include 'services/service_short_details.html' %}
-    {% empty %}
-        <p>No services found.</p>
-    {% endfor %}
-</div>
+{% block main_content %}
+<article class="categories-type">
+
+    <div class="categories-type__header">
+        <img
+            src="{{ type.image.url }}"
+            alt="{{ type.name }}"
+            class="categories-type__image"
+        >
+        <h1 class="categories-type__name">
+            {{ type.name }}
+        </h1>
+        <p class="categories-type__description">
+            {{ type.description }}
+        </p>
+    </div>
+
+    <section class="categories-type__services">
+        <h2 class="categories-type__services-title">Services</h2>
+
+        <div class="categories-type__services-list">
+            {% for service in type.services.all %}
+                <div class="categories-type__service-item">
+                    {% include 'services/service_short_details.html' %}
+                </div>
+            {% empty %}
+                <p class="categories-type__no-services">
+                    No services found.
+                </p>
+            {% endfor %}
+        </div>
+    </section>
+
+</article>
+{% endblock %}

@@ -1,15 +1,22 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
-<a href="{% url 'create_type' %}">Add Type</a><br><br>
-<a href="{% url 'create_technology' %}">Add Technology</a><br><br>
-<a href="{% url 'create_service' %}">Add Service</a><br><br>
-<a href="{% url 'create_programmer' %}">Add Programmer</a><br><br>
-<a href="{% url 'create_comment' %}">Add Comment</a><br><br>
+{% extends 'core/base.html' %}
 
-</body>
-</html>
+{% block main_content %}
+<section class="hero-section">
+    <div class="hero-badge">Най-бързо растящата мрежа в България</div>
+    <h1 class="hero-title">Мащабирайте идеите си с <span>Топ 1%</span> от софтуерните таланти</h1>
+    <p class="hero-lead">DevRadar свързва визионери с доказани инженери. Превърнете кода в капитал.</p>
+
+    <div class="hero-search-bar">
+        <form action="{% url 'all_services' %}" method="get">
+            <input type="text" placeholder="Каква технология търсите? (напр. Python, React...)" name="search">
+            <button type="submit" class="btn btn--primary">Търси</button>
+        </form>
+    </div>
+
+    <div class="hero-stats">
+        <div class="stat-item"><strong>500+</strong> Проекта</div>
+        <div class="stat-item"><strong>120+</strong> Експерти</div>
+        <div class="stat-item"><strong>4.9/5</strong> Оценка</div>
+    </div>
+</section>
+{% endblock %}

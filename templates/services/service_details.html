@@ -1,18 +1,70 @@
-<img src="{{ service.image.url }}" alt="{{ service.name }}">
-<h2>{{ service.name }}</h2>
-<p>{{ service.type.name }}</p>
-<p>{{ service.description }}</p>
-<p>{{ service.programmer.name }}</p>
+{% extends 'core/base.html' %}
 
-{% for technology in service.technologies.all %}
-    {% include 'categories/technology_details.html' %}
-{% endfor %}
+{% block main_content %}
+<article class="service-details">
 
-{% include 'comments/forms/create_comment_form.html' %}
-<p>{{ service.min_price }} - {{ service.max_price }}</p>
+    <div class="service-details__header">
+        <img
+            src="{{ service.image.url }}"
+            alt="{{ service.name }}"
+            class="service-details__image"
+        >
+        <h1 class="service-details__title">
+            {{ service.name }}
+        </h1>
+        <p class="service-details__type">
+            {{ service.type.name }}
+        </p>
+        <p class="service-details__programmer">
+            {{ service.programmer.name }}
+        </p>
+    </div>
 
-{% for comment in service.comments.all %}
-    {% include 'comments/comment_details.html' %}
-{% empty %}
-    <p>No comments yet.</p>
-{% endfor %}
+    <div class="service-details__content">
+        <p class="service-details__description">
+            {{ service.description }}
+        </p>
+
+        <p class="service-details__price">
+            <span class="service-details__price-min">
+                {{ service.min_price }}
+            </span>
+            -
+            <span class="service-details__price-max">
+                {{ service.max_price }}
+            </span>
+        </p>
+    </div>
+
+    <section class="service-details__technologies">
+        {% for technology in service.technologies.all %}
+            <div class="service-details__technology">
+                {% include 'categories/technology_details.html' %}
+            </div>
+        {% endfor %}
+    </section>
+
+    <section class="service-details__comments">
+        <h2 class="service-details__comments-title">
+            Comments
+        </h2>
+
+        <div class="service-details__comment-form">
+            {% include 'comments/forms/create_comment_form.html' %}
+        </div>
+
+        <div class="service-details__comment-list">
+            {% for comment in service.comments.all %}
+                <div class="service-details__comment">
+                    {% include 'comments/comment_details.html' %}
+                </div>
+            {% empty %}
+                <p class="service-details__no-comments">
+                    No comments yet.
+                </p>
+            {% endfor %}
+        </div>
+    </section>
+
+</article>
+{% endblock %}

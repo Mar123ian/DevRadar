@@ -1,6 +1,24 @@
-{% for programmer in programmers %}
-    <img src="{{ programmer.image.url }}" alt="{{ programmer.get_full_name }}">
-    <p>{{ programmer.get_full_name }}</p>
-{% empty %}
-    <p>There are no programmers yet.</p>
-{% endfor %}
+{% extends 'core/base.html' %}
+
+{% block main_content %}
+<section class="programmers-list">
+
+    {% for programmer in programmers %}
+        <div class="programmers-list__item">
+            <img
+                src="{{ programmer.image.url }}"
+                alt="{{ programmer.get_full_name }}"
+                class="programmers-list__image"
+            >
+            <p class="programmers-list__name">
+                {{ programmer.get_full_name }}
+            </p>
+        </div>
+    {% empty %}
+        <p class="programmers-list__empty">
+            There are no programmers yet.
+        </p>
+    {% endfor %}
+
+</section>
+{% endblock %}

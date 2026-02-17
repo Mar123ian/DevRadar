@@ -68,6 +68,13 @@ class ServiceForm(forms.ModelForm):
         programmer = cleaned_data.get('programmer')
         service = cleaned_data.get('service')
 
+        min_price = cleaned_data.get('min_price')
+        max_price = cleaned_data.get('max_price')
+
+        if min_price > max_price:
+            self.add_error('min_price', 'Минималната цена не може да е по-голяма от максималната цена!')
+            self.add_error('max_price', 'Максималната цена не може да е по-малка от минималната цена!')
+
         if programmer.services.filter(id=service.id).exists():
             self.add_error('service',"Този програмист вече е предложил същата услуга!")
 

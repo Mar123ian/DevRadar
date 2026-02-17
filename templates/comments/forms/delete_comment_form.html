@@ -1,5 +1,18 @@
-<form method="post" enctype="multipart/form-data">
+<form
+    method="post"
+    enctype="multipart/form-data"
+    class="comments-delete-form"
+>
     {% csrf_token %}
-    {{ form }}
-    <button type="submit">Изтрий</button>
+
+    <div class="comments-delete-form__fields">
+        {{ form }}
+    </div>
+
+    <button
+        type="submit"
+        class="comments-delete-form__button comments-delete-form__button--danger"
+    >
+        Изтрий
+    </button>
 </form>

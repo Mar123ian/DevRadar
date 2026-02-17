@@ -1,5 +1,15 @@
-<a href="{% url 'service_details' service.slug %}">
-    <img src="{{ service.image.url }}" alt="{{ service.name }}">
-    <h2>{{ service.name }}</h2>
-    <p>{{ service.description }}</p>
-</a>
+<div class="service-card">
+    <a href="{% url 'service_details' service.slug %}" class="service-card__link">
+        <img
+            src="{{ service.image.url }}"
+            alt="{{ service.name }}"
+            class="service-card__image"
+        >
+        <h2 class="service-card__title">
+            {{ service.name }}
+        </h2>
+        <p class="service-card__description">
+            {{ service.description }}
+        </p>
+    </a>
+</div>

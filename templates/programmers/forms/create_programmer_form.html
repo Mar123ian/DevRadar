@@ -1,5 +1,22 @@
-<form method="post" enctype="multipart/form-data">
+{% extends 'core/base.html' %}
+
+{% block main_content %}
+<form
+    method="post"
+    enctype="multipart/form-data"
+    class="programmer-create-form"
+>
     {% csrf_token %}
-    {{ form }}
-    <button type="submit">Създай</button>
+
+    <div class="programmer-create-form__fields">
+        {{ form }}
+    </div>
+
+    <button
+        type="submit"
+        class="programmer-create-form__button programmer-create-form__button--primary"
+    >
+        Създай
+    </button>
 </form>
+{% endblock %}

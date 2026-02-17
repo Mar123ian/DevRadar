@@ -1,5 +1,22 @@
-<form method="post" enctype="multipart/form-data">
+{% extends 'core/base.html' %}
+
+{% block main_content %}
+<form
+    method="post"
+    enctype="multipart/form-data"
+    class="categories-type-delete-form"
+>
     {% csrf_token %}
-    {{ form }}
-    <button type="submit">Изтрий</button>
+
+    <div class="categories-type-delete-form__fields">
+        {{ form }}
+    </div>
+
+    <button
+        type="submit"
+        class="categories-type-delete-form__button categories-type-delete-form__button--danger"
+    >
+        Изтрий
+    </button>
 </form>
+{% endblock %}

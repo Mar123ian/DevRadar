@@ -1,5 +1,6 @@
 from django.db import models
 from django.utils.text import slugify
+from unidecode import unidecode
 
 from core.mixins import CreatedAndUpdatedAtMixin
 
@@ -18,7 +19,7 @@ class Programmer(CreatedAndUpdatedAtMixin, models.Model):
 
     def save(self, *args, **kwargs):
         if not self.slug:
-            self.slug = slugify(self.get_full_name())
+            self.slug = slugify(unidecode(self.get_full_name()))
         super().save(*args, **kwargs)
 
     def get_full_name(self):

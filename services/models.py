@@ -1,5 +1,6 @@
 from django.db import models
 from django.utils.text import slugify
+from unidecode import unidecode
 
 from core.mixins import CreatedAndUpdatedAtMixin
 
@@ -26,6 +27,6 @@ class Service(CreatedAndUpdatedAtMixin, models.Model):
 
     def save(self, *args, **kwargs):
         if not self.slug:
-            self.slug = slugify(self.programmer.get_full_name() + ' ' + self.name)
+            self.slug = slugify(unidecode(self.programmer.get_full_name() + ' ' + self.name))
         super().save(*args, **kwargs)
 

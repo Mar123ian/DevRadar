@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="bg">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>DevRadar | Professional Freelance Network</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'styles.css' %}" />
+</head>
+<body>
+    <header class="main-header">
+        <nav class="nav-container">
+            <a href="/" class="logo">Dev<span class="accent">Radar</span></a>
+
+            <ul class="nav-menu">
+                <li><a href="{% url 'all_services' %}" class="nav-link">Услуги</a></li>
+                <li><a href="{% url 'all_programmers' %}" class="nav-link">Експерти</a></li>
+                <li><a href="{% url 'all_types' %}" class="nav-link">Категории</a></li>
+
+                <li class="dropdown">
+                    <a href="#" class="nav-link dropdown-toggle">Управление ▼</a>
+                    <ul class="dropdown-content">
+                        <li><a href="{% url 'create_service' %}">+ Нова Услуга</a></li>
+                        <li><a href="{% url 'create_programmer' %}">+ Нов Програмист</a></li>
+                        <li><a href="{% url 'create_technology' %}">+ Нова Технология</a></li>
+                        <li><a href="{% url 'create_type' %}">+ Нова Категория</a></li>
+                    </ul>
+                </li>
+            </ul>
+
+            <div class="nav-actions">
+                <a href="{% url 'create_service' %}" class="btn btn--primary">Стартирай проект</a>
+            </div>
+        </nav>
+    </header>
+
+    <main class="content-wrapper">
+        {% block main_content %}
+        {% endblock %}
+    </main>
+
+    <footer class="main-footer">
+        <div class="footer-grid">
+            <div class="footer-brand">
+                <a href="/" class="logo">Dev<span>Radar</span></a>
+                <p>Елитна мрежа за софтуерни решения.</p>
+            </div>
+            <div class="footer-nav">
+                <h4>Бързи връзки</h4>
+                <a href="{% url 'all_services' %}">Всички услуги</a>
+                <a href="{% url 'all_programmers' %}">Топ програмисти</a>
+            </div>
+            <div class="footer-social">
+                <h4>Контакти</h4>
+                <p>support@devradar.com</p>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2026 DevRadar Cloud. Професионална платформа за фрийлансърство.</p>
+        </div>
+    </footer>
+</body>
+</html>
