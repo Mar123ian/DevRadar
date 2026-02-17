@@ -3,41 +3,46 @@
 <html lang="bg">
 <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>DevRadar | Professional Freelance Network</title>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'styles.css' %}" />
 </head>
 <body>
     <header class="main-header">
         <nav class="nav-container">
-            <a href="/" class="logo">Dev<span class="accent">Radar</span></a>
+            <a href="/" class="logo">Dev<span>Radar</span></a>
 
-            <ul class="nav-menu">
-                <li><a href="{% url 'all_services' %}" class="nav-link">Услуги</a></li>
-                <li><a href="{% url 'all_programmers' %}" class="nav-link">Експерти</a></li>
-                <li><a href="{% url 'all_types' %}" class="nav-link">Категории</a></li>
+            <button class="menu-toggle" id="mobile-toggle" aria-label="Toggle Menu">
+                <span></span>
+            </button>
 
-                <li class="dropdown">
-                    <a href="#" class="nav-link dropdown-toggle">Управление ▼</a>
-                    <ul class="dropdown-content">
-                        <li><a href="{% url 'create_service' %}">+ Нова Услуга</a></li>
-                        <li><a href="{% url 'create_programmer' %}">+ Нов Програмист</a></li>
-                        <li><a href="{% url 'create_technology' %}">+ Нова Технология</a></li>
-                        <li><a href="{% url 'create_type' %}">+ Нова Категория</a></li>
-                    </ul>
-                </li>
-            </ul>
+            <div class="nav-inner" id="nav-content">
+                <ul class="nav-menu">
+                    <li><a href="{% url 'all_services' %}" class="nav-link">Услуги</a></li>
+                    <li><a href="{% url 'all_programmers' %}" class="nav-link">Експерти</a></li>
+                    <li><a href="{% url 'all_types' %}" class="nav-link">Категории</a></li>
 
-            <div class="nav-actions">
-                <a href="{% url 'create_service' %}" class="btn btn--primary">Стартирай проект</a>
+                    <li class="dropdown">
+                        <span class="nav-link dropdown-trigger">Управление ▼</span>
+                        <ul class="dropdown-content">
+                            <li><a href="{% url 'create_service' %}">+ Услуга</a></li>
+                            <li><a href="{% url 'create_programmer' %}">+ Програмист</a></li>
+                            <li><a href="{% url 'create_technology' %}">+ Технология</a></li>
+                            <li><a href="{% url 'create_type' %}">+ Категория</a></li>
+                        </ul>
+                    </li>
+                </ul>
+
+                <div class="nav-actions">
+                    <a href="{% url 'create_service' %}" class="btn btn--primary">Стартирай проект</a>
+                </div>
             </div>
         </nav>
     </header>
 
     <main class="content-wrapper">
-        {% block main_content %}
-        {% endblock %}
+        {% block main_content %}{% endblock %}
     </main>
 
     <footer class="main-footer">
@@ -57,8 +62,41 @@
             </div>
         </div>
         <div class="footer-bottom">
-            <p>&copy; 2026 DevRadar Cloud. Професионална платформа за фрийлансърство.</p>
+            <p>&copy; 2026 DevRadar Cloud.</p>
         </div>
     </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const toggle = document.getElementById('mobile-toggle');
+            const nav = document.getElementById('nav-content');
+            const dropdownTrigger = document.querySelector('.dropdown-trigger');
+
+            // Отваряне/Затваряне на мобилно меню
+            toggle.addEventListener('click', function(e) {
+                e.stopPropagation();
+                nav.classList.toggle('active');
+                toggle.classList.toggle('active');
+                document.body.style.overflow = nav.classList.contains('active') ? 'hidden' : '';
+            });
+
+            // Работа на Dropdown на мобилни устройства (клик)
+            dropdownTrigger.addEventListener('click', function(e) {
+                if (window.innerWidth <= 992) {
+                    e.preventDefault();
+                    this.parentElement.classList.toggle('mobile-open');
+                }
+            });
+
+            // Затваряне при клик извън менюто
+            document.addEventListener('click', function(e) {
+                if (!nav.contains(e.target) && !toggle.contains(e.target)) {
+                    nav.classList.remove('active');
+                    toggle.classList.remove('active');
+                    document.body.style.overflow = '';
+                }
+            });
+        });
+    </script>
 </body>
 </html>
