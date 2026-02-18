@@ -5,15 +5,17 @@
 
     {% for programmer in programmers %}
         <div class="programmer-card">
-
+        <p class="programmers-list__name">
+                {{ programmer.get_full_name }}
+            </p>
+            <a href="{% url 'programmer_details' programmer.slug %}" class="programmers-list__link">
             <img
                 src="{{ programmer.image.url }}"
                 alt="{{ programmer.get_full_name }}"
                 class="programmers-list__image"
             >
-            <p class="programmers-list__name">
-                {{ programmer.get_full_name }}
-            </p>
+
+            </a>
         </div>
     {% empty %}
         <p class="programmers-list__empty">

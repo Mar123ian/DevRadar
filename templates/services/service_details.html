@@ -9,10 +9,11 @@
             {{ service.name }}
         </h1>
         <p class="service-details__type">
-            Категория: <span>{{ service.type.name }}</span>
+            Категория: <a href="{% url 'type_details' service.type.slug %}" class="service-details__type-link"><span>{{ service.type.name }}</span></a>
         </p>
-        <p class="service-details__programmer">
-            {{ service.programmer.name }}
+        <p>
+        <span class="service-details__programmer">
+            Предлага се от: <a href="{% url 'programmer_details' service.programmer.slug %}" class="service-details__programmer-link"><span>{{ service.programmer.get_full_name }}</span></a></span>
         </p>
     </div>
 

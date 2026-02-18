@@ -1,6 +1,6 @@
 /* ================= ROOT ================= */
 :root {
-    --primary: #00d1b2;
+    --primary: #00b15e;
     --primary-hover: #00bfa5;
     --dark: #0f172a;
     --dark-light: #1e293b;
@@ -247,14 +247,22 @@ flex: 1 1 200px;    align-items: center;
     color: var(--text-muted);
 }
 
+.programmers-list {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    width: 100%;
+}
+
 .programmer-card {
     display: flex;
     flex-direction: column;
     background: var(--white);
     border: 1px solid var(--gray-200);
     border-radius: var(--radius);
-    overflow: hidden;
     transition: var(--transition);
+    overflow: auto;
+    flex: 1 1 300px;
 }
 
 .programmer-card:hover {
@@ -265,22 +273,32 @@ flex: 1 1 200px;    align-items: center;
 
 .programmers-list__image {
     width: 100%;
-    object-fit: cover;
+    object-fit: contain;
 }
 
 .programmers-list__name {
     text-align: center;
-    font-size: 1.2rem;
+    font-size: 1.8rem;
     font-weight: bold;
+    color: var(--primary);
+}
+
+.programmer-details__header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.programmer-details__image{
+    object-fit: contain;
+    align-self: center;
 }
 
 .service-details__comment {
     border-top: 1px solid var(--gray-200);
 }
 
-.categories-technology img {
-    width: 5%;
-}
+
 
 .service-details__title{
     font-size: 2.5rem;
@@ -301,7 +319,7 @@ flex: 1 1 200px;    align-items: center;
 .service-details__price {
     font-size: 2rem;
     font-weight: bold;
-    margin-bottom: 1em;
+    margin-bottom: 0.3em;
     margin-top: 1em;
 
 }
@@ -312,8 +330,47 @@ flex: 1 1 200px;    align-items: center;
 
 }
 
+.service-details__programmer span{
+    font-weight: bold;
+}
+
 .service-details__price span {
     color: var(--primary);
+}
+
+.service-details__technology{
+    display: flex;
+    flex-direction: column;
+    margin-top: 0.5em;
+}
+
+.categories-technology {
+    display: flex;
+    width: 10%;
+    flex-direction: column;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-bottom: 2em;
+}
+
+.categories-technology img {
+    width: 40%;
+}
+
+.categories-type__image {
+    width: 60%;
+}
+
+.categories-type__header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.categories-type__name {
+    color: var(--primary);
+    margin-top: 1em;
+    font-size: 2em;
 }
 
 /* ================= FORMS ================= */
