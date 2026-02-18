@@ -4,7 +4,8 @@
 <section class="programmers-list">
 
     {% for programmer in programmers %}
-        <div class="programmers-list__item">
+        <div class="programmer-card">
+
             <img
                 src="{{ programmer.image.url }}"
                 alt="{{ programmer.get_full_name }}"

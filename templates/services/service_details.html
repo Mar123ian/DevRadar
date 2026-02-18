@@ -4,36 +4,34 @@
 <article class="service-details">
 
     <div class="service-details__header">
-        <img
-            src="{{ service.image.url }}"
-            alt="{{ service.name }}"
-            class="service-details__image"
-        >
+
         <h1 class="service-details__title">
             {{ service.name }}
         </h1>
         <p class="service-details__type">
-            {{ service.type.name }}
+            Категория: <span>{{ service.type.name }}</span>
         </p>
         <p class="service-details__programmer">
             {{ service.programmer.name }}
         </p>
     </div>
 
+    <p class="service-details__price">
+          От  <span class="service-details__price-min">
+                {{ service.min_price }}€
+            </span>
+            до
+            <span class="service-details__price-max">
+                {{ service.max_price }}€
+            </span>
+        </p>
+
     <div class="service-details__content">
         <p class="service-details__description">
             {{ service.description }}
         </p>
 
-        <p class="service-details__price">
-            <span class="service-details__price-min">
-                {{ service.min_price }}
-            </span>
-            -
-            <span class="service-details__price-max">
-                {{ service.max_price }}
-            </span>
-        </p>
+
     </div>
 
     <section class="service-details__technologies">

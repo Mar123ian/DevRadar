@@ -23,23 +23,14 @@
 /* ================= RESET ================= */
 * { box-sizing: border-box; margin: 0; padding: 0;}
 
-* , *::before, *::after{
-  min-width: 0 !important;
-  word-break: break-all !important;
-  overflow-wrap: break-word !important;
-  hyphens: auto !important;
-    white-space: normal !important;
+* {
+  /*min-width: 0;*/
+  word-break: normal; !important;
+  overflow-wrap: break-word; !important;
+  hyphens: auto; !important;
 }
 
-/* Всички директни деца на flex или grid контейнер */
-*[style*="display: flex"],*[style*="display: flex"] > *,
-*[style*="display: grid"] > * {
-  min-width: 0 !important;
-  word-break: break-all !important;
-  overflow-wrap: break-word !important;
-  hyphens: auto !important;
-    white-space: normal !important;
-}
+
 
 
 body {
@@ -48,6 +39,7 @@ body {
     color: var(--text-main);
     line-height: 1.6;
     overflow-x: hidden;
+
 }
 
 a { text-decoration: none; color: inherit; transition: var(--transition); }
@@ -87,7 +79,15 @@ ul { list-style: none; }
     font-weight: 800;
     color: var(--dark);
     flex-shrink: 0;
+
 }
+
+.main-footer .logo {
+    background: linear-gradient(45deg, var(--primary) 0%, var(--dark) 100%);
+    padding: 0.3em;
+    border-radius: var(--radius);
+}
+
 .logo span { color: var(--primary); }
 
 /* NAV INNER */
@@ -97,6 +97,7 @@ ul { list-style: none; }
     gap: 32px;
     flex: 1;
     justify-content: space-between;
+
 }
 
 /* NAV MENU */
@@ -186,10 +187,31 @@ ul { list-style: none; }
 .programmers-list,
 .categories-type__services-list,
 .programmer-details__services-list {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(260px,1fr));
+    display: flex;
+    flex-direction: row;
     gap: 24px;
     margin-top: 40px;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    width: 100%;
+
+
+}
+
+
+
+.categories-types__item {
+    display: flex;
+    flex-direction: column;
+flex: 1 1 200px;    align-items: center;
+    align-content: center;
+    text-align: center;
+    gap: 0.3em;
+}
+
+.categories-types__image {
+    flex:1 1 0;
+    max-width: 70%;
 }
 
 /* ================= CARDS ================= */
@@ -225,6 +247,75 @@ ul { list-style: none; }
     color: var(--text-muted);
 }
 
+.programmer-card {
+    display: flex;
+    flex-direction: column;
+    background: var(--white);
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius);
+    overflow: hidden;
+    transition: var(--transition);
+}
+
+.programmer-card:hover {
+    transform: translateY(-6px);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--primary);
+}
+
+.programmers-list__image {
+    width: 100%;
+    object-fit: cover;
+}
+
+.programmers-list__name {
+    text-align: center;
+    font-size: 1.2rem;
+    font-weight: bold;
+}
+
+.service-details__comment {
+    border-top: 1px solid var(--gray-200);
+}
+
+.categories-technology img {
+    width: 5%;
+}
+
+.service-details__title{
+    font-size: 2.5rem;
+    font-weight: bold;
+    color: var(--primary);
+}
+
+.service-details__type{
+    font-size: 1.5rem;
+
+}
+
+.service-details__type span{
+    font-weight: bold;
+
+}
+
+.service-details__price {
+    font-size: 2rem;
+    font-weight: bold;
+    margin-bottom: 1em;
+    margin-top: 1em;
+
+}
+
+.service-details__content {
+    font-size: 1.2rem;
+    margin-bottom: 0.5em;
+
+}
+
+.service-details__price span {
+    color: var(--primary);
+}
+
 /* ================= FORMS ================= */
 form[class$="-form"] {
     background: var(--white);
@@ -252,6 +343,16 @@ form select {
     background: var(--gray-50);
     margin-bottom: 16px;
 }
+.errorlist {
+    color: var(--danger);
+}
+
+.helptext, .comments-details__timestamp {
+    font-style: italic;
+    font-size: 0.8rem;
+}
+
+
 
 /* ================= BUTTONS ================= */
 .btn,
@@ -268,6 +369,7 @@ button[type="submit"] {
 button[class*="--primary"] {
     background: var(--dark);
     color: white;
+    text-align: center
 }
 
 .btn--primary:hover {
@@ -289,8 +391,8 @@ button[class*="--primary"] {
     margin: 0 auto;
     padding: 0 24px;
 
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    display: flex;
+    flex-wrap: wrap;
     gap: 40px;
 
     justify-items: center;
@@ -425,9 +527,10 @@ button[class*="--primary"] {
     }
 }
 
-.categories-types__item *{
-    min-width: 0 !important;
-  word-break: normal !important;
-  overflow-wrap: break-word !important;
-  hyphens: auto !important;
+img {
+
+    object-fit: contain; /* изображението се мащабира без да се изрязва */
 }
+
+
+
