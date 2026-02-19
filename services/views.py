@@ -1,10 +1,10 @@
 from django.shortcuts import render, redirect
 from django.urls import reverse
 from django.views.generic import CreateView, DeleteView, ListView, DetailView
-from django.views.generic.edit import FormMixin
+from django.views.generic.edit import FormMixin, UpdateView
 
 from comments.forms import CreateCommentForm
-from services.forms import CreateServiceForm, DeleteServiceForm, SearchSortAndFilterServicesForm
+from services.forms import CreateServiceForm, DeleteServiceForm, SearchSortAndFilterServicesForm, UpdateServiceForm
 from services.models import Service
 
 
@@ -16,6 +16,17 @@ class CreateService(CreateView):
 
     def get_success_url(self):
         return reverse('all_services')
+
+class UpdateService(UpdateView):
+    model = Service
+    form_class = UpdateServiceForm
+    slug_field = 'slug'
+    slug_url_kwarg = 'service_slug'
+    template_name = 'services/forms/update_service_form.html'
+
+    def get_success_url(self):
+        return reverse('service_details', kwargs={'service_slug': self.object.slug})
+
 
 class DeleteService(DeleteView):
     model = Service

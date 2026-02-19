@@ -1,0 +1,22 @@
+{% extends 'core/base.html' %}
+
+{% block main_content %}
+<form
+    method="post"
+    enctype="multipart/form-data"
+    class="services-update-form"
+>
+    {% csrf_token %}
+
+    <div class="services-update-form__fields">
+        {{ form }}
+    </div>
+
+    <button
+        type="submit"
+        class="services-update-form__button services-update-form__button--primary"
+    >
+        Запази
+    </button>
+</form>
+{% endblock %}

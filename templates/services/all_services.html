@@ -5,7 +5,12 @@
 {% block main_content %}
 <section class="services-page">
 
-    <div class="services-page__search">
+    <!-- Бутон за toggle -->
+    <button type="button" id="toggleSearchBtn" class="services-page__toggle-button">
+        Покажи търсачката и филтрите
+    </button>
+
+    <div class="services-page__search is-hidden" id="servicesSearch">
         <form method="get" class="services-page__search-form">
             <div class="services-page__search-fields">
                 {{ form }}
@@ -15,6 +20,7 @@
             </button>
         </form>
     </div>
+
 
     <div class="services-page__list">
         {% for service in services %}
@@ -49,4 +55,24 @@
     </div>
 
 </section>
+    <script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const toggleBtn = document.getElementById('toggleSearchBtn');
+        const searchSection = document.getElementById('servicesSearch');
+
+        toggleBtn.addEventListener('click', function () {
+            searchSection.classList.toggle('is-hidden');
+
+            if (searchSection.classList.contains('is-hidden')) {
+                toggleBtn.textContent = 'Покажи търсачката и филтрите';
+            } else {
+                toggleBtn.textContent = 'Скрий';
+            }
+        });
+    });
+</script>
 {% endblock %}
+
+
+
+

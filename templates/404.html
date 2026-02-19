@@ -1,0 +1,18 @@
+{% extends 'core/base.html' %}
+{% block main_content %}
+<section class="hero-section">
+    <h1 class="hero-title"><span>404</span> — Страницата не е намерена</h1>
+    <p class="hero-lead">Съжаляваме, но търсената страница не съществува или е преместена.</p>
+
+    <div style="margin-top: 16px;">
+        <a href="/" class="btn btn--primary">Към началото</a>
+        <a href="{% url 'all_services' %}" class="btn btn--primary" style="margin-left: 12px;">Разгледай услугите</a>
+    </div>
+
+    <p class="hero-lead" style="margin-top: 18px;">
+        Или опитай: 
+        <a class="nav-link" href="{% url 'all_programmers' %}">Експерти</a> · 
+        <a class="nav-link" href="{% url 'all_types' %}">Категории</a>
+    </p>
+</section>
+{% endblock %}

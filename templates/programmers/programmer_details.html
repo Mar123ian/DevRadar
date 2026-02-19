@@ -3,6 +3,10 @@
 {% block main_content %}
 <article class="programmer-details">
 
+    <a href="{% url 'update_programmer' programmer.slug%}"><button class="update-button">Edit</button></a>
+    <a href="{% url 'delete_programmer' programmer.slug%}"><button class="delete-button">Delete</button></a>
+
+
     <div class="programmer-details__header">
         <img
             src="{{ programmer.image.url }}"

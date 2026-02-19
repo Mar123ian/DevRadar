@@ -255,14 +255,12 @@ flex: 1 1 200px;    align-items: center;
 }
 
 .programmer-card {
-    display: flex;
-    flex-direction: column;
     background: var(--white);
     border: 1px solid var(--gray-200);
     border-radius: var(--radius);
+    overflow: hidden;
     transition: var(--transition);
-    overflow: auto;
-    flex: 1 1 300px;
+    padding: 1em;
 }
 
 .programmer-card:hover {
@@ -273,7 +271,8 @@ flex: 1 1 200px;    align-items: center;
 
 .programmers-list__image {
     width: 100%;
-    object-fit: contain;
+    height: 200px;
+    object-fit: cover;
 }
 
 .programmers-list__name {
@@ -290,12 +289,20 @@ flex: 1 1 200px;    align-items: center;
 }
 
 .programmer-details__image{
+    height: 200px;
     object-fit: contain;
-    align-self: center;
+}
+
+
+.service-card:hover {
+     transform: translateY(-6px);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--primary);
 }
 
 .service-details__comment {
     border-top: 1px solid var(--gray-200);
+    padding: 1em;
 }
 
 
@@ -316,6 +323,10 @@ flex: 1 1 200px;    align-items: center;
 
 }
 
+.service-details__type span:hover{
+    color: var(--primary-hover);
+}
+
 .service-details__price {
     font-size: 2rem;
     font-weight: bold;
@@ -334,28 +345,65 @@ flex: 1 1 200px;    align-items: center;
     font-weight: bold;
 }
 
+.service-details__programmer span:hover {
+    color: var(--primary-hover);
+}
+
 .service-details__price span {
     color: var(--primary);
+}
+
+.service-details__technologies {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    align-content: center;
+
 }
 
 .service-details__technology{
     display: flex;
     flex-direction: column;
     margin-top: 0.5em;
+    width: 5em;
+    align-items: center;
+    align-content: center;
 }
 
 .categories-technology {
     display: flex;
-    width: 10%;
     flex-direction: column;
     align-items: center;
     flex-wrap: wrap;
     margin-bottom: 2em;
+    text-align: center;
 }
 
 .categories-technology img {
-    width: 40%;
+    width: 3em;
 }
+
+.categories-types__item {
+    display: flex;
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius);
+    padding: 1em;
+    align-items: center;
+}
+
+.categories-types__item:hover {
+    border-color: var(--primary);
+}
+
+.categories-types__item img{
+    display: block;
+    max-width: 100%;
+}
+
+
+
+
 
 .categories-type__image {
     width: 60%;
@@ -371,6 +419,12 @@ flex: 1 1 200px;    align-items: center;
     color: var(--primary);
     margin-top: 1em;
     font-size: 2em;
+}
+
+
+
+.is-hidden {
+    display: none;
 }
 
 /* ================= FORMS ================= */
@@ -409,11 +463,102 @@ form select {
     font-size: 0.8rem;
 }
 
+/* Fieldset като form container */
+form fieldset {
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius);
+    padding: 20px;
+    margin-bottom: 20px;
+    background: var(--gray-50);
+}
+
+/* Legend стил */
+form fieldset legend {
+    font-weight: 600;
+    padding: 0 8px;
+    font-size: 1rem;
+}
+
+/* Wrapper на checkbox групата */
+#id_technologies {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 12px;
+}
+
+/* Всеки checkbox item */
+#id_technologies div {
+    background: var(--white);
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius);
+    padding: 10px 14px;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+
+/* Wrapper на checkbox групата с ограничена височина и скрол */
+#id_technologies {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 12px;
+
+    max-height: 250px; /* ограничена височина */
+    overflow-y: auto;  /* вертикален скрол, ако съдържанието е повече */
+    padding-right: 4px; /* малко пространство за scrollbar */
+}
+
+/* Optional: по-мек scrollbar за по-чист дизайн (Chrome, Edge, Safari) */
+#id_technologies::-webkit-scrollbar {
+    width: 6px;
+}
+
+#id_technologies::-webkit-scrollbar-thumb {
+    background-color: var(--primary);
+    border-radius: 3px;
+}
+
+#id_technologies::-webkit-scrollbar-track {
+    background: var(--gray-50);
+}
+
+
+
+
+
+/* Hover ефект */
+#id_technologies div:hover {
+    border-color: var(--primary);
+    box-shadow: var(--shadow-sm);
+}
+
+/* Label styling */
+#id_technologies label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+/* Checkbox custom accent */
+#id_technologies input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--primary);
+    cursor: pointer;
+}
 
 
 /* ================= BUTTONS ================= */
+.update-button, .delete-button, #toggleSearchBtn {
+    margin-bottom: 1em;
+}
+
 .btn,
-button[type="submit"] {
+button[type="submit"],.update-button, .delete-button, #toggleSearchBtn {
     padding: 12px 24px;
     border-radius: var(--radius);
     font-weight: 700;
@@ -423,13 +568,13 @@ button[type="submit"] {
 }
 
 .btn--primary,
-button[class*="--primary"] {
+button[class*="--primary"], .update-button, .delete-button, #toggleSearchBtn {
     background: var(--dark);
     color: white;
     text-align: center
 }
 
-.btn--primary:hover {
+.btn--primary:hover, .update-button:hover, .delete-button:hover, #toggleSearchBtn:hover {
     background: var(--primary);
 }
 
@@ -587,6 +732,8 @@ button[class*="--primary"] {
 img {
 
     object-fit: contain; /* изображението се мащабира без да се изрязва */
+    object-position: top center;
+
 }
 
 

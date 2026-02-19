@@ -1,8 +1,8 @@
 from django.shortcuts import render
 from django.urls import reverse
-from django.views.generic import CreateView, DeleteView, ListView, DetailView
+from django.views.generic import CreateView, DeleteView, ListView, DetailView, UpdateView
 
-from programmers.forms import CreateProgrammerForm, DeleteProgrammerForm
+from programmers.forms import CreateProgrammerForm, DeleteProgrammerForm, UpdateProgrammerForm
 from programmers.models import Programmer
 
 
@@ -14,6 +14,16 @@ class CreateProgrammer(CreateView):
 
     def get_success_url(self):
         return reverse('all_programmers')
+
+class UpdateProgrammer(UpdateView):
+    model = Programmer
+    form_class = UpdateProgrammerForm
+    slug_field = 'slug'
+    slug_url_kwarg = 'programmer_slug'
+    template_name = 'programmers/forms/update_programmer_form.html'
+
+    def get_success_url(self):
+        return reverse('service_details', kwargs={'service_slug': self.object.slug})
 
 class DeleteProgrammer(DeleteView):
     model = Programmer

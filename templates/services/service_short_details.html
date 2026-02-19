@@ -6,10 +6,10 @@
             class="service-card__image"
         >
         <h2 class="service-card__title">
-            {{ service.name }}
+            {{ service.name|upper }}
         </h2>
         <p class="service-card__description">
-            {{ service.description }}
+            {{ service.description|truncatechars:100 }}
         </p>
     </a>
 </div>

@@ -5,6 +5,7 @@
     method="post"
     enctype="multipart/form-data"
     class="programmer-delete-form"
+    id="delete-form"
 >
     {% csrf_token %}
 
@@ -19,4 +20,14 @@
         Изтрий
     </button>
 </form>
+
+<script>
+    document.getElementById('delete-form').addEventListener('submit', function(event) {
+        const confirmed = confirm('Сигурни ли сте, че искате да изтриете този запис?');
+
+        if (!confirmed) {
+            event.preventDefault();
+        }
+    });
+</script>
 {% endblock %}

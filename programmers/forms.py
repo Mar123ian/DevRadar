@@ -50,5 +50,8 @@ class ProgrammerForm(forms.ModelForm):
 class CreateProgrammerForm(ProgrammerForm):
     pass
 
+class UpdateProgrammerForm(ProgrammerForm):
+    pass
+
 class DeleteProgrammerForm(DisableFieldsMixin, ProgrammerForm):
     pass

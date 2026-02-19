@@ -35,7 +35,7 @@ class CreateTechnology(CreateView):
     template_name = 'categories/forms/create_technology_form.html'
 
     def get_success_url(self):
-        return reverse('all_technologies')
+        return reverse('home')
 
 class DeleteTechnology(DeleteView):
     model = Technology
@@ -49,7 +49,7 @@ class DeleteTechnology(DeleteView):
         return context
 
     def get_success_url(self):
-        return reverse('all_technologies')
+        return reverse('home')
 
 class AllTypes(ListView):
     model = Type

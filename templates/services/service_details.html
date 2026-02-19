@@ -5,15 +5,19 @@
 
     <div class="service-details__header">
 
+        <a href="{% url 'update_service' service.slug%}"><button class="update-button">Edit</button></a>
+        <a href="{% url 'delete_service' service.slug%}"><button class="delete-button">Delete</button></a>
+
+
         <h1 class="service-details__title">
-            {{ service.name }}
+            {{ service.name|upper }}
         </h1>
         <p class="service-details__type">
-            Категория: <a href="{% url 'type_details' service.type.slug %}" class="service-details__type-link"><span>{{ service.type.name }}</span></a>
+            Категория: <a href="{% url 'type_details' service.type.slug %}" class="service-details__type-link"><span>{{ service.type.name|upper }}</span></a>
         </p>
         <p>
         <span class="service-details__programmer">
-            Предлага се от: <a href="{% url 'programmer_details' service.programmer.slug %}" class="service-details__programmer-link"><span>{{ service.programmer.get_full_name }}</span></a></span>
+            Предлага се от: <a href="{% url 'programmer_details' service.programmer.slug %}" class="service-details__programmer-link"><span>{{ service.programmer.get_full_name|upper }}</span></a></span>
         </p>
     </div>
 

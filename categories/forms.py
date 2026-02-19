@@ -36,6 +36,8 @@ class TypeForm(forms.ModelForm):
             'image': 'Изберете изображение за типа услуга',
         }
 
+
+
 class CreateTypeForm(TypeForm):
     pass
 
