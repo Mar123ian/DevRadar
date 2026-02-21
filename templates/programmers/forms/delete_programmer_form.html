@@ -1,11 +1,15 @@
 {% extends 'core/base.html' %}
 
+{% block title %}
+    <title>DevRadar | Изтриване на програмист</title>
+{% endblock %}
+
 {% block main_content %}
 <form
     method="post"
     enctype="multipart/form-data"
     class="programmer-delete-form"
-    id="delete-form"
+    id="programmer-delete-form"
 >
     {% csrf_token %}
 
@@ -21,13 +25,5 @@
     </button>
 </form>
 
-<script>
-    document.getElementById('delete-form').addEventListener('submit', function(event) {
-        const confirmed = confirm('Сигурни ли сте, че искате да изтриете този запис?');
 
-        if (!confirmed) {
-            event.preventDefault();
-        }
-    });
-</script>
 {% endblock %}

@@ -1,22 +1,29 @@
 {% extends 'core/base.html' %}
 
+{% block title %}
+    <title>DevRadar | Всички програмисти</title>
+{% endblock %}
+
 {% block main_content %}
 <section class="programmers-list">
 
     {% for programmer in programmers %}
+        <a href="{% url 'programmer_details' programmer.slug %}" class="programmers-list__link">
         <div class="programmer-card">
+
         <p class="programmers-list__name">
                 {{ programmer.get_full_name }}
             </p>
-            <a href="{% url 'programmer_details' programmer.slug %}" class="programmers-list__link">
+
             <img
                 src="{{ programmer.image.url }}"
                 alt="{{ programmer.get_full_name }}"
                 class="programmers-list__image"
             >
 
-            </a>
+
         </div>
+        </a>
     {% empty %}
         <p class="programmers-list__empty">
             There are no programmers yet.

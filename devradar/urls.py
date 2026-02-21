@@ -23,7 +23,6 @@ from devradar import settings
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('categories/', include('categories.urls')),
-    path('comments/', include('comments.urls')),
     path('services/', include('services.urls')),
     path('programmers/', include('programmers.urls')),
     path('', include('core.urls'))
