@@ -7,7 +7,7 @@
 {% block main_content %}
 <article class="categories-type">
 
-    <a href="{% url 'delete_type' type.slug%}"><button class="delete-button">Delete</button></a>
+    <a href="{% url 'delete_type' type.slug%}"><button class="delete-button">Изтрий</button></a>
 
 
     <div class="categories-type__header">
@@ -21,7 +21,7 @@
     </div>
 
     <section class="categories-type__services">
-        <h2 class="categories-type__services-title">Services</h2>
+        <h2 class="categories-type__services-title">Услуги</h2>
 
         <div class="categories-type__services-list">
             {% for service in type.services.all %}
@@ -30,7 +30,7 @@
                 </div>
             {% empty %}
                 <p class="categories-type__no-services">
-                    No services found.
+                    Няма намерени услуги.
                 </p>
             {% endfor %}
         </div>

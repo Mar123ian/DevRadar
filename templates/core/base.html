@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
 
     {% block title %}
-    <title>DevRadar | Professional Freelance Network</title>
+    <title>DevRadar | Свободно предлагане на ИТ услуги</title>
     {% endblock %}
 
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -26,21 +26,21 @@
                 <ul class="nav-menu">
                     <li><a href="{% url 'all_services' %}" class="nav-link">Услуги</a></li>
                     <li><a href="{% url 'all_programmers' %}" class="nav-link">Експерти</a></li>
-                    <li><a href="{% url 'all_types' %}" class="nav-link">Категории</a></li>
+                    <li><a href="{% url 'all_types' %}" class="nav-link">Типове услуги</a></li>
 
                     <li class="dropdown">
                         <span class="nav-link dropdown-trigger">Управление ▼</span>
                         <ul class="dropdown-content">
-                            <li><a href="{% url 'create_service' %}">+ Услуга</a></li>
-                            <li><a href="{% url 'create_programmer' %}">+ Програмист</a></li>
-                            <li><a href="{% url 'create_technology' %}">+ Технология</a></li>
-                            <li><a href="{% url 'create_type' %}">+ Категория</a></li>
+                            <li><a href="{% url 'create_service' %}">Добави услуга</a></li>
+                            <li><a href="{% url 'create_programmer' %}">Добави програмист</a></li>
+                            <li><a href="{% url 'create_technology' %}">Добави технология</a></li>
+                            <li><a href="{% url 'create_type' %}">Добави тип услуга</a></li>
                         </ul>
                     </li>
                 </ul>
 
                 <div class="nav-actions">
-                    <a href="{% url 'create_service' %}" class="btn btn--primary">Стартирай проект</a>
+                    <a href="{% url 'create_service' %}" class="btn btn--primary">Предложи услуга</a>
                 </div>
             </div>
         </nav>
@@ -54,7 +54,7 @@
         <div class="footer-grid">
             <div class="footer-brand">
                 <a href="/" class="logo">Dev<span>Radar</span></a>
-                <p>Елитна мрежа за софтуерни решения.</p>
+                <p>Мрежа за софтуерни решения.</p>
             </div>
             <div class="footer-nav">
                 <h4>Бързи връзки</h4>
@@ -67,7 +67,7 @@
             </div>
         </div>
         <div class="footer-bottom">
-            <p>&copy; 2026 DevRadar Cloud.</p>
+            <p>&copy; 2026 DevRadar</p>
         </div>
     </footer>
 
