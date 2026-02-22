@@ -88,7 +88,7 @@ Admin: `/admin/`
 1) Clone and enter the project directory
 
 ```
-git clone <repo-url>
+git clone https://github.com/Mar123ian/DevRadar.git
 cd DevRadar
 ```
 
