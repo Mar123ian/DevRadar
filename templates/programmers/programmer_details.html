@@ -29,7 +29,7 @@
     </div>
 
     <section class="programmer-details__services">
-        <h2 class="programmer-details__services-title">Services</h2>
+        <h2 class="programmer-details__services-title">Услуги, предлагани от {{ programmer.get_full_name }}:</h2>
 
         <div class="programmer-details__services-list">
             {% for service in programmer.services.all %}
@@ -38,7 +38,7 @@
                 </div>
             {% empty %}
                 <p class="programmer-details__no-services">
-                    No services found.
+                    Няма намерени услуги.
                 </p>
             {% endfor %}
         </div>

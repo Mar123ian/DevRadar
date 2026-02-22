@@ -9,4 +9,10 @@ def get_parameters(context):
     if not request.GET:
         return ""
 
-    return request.GET.urlencode() + "&"
+    request_copy = request.GET.copy()
+
+    if 'page' in request_copy:
+        del request_copy['page']
+
+
+    return request_copy.urlencode() + "&"

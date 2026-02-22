@@ -9,8 +9,8 @@
 
     <div class="service-details__header">
 
-        <a href="{% url 'update_service' service.slug%}"><button class="update-button">Edit</button></a>
-        <a href="{% url 'delete_service' service.slug%}"><button class="delete-button">Delete</button></a>
+        <a href="{% url 'update_service' service.slug%}"><button class="update-button">Редактирай</button></a>
+        <a href="{% url 'delete_service' service.slug%}"><button class="delete-button">Изтрий</button></a>
 
 
         <h1 class="service-details__title">
@@ -53,7 +53,7 @@
 
     <section class="service-details__comments">
         <h2 class="service-details__comments-title">
-            Comments
+            Коментари
         </h2>
 
         <div class="service-details__comment-form">
@@ -67,7 +67,7 @@
                 </div>
             {% empty %}
                 <p class="service-details__no-comments">
-                    No comments yet.
+                    Няма коментари.
                 </p>
             {% endfor %}
         </div>

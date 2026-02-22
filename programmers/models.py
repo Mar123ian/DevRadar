@@ -1,4 +1,4 @@
-from django.db import models
+from django.db import models, IntegrityError
 from django.utils.text import slugify
 from unidecode import unidecode
 
@@ -19,7 +19,16 @@ class Programmer(CreatedAndUpdatedAtMixin, models.Model):
 
     def save(self, *args, **kwargs):
         if not self.slug:
-            self.slug = slugify(unidecode(self.get_full_name()))
+            objects_with_that_name = self.__class__.objects.filter(first_name=self.first_name,
+                                                                   last_name=self.last_name).count()
+
+            if objects_with_that_name > 0:
+                self.slug = slugify(unidecode(self.get_full_name()) + f"{objects_with_that_name + 1}")
+            else:
+                self.slug = slugify(unidecode(self.get_full_name()))
+
+
+
         super().save(*args, **kwargs)
 
     def get_full_name(self):

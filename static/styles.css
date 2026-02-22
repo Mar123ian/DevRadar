@@ -24,7 +24,6 @@
 * { box-sizing: border-box; margin: 0; padding: 0;}
 
 * {
-  /*min-width: 0;*/
   word-break: normal; !important;
   overflow-wrap: break-word; !important;
   hyphens: auto; !important;
@@ -105,7 +104,7 @@ ul { list-style: none; }
     display: flex;
     gap: 24px;
     align-items: center;
-    flex-wrap: wrap; /* позволява слизане */
+    flex-wrap: wrap;
 }
 
 .nav-link {
@@ -431,6 +430,18 @@ flex: 1 1 200px;    align-items: center;
     display: none;
 }
 
+.services-page__pagination-link:hover {
+     color: var(--primary);
+}
+
+.services-page__pagination{
+    display: flex;
+    flex-direction: row;
+    gap: 2em;
+    flex-wrap: wrap;
+    margin-top: 1em;
+}
+
 /* ================= FORMS ================= */
 form[class$="-form"] {
     background: var(--white);
@@ -467,7 +478,6 @@ form select {
     font-size: 0.8rem;
 }
 
-/* Fieldset като form container */
 form fieldset {
     border: 1px solid var(--gray-200);
     border-radius: var(--radius);
@@ -476,14 +486,12 @@ form fieldset {
     background: var(--gray-50);
 }
 
-/* Legend стил */
 form fieldset legend {
     font-weight: 600;
     padding: 0 8px;
     font-size: 1rem;
 }
 
-/* Wrapper на checkbox групата */
 #id_technologies {
     display: flex;
     flex-direction: column;
@@ -491,7 +499,6 @@ form fieldset legend {
     margin-top: 12px;
 }
 
-/* Всеки checkbox item */
 #id_technologies div {
     background: var(--white);
     border: 1px solid var(--gray-200);
@@ -502,19 +509,17 @@ form fieldset legend {
 }
 
 
-/* Wrapper на checkbox групата с ограничена височина и скрол */
 #id_technologies {
     display: flex;
     flex-direction: column;
     gap: 12px;
     margin-top: 12px;
 
-    max-height: 250px; /* ограничена височина */
-    overflow-y: auto;  /* вертикален скрол, ако съдържанието е повече */
-    padding-right: 4px; /* малко пространство за scrollbar */
+    max-height: 250px;
+    overflow-y: auto;
+    padding-right: 4px;
 }
 
-/* Optional: по-мек scrollbar за по-чист дизайн (Chrome, Edge, Safari) */
 #id_technologies::-webkit-scrollbar {
     width: 6px;
 }
@@ -532,13 +537,11 @@ form fieldset legend {
 
 
 
-/* Hover ефект */
 #id_technologies div:hover {
     border-color: var(--primary);
     box-shadow: var(--shadow-sm);
 }
 
-/* Label styling */
 #id_technologies label {
     display: flex;
     align-items: center;
@@ -547,7 +550,6 @@ form fieldset legend {
     cursor: pointer;
 }
 
-/* Checkbox custom accent */
 #id_technologies input[type="checkbox"] {
     width: 18px;
     height: 18px;
@@ -582,6 +584,40 @@ button[class*="--primary"], .update-button, .delete-button, #toggleSearchBtn {
     background: var(--primary);
 }
 
+#id_desc_price {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 50px;
+    height: 26px;
+    background-color: var(--gray-50);
+    border-radius: 26px;
+    position: relative;
+    cursor: pointer;
+    outline: none;
+    transition: background-color 0.3s ease;
+}
+
+#id_desc_price::before {
+    content: "";
+    position: absolute;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background-color: var(--white);
+    top: 2px;
+    left: 2px;
+    transition: transform 0.3s ease;
+}
+
+#id_desc_price:checked {
+    background-color: var(--primary);
+}
+
+#id_desc_price:checked::before {
+    transform: translateX(24px);
+}
+
+
 /* ================= FOOTER ================= */
 
 .main-footer {
@@ -605,25 +641,21 @@ button[class*="--primary"], .update-button, .delete-button, #toggleSearchBtn {
     text-align: center;
 }
 
-/* Колони */
 .footer-grid > div {
     width: 100%;
 }
 
-/* Заглавия */
 .footer-grid h4 {
     font-size: clamp(1rem, 2vw, 1.1rem);
     margin-bottom: 16px;
 }
 
-/* Текст и линкове – НИЩО не заключваме */
 .footer-grid p,
 .footer-grid a {
     font-size: clamp(0.85rem, 1.4vw, 0.95rem);
     line-height: 1.6;
 }
 
-/* Навигация */
 .footer-nav {
     display: flex;
     flex-direction: column;
@@ -631,7 +663,6 @@ button[class*="--primary"], .update-button, .delete-button, #toggleSearchBtn {
     gap: 8px;
 }
 
-/* Bottom */
 .footer-bottom {
     text-align: center;
     border-top: 1px solid var(--dark-light);
@@ -735,7 +766,7 @@ button[class*="--primary"], .update-button, .delete-button, #toggleSearchBtn {
 
 img {
 
-    object-fit: contain; /* изображението се мащабира без да се изрязва */
+    object-fit: contain; 
     object-position: top center;
 
 }

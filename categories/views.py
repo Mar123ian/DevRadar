@@ -37,19 +37,6 @@ class CreateTechnology(CreateView):
     def get_success_url(self):
         return reverse('home')
 
-class DeleteTechnology(DeleteView):
-    model = Technology
-    template_name = 'categories/forms/delete_technology_form.html'
-    slug_field = 'slug'
-    slug_url_kwarg = 'technology_slug'
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['form'] = DeleteTechnologyForm(instance=self.get_object())
-        return context
-
-    def get_success_url(self):
-        return reverse('home')
 
 class AllTypes(ListView):
     model = Type

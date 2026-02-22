@@ -9,8 +9,7 @@
 {% block main_content %}
 <section class="services-page">
 
-    <!-- Бутон за toggle -->
-    <button type="button" id="toggleSearchBtn" class="services-page__toggle-button">
+   <button type="button" id="toggleSearchBtn" class="services-page__toggle-button">
         Покажи търсачката и филтрите
     </button>
 
@@ -20,7 +19,7 @@
                 {{ form }}
             </div>
             <button type="submit" class="services-page__search-button">
-                Search
+                Приложи
             </button>
         </form>
     </div>
@@ -33,7 +32,7 @@
             </div>
         {% empty %}
             <p class="services-page__empty">
-                No services found.
+                Няма намерени услуги.
             </p>
         {% endfor %}
     </div>
@@ -44,7 +43,7 @@
                 href="?{% get_parameters %}page={{ page_obj.previous_page_number }}"
                 class="services-page__pagination-link services-page__pagination-link--prev"
             >
-                Предишна
+                <<< Предишна страница
             </a>
         {% endif %}
 
@@ -53,7 +52,7 @@
                 href="?{% get_parameters %}page={{ page_obj.next_page_number }}"
                 class="services-page__pagination-link services-page__pagination-link--next"
             >
-                Следващa
+                Следващa страница >>>
             </a>
         {% endif %}
     </div>

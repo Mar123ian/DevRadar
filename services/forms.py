@@ -1,4 +1,5 @@
 from django import forms
+from django.db import models
 
 from categories.models import Type, Technology
 from core.mixins import DisableFieldsMixin
@@ -97,9 +98,18 @@ class DeleteServiceForm(DisableFieldsMixin, ServiceForm):
     pass
 
 class SearchSortAndFilterServicesForm(forms.Form):
-    search_query = forms.CharField(required=False, max_length=255, error_messages={'max_length': 'Максималната дължина е 255 символа!'})
-    type = forms.ModelChoiceField(queryset=Type.objects.all(), required=False)
-    technologies = forms.ModelMultipleChoiceField(queryset=Technology.objects.all(), required=False, widget=forms.CheckboxSelectMultiple())
-    min_price = forms.DecimalField(required=False, decimal_places=2, max_digits=10, error_messages={'max_digits': 'Максималната дължина е 10 цифри!', 'decimal_places': 'Максималната дължина след десетичната запетая е 2 цифри!'})
-    max_price = forms.DecimalField(required=False, decimal_places=2, max_digits=10, error_messages={'max_digits': 'Максималната дължина е 10 цифри!', 'decimal_places': 'Максималната дължина след десетичната запетая е 2 цифри!'})
-    desc_price = forms.BooleanField(required=False, initial=False)
+
+    class PerPageChoices(models.IntegerChoices):
+        FIVE = 5, '5'
+        TEN = 10, '10'
+        THIRTY = 30, '30'
+        ONE_HUNDRED = 100, '100'
+
+
+    search_query = forms.CharField(label='Търси по заглавие', required=False, max_length=255, error_messages={'max_length': 'Максималната дължина е 255 символа!'})
+    type = forms.ModelChoiceField(label='Тип услуга', queryset=Type.objects.all(), required=False)
+    technologies = forms.ModelMultipleChoiceField(label='Използвани технологии', queryset=Technology.objects.all(), required=False, widget=forms.CheckboxSelectMultiple())
+    min_price = forms.DecimalField(label='Минимална цена', min_value=0, required=False, decimal_places=2, max_digits=10, error_messages={'max_digits': 'Максималната дължина е 10 цифри!', 'decimal_places': 'Максималната дължина след десетичната запетая е 2 цифри!', 'min_value': 'Минималната цена е 0€!'})
+    max_price = forms.DecimalField(label='Макимална цена', min_value=0, required=False, decimal_places=2, max_digits=10, error_messages={'max_digits': 'Максималната дължина е 10 цифри!', 'decimal_places': 'Максималната дължина след десетичната запетая е 2 цифри!', 'min_value': 'Минималната цена е 0€!'})
+    desc_price = forms.BooleanField(label='Подреди низходящо по цена', required=False, initial=False)
+    per_page = forms.ChoiceField(choices=PerPageChoices.choices, label='Брой резултати на страница', required=False, initial=PerPageChoices.FIVE)

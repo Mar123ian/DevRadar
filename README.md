@@ -1,6 +1,6 @@
 # DevRadar
 
-A Django-based web application for managing and discovering software development services, categorized by types and technologies, and linked to programmers. It provides CRUD operations, clean navigation across apps, and a simple UI.
+A Django-based web application for discovering software development services, categorized by types and technologies, and linked to programmers. It provides CRUD operations, clean navigation across apps, and a simple UI.
 
 ## Features
 
@@ -19,7 +19,7 @@ A Django-based web application for managing and discovering software development
 
 - Python 3.11+
 - Django 5.x
-- SQLite (default) — easily switchable to PostgreSQL/MySQL
+- PostgreSQL (default)
 - HTML templates, CSS (static/styles.css)
 
 ## Project Structure
@@ -68,7 +68,6 @@ Root URLConf: `devradar/urls.py`
   - `/categories/type/delete/<type_slug>/` → delete type
   - `/categories/type/<type_slug>/` → type details
   - `/categories/technology/create/` → create technology
-  - `/categories/technology/delete/<technology_slug>/` → delete technology
 - `/services/` → services app
   - `/services/all/` → list all services
   - `/services/create/` → create service
@@ -81,8 +80,6 @@ Root URLConf: `devradar/urls.py`
   - `/programmers/update/<programmer_slug>/` → update programmer
   - `/programmers/delete/<programmer_slug>/` → delete programmer
   - `/programmers/<programmer_slug>/` → programmer details
-- `/comments/` → comments app
-  - `/comments/create/` → create comment
 
 Admin: `/admin/`
 
@@ -103,25 +100,27 @@ python -m venv .venv
 ```
 
 3) Install dependencies
-
 ```
 pip install -r requirements.txt
 ```
 
-4) Apply migrations and create a superuser
+4) Create PostgreSQL database and configure `DATABASES` in `settings.py`
+
+
+5) Apply migrations and create a superuser
 
 ```
 python manage.py migrate
 python manage.py createsuperuser
 ```
 
-5) Run the development server
+6) Run the development server
 
 ```
 python manage.py runserver
 ```
 
-6) Open in browser
+7) Open in browser
 
 - App: http://127.0.0.1:8000/
 - Admin: http://127.0.0.1:8000/admin/
@@ -131,8 +130,7 @@ python manage.py runserver
 All key settings are in `devradar/settings.py`.
 
 - DEBUG: enabled by default for development
-- Database: defaults to SQLite; change `DATABASES` for Postgres/MySQL
-- Language: `en-us`, Timezone: `UTC`
+- Database: defaults to Postgres; change `DATABASES` for SQLite
 - Static files:
   - STATIC_URL = `/static/`
   - In development Django serves static automatically when `DEBUG=True`
@@ -154,7 +152,7 @@ All key settings are in `devradar/settings.py`.
   - `services/`: all, details, short details and forms (create/update)
   - `programmers/`: all, details, and forms (create/update/delete)
   - `categories/`: all types, type details, technology details
-  - `core/`: base.html and 404.html
+  - `core/`: base.html and home.html
 - Styling lives in `static/styles.css`
 
 ## Development Notes

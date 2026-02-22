@@ -46,7 +46,13 @@ class AllServices(ListView):
     model = Service
     template_name = 'services/all_services.html'
     context_object_name = 'services'
-    paginate_by = 3
+
+    def get_paginate_by(self, queryset):
+        per_page = int(self.request.GET.get('per_page', 5))
+
+        if per_page < 5:
+            return 5
+        return  min(per_page, 100)
 
     def get_queryset(self):
         queryset = super().get_queryset().select_related('programmer', 'type').prefetch_related('technologies', 'comments')

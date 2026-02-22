@@ -27,6 +27,6 @@ class Service(CreatedAndUpdatedAtMixin, models.Model):
 
     def save(self, *args, **kwargs):
         if not self.slug:
-            self.slug = slugify(unidecode(self.programmer.get_full_name() + ' ' + self.name))
+            self.slug = slugify(unidecode(self.programmer.slug + ' ' + self.name))
         super().save(*args, **kwargs)
 

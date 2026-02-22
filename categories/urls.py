@@ -1,6 +1,6 @@
 from django.urls import path, include
 
-from categories.views import CreateType, DeleteType, CreateTechnology, DeleteTechnology, AllTypes, TypeDetails
+from categories.views import CreateType, DeleteType, CreateTechnology, AllTypes, TypeDetails
 
 urlpatterns = [
     path('type/', include([
@@ -12,6 +12,5 @@ urlpatterns = [
     ])),
     path('technology/', include([
         path('create/', CreateTechnology.as_view(), name='create_technology'),
-        path('delete/<slug:technology_slug>/', DeleteTechnology.as_view(), name='delete_technology'),
     ])),
 ]
