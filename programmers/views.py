@@ -23,7 +23,7 @@ class UpdateProgrammer(UpdateView):
     template_name = 'programmers/forms/update_programmer_form.html'
 
     def get_success_url(self):
-        return reverse('service_details', kwargs={'service_slug': self.object.slug})
+        return reverse('programmer_details', kwargs={'programmer_slug': self.object.slug})
 
 class DeleteProgrammer(DeleteView):
     model = Programmer
