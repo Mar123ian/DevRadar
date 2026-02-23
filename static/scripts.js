@@ -3,7 +3,6 @@ document.addEventListener('DOMContentLoaded', function() {
             const nav = document.getElementById('nav-content');
             const dropdownTrigger = document.querySelector('.dropdown-trigger');
 
-            // Отваряне/Затваряне на мобилно меню
             toggle.addEventListener('click', function(e) {
                 e.stopPropagation();
                 nav.classList.toggle('active');
@@ -11,7 +10,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 document.body.style.overflow = nav.classList.contains('active') ? 'hidden' : '';
             });
 
-            // Работа на Dropdown на мобилни устройства (клик)
             dropdownTrigger.addEventListener('click', function(e) {
                 if (window.innerWidth <= 992) {
                     e.preventDefault();
@@ -19,7 +17,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             });
 
-            // Затваряне при клик извън менюто
             document.addEventListener('click', function(e) {
                 if (!nav.contains(e.target) && !toggle.contains(e.target)) {
                     nav.classList.remove('active');
@@ -37,6 +34,20 @@ document.querySelectorAll('form[class$="-delete-form"]').forEach(element => elem
         }
     }));
 
+document.addEventListener('DOMContentLoaded', function () {
+        const toggleBtn = document.getElementById('toggleSearchBtn');
+        const searchSection = document.getElementById('servicesSearch');
+
+        toggleBtn.addEventListener('click', function () {
+            searchSection.classList.toggle('is-hidden');
+
+            if (searchSection.classList.contains('is-hidden')) {
+                toggleBtn.textContent = 'Покажи търсачката и филтрите';
+            } else {
+                toggleBtn.textContent = 'Скрий';
+            }
+        });
+    });
 
 
 

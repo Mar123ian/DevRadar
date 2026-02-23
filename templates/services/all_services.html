@@ -58,22 +58,7 @@
     </div>
 
 </section>
-    <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const toggleBtn = document.getElementById('toggleSearchBtn');
-        const searchSection = document.getElementById('servicesSearch');
 
-        toggleBtn.addEventListener('click', function () {
-            searchSection.classList.toggle('is-hidden');
-
-            if (searchSection.classList.contains('is-hidden')) {
-                toggleBtn.textContent = 'Покажи търсачката и филтрите';
-            } else {
-                toggleBtn.textContent = 'Скрий';
-            }
-        });
-    });
-</script>
 {% endblock %}
 
 
