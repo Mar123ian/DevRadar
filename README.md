@@ -104,8 +104,19 @@ python -m venv .venv
 pip install -r requirements.txt
 ```
 
-4) Create PostgreSQL database and configure `DATABASES` in `settings.py`
-
+4) Create PostgreSQL database and configure `DATABASES` in `settings.py`:
+```py
+DATABASES = {
+    "default": {
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": "mydatabase", # replace with your database name
+        "USER": "mydatabaseuser", # replace with your database username
+        "PASSWORD": "mypassword", # replace with your database password
+        "HOST": "127.0.0.1",
+        "PORT": "5432",
+    }
+}
+```
 
 5) Apply migrations and create a superuser
 
