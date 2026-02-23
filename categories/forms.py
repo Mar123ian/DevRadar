@@ -36,6 +36,10 @@ class TypeForm(forms.ModelForm):
             'image': 'Изберете изображение за типа услуга',
         }
 
+        widgets = {
+            'name': forms.TextInput(attrs={'placeholder': 'Например: Изработка на сайт, приложение...'}),
+        }
+
 
 
 class CreateTypeForm(TypeForm):
@@ -68,6 +72,10 @@ class TechnologyForm(forms.ModelForm):
         help_texts = {
             'name': 'Въведете име на технологията',
             'image': 'Изберете изображение за технологията',
+        }
+
+        widgets = {
+            'name': forms.TextInput(attrs={'placeholder': 'Например: Django, React, PostgreSQL...'}),
         }
 
 class CreateTechnologyForm(TechnologyForm):
