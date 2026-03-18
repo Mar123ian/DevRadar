@@ -68,7 +68,7 @@ class AllServices(ListView):
 
 
             if query:
-                queryset = queryset.filter(title__icontains=query)
+                queryset = queryset.filter(name__icontains=query)
 
             if service_type:
                 queryset = queryset.filter(type=service_type)
