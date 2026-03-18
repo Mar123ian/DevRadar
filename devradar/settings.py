@@ -30,6 +30,9 @@ ALLOWED_HOSTS = ["devradar-cfcjedeha8fqfpgq.switzerlandnorth-01.azurewebsites.ne
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 CSRF_COOKIE_SECURE = True
 SESSION_COOKIE_SECURE = True
+CSRF_TRUSTED_ORIGINS = [
+    "https://devradar-cfcjedeha8fqfpgq.switzerlandnorth-01.azurewebsites.net"
+]
 
 
 # Application definition
