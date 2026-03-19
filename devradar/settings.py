@@ -29,7 +29,7 @@ SECRET_KEY = 'django-insecure-d(yhl67lke$4g4q3k7@^^cf+umm9%g^r3w5u#u&id+(09fjm)m
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get("DEBUG", "False") == "True"
 
-ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "").split(",")
+ALLOWED_HOSTS = [os.environ.get("ALLOWED_HOSTS", "devradar-cfcjedeha8fqfpgq.switzerlandnorth-01.azurewebsites.net")]
 
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 CSRF_COOKIE_SECURE = True
