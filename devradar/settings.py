@@ -50,11 +50,13 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'storages',
     'programmers.apps.ProgrammersConfig',
     'comments.apps.CommentsConfig',
     'services.apps.ServicesConfig',
     'categories.apps.CategoriesConfig',
-    'core.apps.CoreConfig'
+    'core.apps.CoreConfig',
+
 ]
 
 MIDDLEWARE = [
@@ -149,18 +151,25 @@ STATICFILES_DIRS = [BASE_DIR / 'static',]
 STATIC_ROOT = BASE_DIR / 'staticfiles/'
 
 STORAGES = {
-    "default": {
-        "BACKEND": "django.core.files.storage.FileSystemStorage",
-        "LOCATION": settings.MEDIA_ROOT
-    },
+    #"default": {
+      #  "BACKEND": "django.core.files.storage.FileSystemStorage",
+      #  "LOCATION": settings.MEDIA_ROOT
+    #},
     "staticfiles": {
         "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
     },
 }
 
-MEDIA_URL = '/media/'
+DEFAULT_FILE_STORAGE = "storages.backends.azure_storage.AzureStorage"
+
+AZURE_ACCOUNT_NAME = "devradarstorage"   # виж Azure Portal
+AZURE_ACCOUNT_KEY = os.environ.get("AZURE_ACCOUNT_KEY")    # от Access Keys
+AZURE_CONTAINER = "media"                          # името на Blob контейнера
+MEDIA_URL = f"https://devradarstorage.blob.core.windows.net/media/"
+
+#MEDIA_URL = '/media/'
 #MEDIA_ROOT = BASE_DIR / 'media/'
-MEDIA_ROOT = '/home/site/wwwroot/media'
+#MEDIA_ROOT = '/home/site/wwwroot/media'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
