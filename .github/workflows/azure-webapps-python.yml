@@ -32,6 +32,7 @@ env:
   SECRET_KEY: ${{ secrets.SECRET_KEY }}
   DEBUG: ${{ secrets.DEBUG }}
   ALLOWED_HOSTS: ${{ secrets.ALLOWED_HOSTS }}
+  AZURE_ACCOUNT_KEY: ${{ secrets.AZURE_ACCOUNT_KEY }}
 
 on:
   push:

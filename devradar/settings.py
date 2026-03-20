@@ -150,15 +150,7 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / 'static',]
 STATIC_ROOT = BASE_DIR / 'staticfiles/'
 
-STORAGES = {
-    #"default": {
-      #  "BACKEND": "django.core.files.storage.FileSystemStorage",
-      #  "LOCATION": settings.MEDIA_ROOT
-    #},
-    "staticfiles": {
-        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
-    },
-}
+
 
 DEFAULT_FILE_STORAGE = "storages.backends.azure_storage.AzureStorage"
 
@@ -166,6 +158,22 @@ AZURE_ACCOUNT_NAME = "devradarstorage"   # виж Azure Portal
 AZURE_ACCOUNT_KEY = os.environ.get("AZURE_ACCOUNT_KEY")    # от Access Keys
 AZURE_CONTAINER = "media"                          # името на Blob контейнера
 MEDIA_URL = f"https://devradarstorage.blob.core.windows.net/media/"
+
+STORAGES = {
+    #"default": {
+      #  "BACKEND": "django.core.files.storage.FileSystemStorage",
+      #  "LOCATION": settings.MEDIA_ROOT
+    #},
+    "default": {
+        "BACKEND": "storages.backends.azure_storage.AzureStorage",
+        "ACCOUNT_NAME": AZURE_ACCOUNT_NAME,
+        "ACCOUNT_KEY": AZURE_ACCOUNT_KEY,
+        "CONTAINER": AZURE_CONTAINER,
+    },
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    },
+}
 
 #MEDIA_URL = '/media/'
 #MEDIA_ROOT = BASE_DIR / 'media/'
