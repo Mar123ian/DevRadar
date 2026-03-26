@@ -1,0 +1,15 @@
+{% extends 'core/base.html' %}
+
+{% block title %}
+    <title>DevRadar | Регистрация на програмист</title>
+{% endblock %}
+
+{% block main_content %}
+
+<form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    {{ form }}
+    <button type="submit">Register</button>
+</form>
+
+{% endblock %}

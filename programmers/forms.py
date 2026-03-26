@@ -1,5 +1,6 @@
 from django import forms
 
+from accounts.models import ProgrammerUser
 from core.mixins import DisableFieldsMixin
 from programmers.models import Programmer
 
@@ -8,7 +9,7 @@ class ProgrammerForm(forms.ModelForm):
 
 
     class Meta:
-        model = Programmer
+        model = ProgrammerUser
 
         fields = ['first_name', 'last_name', 'image', 'email', 'phone_number']
 

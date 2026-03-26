@@ -1,0 +1,13 @@
+{% extends 'core/base.html' %}
+
+{% block title %}
+    <title>DevRadar | Регистрация</title>
+{% endblock %}
+
+{% block main_content %}
+
+
+    <a href="{% url 'register_user' %}"><button>Регистрация на потребител</button></a>
+    <a href="{% url 'register_programmer' %}"><button>Регистрация на програмист</button></a>
+
+{% endblock %}

@@ -25,9 +25,12 @@ urlpatterns = [
     path('categories/', include('categories.urls')),
     path('services/', include('services.urls')),
     path('programmers/', include('programmers.urls')),
-    path('', include('core.urls'))
+    path('', include('core.urls')),
+    path('accounts/', include('accounts.urls')),
 
 ] #+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 if not settings.DEBUG:
     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+else:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

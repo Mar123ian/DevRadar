@@ -1,0 +1,49 @@
+{% extends 'core/base.html' %}
+{% load filters %}
+
+{% block title %}
+    <title>DevRadar | Моят профил</title>
+{% endblock %}
+
+{% block main_content %}
+
+{% if user.is_authenticated  %}
+<p>Hi, {{ user.get_username }}!</p>
+{% else %}
+<p>Hi, Anonymous!</p>
+{% endif %}
+
+{% if user.is_authenticated  %}
+<p>Your profile details are:</p>
+<p>Name: {{ user.get_full_name }}</p>
+{% else %}
+    <p>No profile details available.</p>
+{% endif %}
+
+    {% if user|has_group:"Programmers" %}
+
+    <a href="{% url 'update_programmer' user.slug%}"><button class="update-button">Edit</button></a>
+    <a href="{% url 'delete_programmer' user.slug%}"><button class="delete-button">Delete</button></a>
+    {% endif %}
+
+
+<form method="post" action="{% url 'logout' %}">
+    {% csrf_token %}
+    <button type="submit">Logout</button>
+</form>
+
+    <div class="services-page__list">
+        {% if user|has_group:"Programmers" %}
+        {% for service in user.services.all %}
+            <div class="services-page__item">
+                {% include 'services/service_short_details.html' %}
+            </div>
+        {% empty %}
+            <p class="services-page__empty">
+                Няма намерени услуги.
+            </p>
+        {% endfor %}
+        {% endif %}
+    </div>
+{% endblock %}
+

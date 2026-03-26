@@ -1,22 +1,26 @@
+from django.contrib.auth import get_user_model
+from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
+from django.http import HttpResponseForbidden
 from django.shortcuts import render
 from django.urls import reverse
 from django.views.generic import CreateView, DeleteView, ListView, DetailView, UpdateView
 
+from accounts.models import ProgrammerUser
 from programmers.forms import CreateProgrammerForm, DeleteProgrammerForm, UpdateProgrammerForm
 from programmers.models import Programmer
 
 
 # Create your views here.
-class CreateProgrammer(CreateView):
-    model = Programmer
-    form_class = CreateProgrammerForm
-    template_name = 'programmers/forms/create_programmer_form.html'
+# class CreateProgrammer(CreateView):
+#     model = Programmer
+#     form_class = CreateProgrammerForm
+#     template_name = 'programmers/forms/create_programmer_form.html'
+#
+#     def get_success_url(self):
+#         return reverse('all_programmers')
 
-    def get_success_url(self):
-        return reverse('all_programmers')
-
-class UpdateProgrammer(UpdateView):
-    model = Programmer
+class UpdateProgrammer(LoginRequiredMixin, UpdateView):
+    model = ProgrammerUser
     form_class = UpdateProgrammerForm
     slug_field = 'slug'
     slug_url_kwarg = 'programmer_slug'
@@ -25,8 +29,13 @@ class UpdateProgrammer(UpdateView):
     def get_success_url(self):
         return reverse('programmer_details', kwargs={'programmer_slug': self.object.slug})
 
-class DeleteProgrammer(DeleteView):
-    model = Programmer
+    def dispatch(self, request, *args, **kwargs):
+        if not (request.user.groups.filter(name='Editors').exists() or request.user.is_superuser) and request.user != self.get_object():
+            return HttpResponseForbidden()
+        return super().dispatch(request, *args, **kwargs)
+
+class DeleteProgrammer(LoginRequiredMixin, PermissionRequiredMixin, DeleteView):
+    model = ProgrammerUser
     template_name = 'programmers/forms/delete_programmer_form.html'
     slug_field = 'slug'
     slug_url_kwarg = 'programmer_slug'
@@ -36,16 +45,25 @@ class DeleteProgrammer(DeleteView):
         context['form'] = DeleteProgrammerForm(instance=self.get_object())
         return context
 
+    def dispatch(self, request, *args, **kwargs):
+        if not (request.user.groups.filter(name='Editors').exists() or request.user.is_superuser) and request.user != self.get_object():
+            return HttpResponseForbidden()
+        return super().dispatch(request, *args, **kwargs)
+
+
     def get_success_url(self):
         return reverse('all_programmers')
-    
+
+UserModel = get_user_model()
 class AllProgrammers(ListView):
-    model = Programmer
+    model = ProgrammerUser
     template_name = 'programmers/all_programmers.html'
     context_object_name = 'programmers'
 
-class ProgrammerDetails(DetailView):
-    model = Programmer
+
+
+class ProgrammerDetails(LoginRequiredMixin, DetailView):
+    model = ProgrammerUser
     template_name = 'programmers/programmer_details.html'
     context_object_name = 'programmer'
     slug_field = 'slug'

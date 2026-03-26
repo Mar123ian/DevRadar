@@ -9,17 +9,14 @@ class CommentForm(forms.ModelForm):
     class Meta:
         model = Comment
 
-        fields = ['author', 'content']
+        fields = ['content']
 
         labels = {
-            'author': 'Автор',
             'content': 'Съдържание',
         }
 
         error_messages = {
-            'author': {
-                'required': 'Полето е задължително!'
-            },
+
             'content': {
                 'required': 'Полето е задължително!'
             },

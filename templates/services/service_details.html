@@ -1,4 +1,5 @@
 {% extends 'core/base.html' %}
+{% load filters %}
 
 {% block title %}
     <title>DevRadar | Подробности за услугата</title>
@@ -9,9 +10,11 @@
 
     <div class="service-details__header">
 
+        {% if user.is_superuser or user == service.programmer or user|has_group:"Editors" %}
+
         <a href="{% url 'update_service' service.slug%}"><button class="update-button">Редактирай</button></a>
         <a href="{% url 'delete_service' service.slug%}"><button class="delete-button">Изтрий</button></a>
-
+        {% endif %}
 
         <h1 class="service-details__title">
             {{ service.name|upper }}

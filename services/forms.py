@@ -11,11 +11,10 @@ class ServiceForm(forms.ModelForm):
     class Meta:
         model = Service
 
-        fields = ['name', 'programmer', 'description', 'image', 'type', 'technologies', 'min_price', 'max_price']
+        fields = ['name', 'description', 'image', 'type', 'technologies', 'min_price', 'max_price']
 
         labels = {
             'name': 'Име',
-            'programmer': 'Програмист',
             'description': 'Описание',
             'image': 'Изображение',
             'type': 'Тип',
@@ -29,9 +28,7 @@ class ServiceForm(forms.ModelForm):
             'name': {
                 'required': 'Полето е задължително!'
             },
-            'programmer': {
-                'required': 'Полето е задължително!'
-            },
+
             'description': {
                 'required': 'Полето е задължително!'
             },
@@ -54,7 +51,6 @@ class ServiceForm(forms.ModelForm):
 
         help_texts = {
             'name': 'Въведете заглавие на услугата',
-            'programmer': 'Изберете програмиста, предлагащ услугата',
             'description': 'Въведете описание на услугата',
             'image': 'Изберете изображение за услугата',
             'type': 'Изберете типа на услугата',
@@ -72,8 +68,6 @@ class ServiceForm(forms.ModelForm):
 
     def clean(self):
         cleaned_data = super().clean()
-        programmer = cleaned_data.get('programmer')
-        service = cleaned_data.get('service')
 
         min_price = cleaned_data.get('min_price')
         max_price = cleaned_data.get('max_price')
@@ -82,8 +76,7 @@ class ServiceForm(forms.ModelForm):
             self.add_error('min_price', 'Минималната цена не може да е по-голяма от максималната цена!')
             self.add_error('max_price', 'Максималната цена не може да е по-малка от минималната цена!')
 
-        if programmer.services and programmer.services.filter(name=service).exists():
-            self.add_error('service',"Този програмист вече е предложил същата услуга!")
+
 
         return cleaned_data
 

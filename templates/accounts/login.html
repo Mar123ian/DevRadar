@@ -1,0 +1,15 @@
+{% extends 'core/base.html' %}
+
+{% block title %}
+    <title>DevRadar | Вход</title>
+{% endblock %}
+
+{% block main_content %}
+<form method="post">
+    {% csrf_token %}
+    {{ form }}
+    <p>Нямате профил? <a href={% url "register" %}>Регистрирайте се!</a></p>
+
+    <button type="submit">Login</button>
+</form>
+{% endblock %}

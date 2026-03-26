@@ -22,6 +22,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(BASE_DIR / ".dev.env")
 
 
+
+
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
@@ -33,12 +35,13 @@ DEBUG = os.environ.get("DEBUG", "False") == "True"
 
 ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS").split(",")
 
-SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-CSRF_COOKIE_SECURE = True
-SESSION_COOKIE_SECURE = True
-CSRF_TRUSTED_ORIGINS = [
-    "https://devradar-cfcjedeha8fqfpgq.switzerlandnorth-01.azurewebsites.net"
-]
+if not DEBUG:
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+    CSRF_COOKIE_SECURE = True
+    SESSION_COOKIE_SECURE = True
+    CSRF_TRUSTED_ORIGINS = [
+        "https://devradar-cfcjedeha8fqfpgq.switzerlandnorth-01.azurewebsites.net"
+    ]
 
 
 # Application definition
@@ -56,6 +59,7 @@ INSTALLED_APPS = [
     'services.apps.ServicesConfig',
     'categories.apps.CategoriesConfig',
     'core.apps.CoreConfig',
+    'accounts.apps.AccountsConfig'
 
 ]
 
@@ -89,7 +93,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'devradar.wsgi.application'
-
+AUTH_USER_MODEL = 'accounts.DevRadarUser'
 
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
@@ -151,33 +155,38 @@ STATICFILES_DIRS = [BASE_DIR / 'static',]
 STATIC_ROOT = BASE_DIR / 'staticfiles/'
 
 
+if not DEBUG:
+    DEFAULT_FILE_STORAGE = "storages.backends.azure_storage.AzureStorage"
 
-DEFAULT_FILE_STORAGE = "storages.backends.azure_storage.AzureStorage"
+    AZURE_ACCOUNT_NAME = "devradarstorage"   # виж Azure Portal
+    AZURE_ACCOUNT_KEY = os.environ.get("AZURE_ACCOUNT_KEY")    # от Access Keys
+    AZURE_CONTAINER = "media"                          # името на Blob контейнера
+    MEDIA_URL = f"https://devradarstorage.blob.core.windows.net/media/"
 
-AZURE_ACCOUNT_NAME = "devradarstorage"   # виж Azure Portal
-AZURE_ACCOUNT_KEY = os.environ.get("AZURE_ACCOUNT_KEY")    # от Access Keys
-AZURE_CONTAINER = "media"                          # името на Blob контейнера
-MEDIA_URL = f"https://devradarstorage.blob.core.windows.net/media/"
+    STORAGES = {
+        #"default": {
+          #  "BACKEND": "django.core.files.storage.FileSystemStorage",
+          #  "LOCATION": settings.MEDIA_ROOT
+        #},
+        "default": {
+            "BACKEND": "storages.backends.azure_storage.AzureStorage",
+            "ACCOUNT_NAME": AZURE_ACCOUNT_NAME,
+            "ACCOUNT_KEY": AZURE_ACCOUNT_KEY,
+            "CONTAINER": AZURE_CONTAINER,
+        },
+        "staticfiles": {
+            "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+        },
+    }
 
-STORAGES = {
-    #"default": {
-      #  "BACKEND": "django.core.files.storage.FileSystemStorage",
-      #  "LOCATION": settings.MEDIA_ROOT
-    #},
-    "default": {
-        "BACKEND": "storages.backends.azure_storage.AzureStorage",
-        "ACCOUNT_NAME": AZURE_ACCOUNT_NAME,
-        "ACCOUNT_KEY": AZURE_ACCOUNT_KEY,
-        "CONTAINER": AZURE_CONTAINER,
-    },
-    "staticfiles": {
-        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
-    },
-}
+if DEBUG:
+    MEDIA_URL = '/media/'
+    MEDIA_ROOT = BASE_DIR / 'media/'
+    #MEDIA_ROOT = '/home/site/wwwroot/media'
 
-#MEDIA_URL = '/media/'
-#MEDIA_ROOT = BASE_DIR / 'media/'
-#MEDIA_ROOT = '/home/site/wwwroot/media'
+LOGOUT_REDIRECT_URL = '/accounts/login/'
+LOGIN_REDIRECT_URL = '/'
+LOGIN_URL = '/accounts/login/'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field

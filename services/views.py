@@ -1,3 +1,5 @@
+from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
+from django.http import HttpResponseForbidden
 from django.shortcuts import render, redirect
 from django.urls import reverse
 from django.views.generic import CreateView, DeleteView, ListView, DetailView
@@ -9,15 +11,29 @@ from services.models import Service
 
 
 # Create your views here.
-class CreateService(CreateView):
+#TODO make permissions to groups
+#TODO every profile must be editable
+#TODO log req to view profile
+class CreateService(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
     model = Service
     form_class = CreateServiceForm
     template_name = 'services/forms/create_service_form.html'
+    permission_required = 'services.add_service'
+
 
     def get_success_url(self):
         return reverse('all_services')
 
-class UpdateService(UpdateView):
+    def form_valid(self, form):
+        service = form.cleaned_data.get('service')
+        programmer = self.request.user
+        if programmer.services and programmer.services.filter(name=service).exists():
+            form.add_error('service',"Този програмист вече е предложил същата услуга!")
+
+        form.instance.programmer = self.request.user
+        return super().form_valid(form)
+
+class UpdateService(LoginRequiredMixin, UpdateView):
     model = Service
     form_class = UpdateServiceForm
     slug_field = 'slug'
@@ -27,8 +43,12 @@ class UpdateService(UpdateView):
     def get_success_url(self):
         return reverse('service_details', kwargs={'service_slug': self.object.slug})
 
+    def dispatch(self, request, *args, **kwargs):
+        if not (request.user.groups.filter(name='Editors').exists() or request.user.is_superuser) and request.user != self.get_object().programmer:
+            return HttpResponseForbidden()
+        return super().dispatch(request, *args, **kwargs)
 
-class DeleteService(DeleteView):
+class DeleteService(LoginRequiredMixin, DeleteView):
     model = Service
     template_name = 'services/forms/delete_service_form.html'
     slug_field = 'slug'
@@ -41,6 +61,11 @@ class DeleteService(DeleteView):
 
     def get_success_url(self):
         return reverse('all_services')
+
+    def dispatch(self, request, *args, **kwargs):
+        if not (request.user.groups.filter(name='Editors').exists() or request.user.is_superuser) and request.user != self.get_object().programmer:
+            return HttpResponseForbidden()
+        return super().dispatch(request, *args, **kwargs)
     
 class AllServices(ListView):
     model = Service
@@ -92,7 +117,7 @@ class AllServices(ListView):
         context['form'] = self.form
         return context
 
-class ServiceDetails(FormMixin, DetailView):
+class ServiceDetails(LoginRequiredMixin, FormMixin, DetailView):
     model = Service
     template_name = 'services/service_details.html'
     context_object_name = 'service'
@@ -106,6 +131,7 @@ class ServiceDetails(FormMixin, DetailView):
     def post(self, request, *args, **kwargs):
         self.object = self.get_object()
         form = self.get_form()
+
         if form.is_valid():
             return self.form_valid(form)
         else:
@@ -114,6 +140,7 @@ class ServiceDetails(FormMixin, DetailView):
     def form_valid(self, form):
         comment = form.save(commit=False)
         comment.service = self.object
+        comment.author = self.request.user
         comment.save()
         return redirect(self.get_success_url())
 

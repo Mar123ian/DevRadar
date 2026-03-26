@@ -8,7 +8,7 @@ from core.mixins import CreatedAndUpdatedAtMixin
 # Create your models here.
 class Service(CreatedAndUpdatedAtMixin, models.Model):
     name = models.CharField(max_length=255, error_messages={'max_length': 'Максималната дължина е 255 символа!'})
-    programmer = models.ForeignKey('programmers.Programmer', on_delete=models.CASCADE, related_name='services')
+    programmer = models.ForeignKey('accounts.ProgrammerUser', on_delete=models.CASCADE, related_name='services')
     description = models.TextField()
     image = models.ImageField(upload_to='services/')
     slug = models.SlugField(unique=True, blank=True)
