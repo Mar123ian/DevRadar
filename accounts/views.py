@@ -2,12 +2,15 @@ from http.client import responses
 
 from django.contrib.auth import get_user_model
 from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.mixins import PermissionRequiredMixin, LoginRequiredMixin
 from django.contrib.auth.models import Group
+from django.http import HttpResponseForbidden
 from django.shortcuts import render
-from django.urls import reverse_lazy
-from django.views.generic import CreateView, ListView, DetailView
+from django.urls import reverse_lazy, reverse
+from django.views.generic import CreateView, ListView, DetailView, DeleteView, UpdateView
 
-from accounts.forms import ProgrammerCreationForm, DevRadarUserCreationForm
+from accounts.forms import ProgrammerCreationForm, DevRadarUserCreationForm, DevRadarUserUpdateForm, \
+    DevRadarUserDeleteForm
 
 
 # Create your views here.
@@ -32,4 +35,37 @@ class RegisterDevRadarUserView(CreateView):
     template_name = 'accounts/register_user.html'
     success_url = reverse_lazy('login')
 
+
+class UpdateDevRadarUser(LoginRequiredMixin, UpdateView):
+    model = get_user_model()
+    form_class = DevRadarUserUpdateForm
+    template_name = 'accounts/forms/update_user_form.html'
+    #TODO get_success_url for user/programmer edit
+    #TODO change the name of edit, del user template
+    def get_success_url(self):
+        return reverse('profile')
+
+    def dispatch(self, request, *args, **kwargs):
+        if request.user.groups.filter(name='Programmers').exists() and not (request.user.groups.filter(name='Editors').exists()):
+            return HttpResponseForbidden()
+        if not (request.user.groups.filter(name='Editors').exists() or request.user.is_superuser) and request.user != self.get_object():
+            return HttpResponseForbidden()
+        return super().dispatch(request, *args, **kwargs)
+
+class DeleteDevRadarUser(LoginRequiredMixin, DeleteView):
+    model = get_user_model()
+    template_name = 'accounts/forms/delete_user_form.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['form'] = DevRadarUserDeleteForm(instance=self.get_object())
+        return context
+
+    #TODO repetition
+    def dispatch(self, request, *args, **kwargs):
+        if request.user.groups.filter(name='Programmers').exists() and not (request.user.groups.filter(name='Editors').exists()):
+            return HttpResponseForbidden()
+        if not (request.user.groups.filter(name='Editors').exists() or request.user.is_superuser) and request.user != self.get_object():
+            return HttpResponseForbidden()
+        return super().dispatch(request, *args, **kwargs)
 

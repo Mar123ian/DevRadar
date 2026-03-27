@@ -112,10 +112,17 @@ class AllServices(ListView):
 
         return queryset.distinct().order_by('min_price')
 
+
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['form'] = self.form
         return context
+
+class FavouriteServices(AllServices):
+
+    def get_queryset(self):
+        return super().get_queryset().filter(users=self.request.user)
 
 class ServiceDetails(LoginRequiredMixin, FormMixin, DetailView):
     model = Service
@@ -129,6 +136,17 @@ class ServiceDetails(LoginRequiredMixin, FormMixin, DetailView):
         return super().get_queryset().select_related('programmer', 'type').prefetch_related('technologies', 'comments')
 
     def post(self, request, *args, **kwargs):
+        action = request.POST.get('action', None)
+        if action == 'add_to_favourites':
+            request.user.favourites.add(self.get_object())
+
+            return redirect(reverse('service_details', kwargs={'service_slug': self.get_object().slug}))
+
+        if action == 'remove_from_favourites':
+            request.user.favourites.remove(self.get_object())
+            return redirect(reverse('service_details', kwargs={'service_slug': self.get_object().slug}))
+
+
         self.object = self.get_object()
         form = self.get_form()
 

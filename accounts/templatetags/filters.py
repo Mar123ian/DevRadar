@@ -7,3 +7,7 @@ register = template.Library()
 def has_group(user, group_name):
     return user.groups.filter(name=group_name).exists()
 
+@register.filter()
+def has_service_in_favourites(user, service_id):
+    return user.favourites.filter(id=service_id).exists()
+

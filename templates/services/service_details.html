@@ -16,6 +16,8 @@
         <a href="{% url 'delete_service' service.slug%}"><button class="delete-button">Изтрий</button></a>
         {% endif %}
 
+        {% include 'services/forms/add_to_favourites_form.html' %}
+
         <h1 class="service-details__title">
             {{ service.name|upper }}
         </h1>

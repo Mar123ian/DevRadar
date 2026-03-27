@@ -3,7 +3,7 @@ from django.contrib.auth.views import LoginView, LogoutView, PasswordResetView, 
 from django.urls import path
 from django.views.generic import TemplateView
 
-from accounts.views import RegisterProgrammerUserView, RegisterDevRadarUserView
+from accounts.views import RegisterProgrammerUserView, RegisterDevRadarUserView, UpdateDevRadarUser, DeleteDevRadarUser
 
 urlpatterns = [
     path('profile/', TemplateView.as_view(template_name='accounts/profile.html'), name='profile'),
@@ -16,5 +16,8 @@ urlpatterns = [
     path('password_reset_confirm/<uidb64>/<token>/', PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
     path('password_reset_done/', PasswordResetDoneView.as_view(), name='password_reset_done'),
     path('password_reset_complete/', PasswordResetCompleteView.as_view(), name='password_reset_complete'),
+
+    path('update/<int:pk>/', UpdateDevRadarUser.as_view(), name='update_user'),
+    path('delete/<int:pk>/', DeleteDevRadarUser.as_view(), name='delete_user'),
 
 ]

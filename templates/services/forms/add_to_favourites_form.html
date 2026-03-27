@@ -1,0 +1,37 @@
+{% load filters %}
+
+{% if not user|has_service_in_favourites:service.id%}
+<form
+    method="post"
+    enctype="multipart/form-data"
+>
+    {% csrf_token %}
+
+    <input type="hidden" name="action" value="add_to_favourites" />
+
+    <input type="hidden" name="id" value="{{ service.id }}" />
+
+
+    <button type="submit" class="services-create-form__button services-create-form__button--primary">
+        Добави в любими
+    </button>
+
+</form>
+{% else %}
+    <form
+    method="post"
+    enctype="multipart/form-data"
+>
+    {% csrf_token %}
+
+    <input type="hidden" name="action" value="remove_from_favourites" />
+
+    <input type="hidden" name="id" value="{{ service.id }}" />
+
+
+    <button type="submit" class="services-create-form__button services-create-form__button--primary">
+        Премахни от любими
+    </button>
+
+</form>
+{% endif %}

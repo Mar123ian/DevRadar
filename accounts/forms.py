@@ -2,11 +2,12 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
+from django.forms import models
 
 from accounts.models import DevRadarUser, ProgrammerUser
 
 
-class ProgrammerCreationForm(UserCreationForm):
+class ProgrammerBaseForm(UserCreationForm):
     class Meta:
         model = ProgrammerUser
 
@@ -53,7 +54,11 @@ class ProgrammerCreationForm(UserCreationForm):
             raise ValidationError("Email already exists.")
         return email
 
-class DevRadarUserCreationForm(UserCreationForm):
+class ProgrammerCreationForm(ProgrammerBaseForm):
+    pass
+
+
+class DevRadarUserBaseForm(models.ModelForm):
     class Meta:
         model = get_user_model()
 
@@ -86,8 +91,18 @@ class DevRadarUserCreationForm(UserCreationForm):
 
         }
 
-    def clean_email(self):
-        email = self.cleaned_data.get('email')
-        if DevRadarUser.objects.filter(email=email).exists():
-            raise ValidationError("Email already exists.")
-        return email
+    #TODO review this
+    # def clean_email(self):
+    #     email = self.cleaned_data.get('email')
+    #     if DevRadarUser.objects.filter(email=email).exists():
+    #         raise ValidationError("Email already exists.")
+    #     return email
+
+class DevRadarUserCreationForm(UserCreationForm, DevRadarUserBaseForm):
+    pass
+
+class DevRadarUserUpdateForm(DevRadarUserBaseForm):
+    pass
+
+class DevRadarUserDeleteForm(DevRadarUserBaseForm):
+    pass

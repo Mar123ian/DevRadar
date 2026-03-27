@@ -24,6 +24,9 @@
 
     <a href="{% url 'update_programmer' user.slug%}"><button class="update-button">Edit</button></a>
     <a href="{% url 'delete_programmer' user.slug%}"><button class="delete-button">Delete</button></a>
+    {% else %}
+        <a href="{% url 'update_user' user.id %}"><button class="update-button">Edit</button></a>
+        <a href="{% url 'delete_user' user.id %}"><button class="delete-button">Delete</button></a>
     {% endif %}
 
 

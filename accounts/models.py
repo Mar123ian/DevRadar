@@ -17,10 +17,12 @@ class DevRadarUser(PolymorphicModel,AbstractUser):
 
     first_name = models.CharField(_("first name"), max_length=150, error_messages={'max_length': 'Максималната дължина е 100 символа!'})
     last_name = models.CharField(_("last name"), max_length=150, blank=True)
-
+    favourites = models.ManyToManyField('services.Service', related_name='users', blank=True)
     email = models.EmailField(_("email address"), unique=True, error_messages={'unique': 'Програмист с този имейл вече съществува!'})
 
     objects = DevRadarUserManager()
+
+
 
     def __str__(self):
         return f"{self.first_name} {self.last_name}"
