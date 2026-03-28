@@ -29,6 +29,9 @@
         <a href="{% url 'delete_user' user.id %}"><button class="delete-button">Delete</button></a>
     {% endif %}
 
+    <a href="{% url 'favourite_services' %}"><button class="delete-button">Списък с любими</button></a>
+
+
 
 <form method="post" action="{% url 'logout' %}">
     {% csrf_token %}

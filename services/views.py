@@ -137,23 +137,29 @@ class ServiceDetails(LoginRequiredMixin, FormMixin, DetailView):
 
     def post(self, request, *args, **kwargs):
         action = request.POST.get('action', None)
-        if action == 'add_to_favourites':
-            request.user.favourites.add(self.get_object())
+        self.object = self.get_object()
 
-            return redirect(reverse('service_details', kwargs={'service_slug': self.get_object().slug}))
+        if action == 'add_to_favourites':
+            return self.add_to_favourites(request)
 
         if action == 'remove_from_favourites':
-            request.user.favourites.remove(self.get_object())
-            return redirect(reverse('service_details', kwargs={'service_slug': self.get_object().slug}))
+            return self.remove_from_favourites(request)
 
 
-        self.object = self.get_object()
         form = self.get_form()
 
         if form.is_valid():
             return self.form_valid(form)
         else:
             return self.form_invalid(form)
+
+    def add_to_favourites(self, request):
+        request.user.favourites.add(self.object)
+        return redirect(self.get_success_url())
+
+    def remove_from_favourites(self, request):
+        request.user.favourites.remove(self.object)
+        return redirect(self.get_success_url())
 
     def form_valid(self, form):
         comment = form.save(commit=False)
