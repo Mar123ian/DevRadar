@@ -9,7 +9,7 @@ https://docs.djangoproject.com/en/5.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
-
+import ssl
 from pathlib import Path
 import os
 
@@ -206,8 +206,8 @@ REDIS_URL = os.getenv("REDIS_URL")
 CELERY_BROKER_URL = REDIS_URL
 CELERY_RESULT_BACKEND = REDIS_URL
 
-CELERY_BROKER_USE_SSL = {"ssl_cert_reqs": None}
-CELERY_RESULT_BACKEND_USE_SSL = {"ssl_cert_reqs": None}
+CELERY_BROKER_USE_SSL = {"ssl_cert_reqs": ssl.CERT_NONE}
+CELERY_RESULT_BACKEND_USE_SSL = {"ssl_cert_reqs": ssl.CERT_NONE}
 
 
 CELERY_ACCEPT_CONTENT = ['json']
