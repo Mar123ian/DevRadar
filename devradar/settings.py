@@ -209,6 +209,11 @@ CELERY_RESULT_BACKEND = REDIS_URL
 CELERY_BROKER_USE_SSL = {"ssl_cert_reqs": ssl.CERT_NONE}
 CELERY_RESULT_BACKEND_USE_SSL = {"ssl_cert_reqs": ssl.CERT_NONE}
 
+CELERY_BROKER_TRANSPORT_OPTIONS = {
+    'ssl': {
+        'ssl_cert_reqs': ssl.CERT_NONE
+    }
+}
 
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
