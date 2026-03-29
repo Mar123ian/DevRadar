@@ -4,7 +4,7 @@ import ssl
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "devradar.settings")
 
-app = Celery("devradar", include=['devradar.tasks'])
+app = Celery("devradar", include=['devradar.tasks', 'services.tasks'])
 
 app.conf.update(
     broker_use_ssl={'ssl_cert_reqs': ssl.CERT_NONE},

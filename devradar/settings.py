@@ -190,6 +190,17 @@ LOGIN_REDIRECT_URL = '/'
 LOGIN_URL = '/accounts/login/'
 
 
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.sendgrid.net'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+
+EMAIL_HOST_USER = 'apikey'
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
+
+DEFAULT_FROM_EMAIL = 'devradar.no.reply@gmail.com'
+
+
 REDIS_PASSWORD = os.getenv("REDIS_KEY")
 encoded_pass = urllib.parse.quote_plus(REDIS_PASSWORD)
 REDIS_URL = f"rediss://:{encoded_pass}@devradar-redis.redis.cache.windows.net:6380/0?ssl_cert_reqs=none"
