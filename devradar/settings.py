@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 import ssl
+import urllib
 from pathlib import Path
 import os
 
@@ -189,18 +190,13 @@ LOGIN_REDIRECT_URL = '/'
 LOGIN_URL = '/accounts/login/'
 
 
-REDIS_URL = os.getenv("REDIS_URL")
+REDIS_PASSWORD = os.getenv("REDIS_KEY")
+encoded_pass = urllib.parse.quote_plus(REDIS_PASSWORD)
+REDIS_URL = f"rediss://:{encoded_pass}@devradar-redis.redis.cache.windows.net:6380/0?ssl_cert_reqs=none"
 
-# Cache
-# CACHES = {
-#     "default": {
-#         "BACKEND": "django_redis.cache.RedisCache",
-#         "LOCATION": REDIS_URL,
-#         "OPTIONS": {
-#             "CLIENT_CLASS": "django_redis.client.DefaultClient",
-#         }
-#     }
-# }
+
+
+
 
 # Celery
 CELERY_BROKER_URL = REDIS_URL
