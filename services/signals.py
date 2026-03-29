@@ -10,4 +10,4 @@ from services.tasks import send_service_creation_email_task
 @receiver(post_save, sender=Service)
 def send_service_creation_email(sender, instance: Service, created, **kwargs):
     if created:
-        send_service_creation_email_task.delay(instance)
+        send_service_creation_email_task.delay(str(instance.name), str(instance.programmer.get_full_name()), str(instance.programmer.email))
