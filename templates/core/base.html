@@ -11,6 +11,10 @@
     <title>DevRadar | Свободно предлагане на ИТ услуги</title>
     {% endblock %}
 
+    <link rel="icon" type="image/png" href="{% static 'logo.png' %}">
+
+    <link rel="apple-touch-icon" href="{% static 'logo.png' %}">
+
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'styles.css' %}" />
     <script src="{% static 'scripts.js' %}" type="module"></script>
@@ -41,7 +45,6 @@
                     <li class="dropdown">
                         <span class="nav-link dropdown-trigger">Управление ▼</span>
                         <ul class="dropdown-content">
-                            <li><a href="{% url 'create_service' %}">Добави услуга</a></li>
                             <li><a href="{% url 'create_technology' %}">Добави технология</a></li>
                             <li><a href="{% url 'create_type' %}">Добави тип услуга</a></li>
                         </ul>
@@ -49,7 +52,7 @@
                     {% endif %}
                 </ul>
 
-                {% if user|has_group:"Programmers" %}
+                {% if user.is_superuser or user|has_group:"Programmers" %}
                 <div class="nav-actions">
                     <a href="{% url 'create_service' %}" class="btn btn--primary">Предложи услуга</a>
                 </div>

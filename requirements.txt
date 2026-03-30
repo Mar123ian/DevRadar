@@ -1,3 +1,4 @@
+djangorestframework
 amqp==5.3.1
 asgiref==3.11.1
 azure-core==1.39.0
