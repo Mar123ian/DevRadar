@@ -48,11 +48,7 @@ class ProgrammerBaseForm(UserCreationForm):
 
         }
 
-    def clean_email(self):
-        email = self.cleaned_data.get('email')
-        if DevRadarUser.objects.filter(email=email).exists():
-            raise ValidationError("Email already exists.")
-        return email
+
 
 class ProgrammerCreationForm(ProgrammerBaseForm):
     pass
@@ -91,14 +87,9 @@ class DevRadarUserBaseForm(models.ModelForm):
 
         }
 
-    #TODO review this
-    # def clean_email(self):
-    #     email = self.cleaned_data.get('email')
-    #     if DevRadarUser.objects.filter(email=email).exists():
-    #         raise ValidationError("Email already exists.")
-    #     return email
 
-class DevRadarUserCreationForm(UserCreationForm, DevRadarUserBaseForm):
+
+class DevRadarUserCreationForm(DevRadarUserBaseForm, UserCreationForm):
     pass
 
 class DevRadarUserUpdateForm(DevRadarUserBaseForm):

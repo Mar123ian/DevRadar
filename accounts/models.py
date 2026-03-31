@@ -43,8 +43,8 @@ class ProgrammerUser(DevRadarUser):
     def save(self, *args, **kwargs):
         #TODO repair slug check
         if not self.slug:
-            objects_with_that_name = self.__class__.objects.filter(first_name__iexact=self.first_name,
-                                                                   last_name__iexact=self.last_name).count()
+            objects_with_that_name = self.__class__.objects.filter(slug=slugify(unidecode(self.get_full_name()))).count()
+
 
             if objects_with_that_name > 0:
                 self.slug = slugify(unidecode(self.get_full_name()) + f"{objects_with_that_name + 1}")

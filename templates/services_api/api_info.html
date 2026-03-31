@@ -1,0 +1,61 @@
+{% extends 'core/base.html' %}
+
+{% block title %}
+    <title>DevRadar | API</title>
+{% endblock %}
+
+{% block main_content %}
+<section>
+
+    <h1>DevRadar API</h1>
+
+    {% if token %}
+        <h3>Вашият токен: <span class="api-token" style="display: none;">{{ token }}</span><span class="api-placeholder">*********</span> <a style="color: #00b15e; display: none;" href="#" class="hide-api">Скрий</a><a style="color: #00b15e" href="#" class="show-api">Покажи</a></h3>
+        <p><i>Пазете токена си в тайна!</i></p>
+
+        <script>
+        (function() {
+            const container = document.currentScript.parentElement;
+            const hideBtn = container.querySelector(".hide-api");
+            const showBtn = container.querySelector(".show-api");
+            const tokenSpan = container.querySelector(".api-token");
+            const placeholder = container.querySelector(".api-placeholder");
+
+            showBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                tokenSpan.style.display = 'inline';
+                placeholder.style.display = 'none';
+                showBtn.style.display = 'none';
+                hideBtn.style.display = 'inline';
+            });
+
+            hideBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                tokenSpan.style.display = 'none';
+                placeholder.style.display = 'inline';
+                showBtn.style.display = 'inline';
+                hideBtn.style.display = 'none';
+            });
+        })();
+    </script>
+
+    {% else %}
+        <h3>Генерирайте токен, за да можете да ползвате API услугата!</h3>
+    {% endif %}
+
+    <br>
+    <form method="POST">
+        {% csrf_token %}
+
+        {% if not token %}
+            <button type="submit" class="btn--primary">ВЗЕМИ API ТОКЕН</button>
+        {% else %}
+                <button type="submit" class="btn--primary">ОБНОВЕТЕ СВОЯ API ТОКЕН</button>
+                <p><i>Това ще изтрие стария ви токен и ще го замени с нов.</i></p>
+        {% endif %}
+
+
+    </form>
+
+</section>
+{% endblock %}

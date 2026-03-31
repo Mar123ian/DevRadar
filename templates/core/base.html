@@ -33,6 +33,7 @@
                     <li><a href="{% url 'all_services' %}" class="nav-link">Услуги</a></li>
                     <li><a href="{% url 'all_programmers' %}" class="nav-link">Експерти</a></li>
                     <li><a href="{% url 'all_types' %}" class="nav-link">Типове услуги</a></li>
+                    <li><a href="{% url 'api_info' %}" class="nav-link">DevRadar API</a></li>
 
                     {% if not user.is_authenticated %}
                     <li><a href="{% url 'login' %}" class="nav-link">ВХОД</a></li>

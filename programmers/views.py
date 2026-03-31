@@ -34,7 +34,7 @@ class UpdateProgrammer(LoginRequiredMixin, UpdateView):
             return HttpResponseForbidden()
         return super().dispatch(request, *args, **kwargs)
 
-class DeleteProgrammer(LoginRequiredMixin, PermissionRequiredMixin, DeleteView):
+class DeleteProgrammer(LoginRequiredMixin, DeleteView):
     model = ProgrammerUser
     template_name = 'programmers/forms/delete_programmer_form.html'
     slug_field = 'slug'
@@ -52,7 +52,7 @@ class DeleteProgrammer(LoginRequiredMixin, PermissionRequiredMixin, DeleteView):
 
 
     def get_success_url(self):
-        return reverse('all_programmers')
+        return reverse('profile')
 
 UserModel = get_user_model()
 class AllProgrammers(ListView):

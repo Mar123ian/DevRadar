@@ -7,7 +7,7 @@ from django.contrib.auth.models import Group
 from django.http import HttpResponseForbidden
 from django.shortcuts import render
 from django.urls import reverse_lazy, reverse
-from django.views.generic import CreateView, ListView, DetailView, DeleteView, UpdateView
+from django.views.generic import CreateView, ListView, DetailView, DeleteView, UpdateView, TemplateView
 
 from accounts.forms import ProgrammerCreationForm, DevRadarUserCreationForm, DevRadarUserUpdateForm, \
     DevRadarUserDeleteForm
@@ -68,4 +68,10 @@ class DeleteDevRadarUser(LoginRequiredMixin, DeleteView):
         if not (request.user.groups.filter(name='Editors').exists() or request.user.is_superuser) and request.user != self.get_object():
             return HttpResponseForbidden()
         return super().dispatch(request, *args, **kwargs)
+
+    def get_success_url(self):
+        return reverse('profile')
+
+class ProfileView(LoginRequiredMixin, TemplateView):
+    template_name = 'accounts/profile.html'
 

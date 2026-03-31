@@ -1,12 +1,15 @@
+from cProfile import Profile
+
 from django.contrib.auth.views import LoginView, LogoutView, PasswordResetView, PasswordResetConfirmView, \
     PasswordResetDoneView, PasswordResetCompleteView
 from django.urls import path
 from django.views.generic import TemplateView
 
-from accounts.views import RegisterProgrammerUserView, RegisterDevRadarUserView, UpdateDevRadarUser, DeleteDevRadarUser
+from accounts.views import RegisterProgrammerUserView, RegisterDevRadarUserView, UpdateDevRadarUser, DeleteDevRadarUser, \
+    ProfileView
 
 urlpatterns = [
-    path('profile/', TemplateView.as_view(template_name='accounts/profile.html'), name='profile'),
+    path('profile/', ProfileView.as_view(), name='profile'),
     path('login/', LoginView.as_view(template_name='accounts/login.html'), name='login'),
     path('register-programmer/', RegisterProgrammerUserView.as_view(), name='register_programmer'),
     path('register/', TemplateView.as_view(template_name="accounts/register.html"), name='register'),
