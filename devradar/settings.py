@@ -33,10 +33,12 @@ SECRET_KEY = os.environ.get("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get("DEBUG", "False") == "True"
+PRODUCTION = os.environ.get("PRODUCTION", "False") == "True"
+
 
 ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS").split(",")
 
-if not DEBUG:
+if PRODUCTION:
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
     CSRF_COOKIE_SECURE = True
     SESSION_COOKIE_SECURE = True
@@ -159,7 +161,7 @@ STATICFILES_DIRS = [BASE_DIR / 'static',]
 STATIC_ROOT = BASE_DIR / 'staticfiles/'
 
 
-if not DEBUG:
+if PRODUCTION:
     DEFAULT_FILE_STORAGE = "storages.backends.azure_storage.AzureStorage"
 
     AZURE_ACCOUNT_NAME = "devradarstorage"   # виж Azure Portal
@@ -183,7 +185,7 @@ if not DEBUG:
         },
     }
 
-if DEBUG:
+if not PRODUCTION:
     MEDIA_URL = '/media/'
     MEDIA_ROOT = BASE_DIR / 'media/'
     #MEDIA_ROOT = '/home/site/wwwroot/media'

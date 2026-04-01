@@ -9,9 +9,17 @@
 {% block main_content %}
 <section class="services-page">
 
+    {% block header %}
+        <h1>Всички услуги</h1>
+    {% endblock %}
+
+    <br>
+
    <button type="button" id="toggleSearchBtn" class="services-page__toggle-button">
         Покажи търсачката и филтрите
     </button>
+
+
 
     <div class="services-page__search is-hidden" id="servicesSearch">
         <form method="get" class="services-page__search-form">

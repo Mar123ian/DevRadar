@@ -30,9 +30,11 @@ class UpdateProgrammer(LoginRequiredMixin, UpdateView):
         return reverse('programmer_details', kwargs={'programmer_slug': self.object.slug})
 
     def dispatch(self, request, *args, **kwargs):
-        if not (request.user.groups.filter(name='Editors').exists() or request.user.is_superuser) and request.user != self.get_object():
-            return HttpResponseForbidden()
-        return super().dispatch(request, *args, **kwargs)
+        if request.user.groups.filter(name='Editors').exists() or request.user.is_superuser or request.user == self.get_object():
+            return super().dispatch(request, *args, **kwargs)
+
+        return HttpResponseForbidden()
+
 
 class DeleteProgrammer(LoginRequiredMixin, DeleteView):
     model = ProgrammerUser
@@ -46,9 +48,11 @@ class DeleteProgrammer(LoginRequiredMixin, DeleteView):
         return context
 
     def dispatch(self, request, *args, **kwargs):
-        if not (request.user.groups.filter(name='Editors').exists() or request.user.is_superuser) and request.user != self.get_object():
-            return HttpResponseForbidden()
-        return super().dispatch(request, *args, **kwargs)
+        if request.user.groups.filter(
+                name='Editors').exists() or request.user.is_superuser or request.user == self.get_object():
+            return super().dispatch(request, *args, **kwargs)
+
+        return HttpResponseForbidden()
 
 
     def get_success_url(self):

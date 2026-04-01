@@ -1,12 +1,13 @@
 from django.urls import path, include
 
-from categories.views import CreateType, DeleteType, CreateTechnology, AllTypes, TypeDetails
+from categories.views import CreateType, DeleteType, CreateTechnology, AllTypes, TypeDetails, UpdateType
 
 urlpatterns = [
     path('type/', include([
         path('all/', AllTypes.as_view(), name='all_types'),
         path('create/', CreateType.as_view(), name='create_type'),
         path('delete/<slug:type_slug>/', DeleteType.as_view(), name='delete_type'),
+        path('update/<slug:type_slug>/', UpdateType.as_view(), name='update_type'),
         path('<slug:type_slug>/', TypeDetails.as_view(), name='type_details'),
 
     ])),

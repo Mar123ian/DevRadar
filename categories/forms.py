@@ -45,6 +45,9 @@ class TypeForm(forms.ModelForm):
 class CreateTypeForm(TypeForm):
     pass
 
+class UpdateTypeForm(TypeForm):
+    pass
+
 class DeleteTypeForm(DisableFieldsMixin, TypeForm):
     pass
 
@@ -80,6 +83,7 @@ class TechnologyForm(forms.ModelForm):
 
 class CreateTechnologyForm(TechnologyForm):
     pass
+
 
 class DeleteTechnologyForm(DisableFieldsMixin, TechnologyForm):
     pass

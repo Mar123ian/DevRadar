@@ -40,17 +40,16 @@ class UpdateDevRadarUser(LoginRequiredMixin, UpdateView):
     model = get_user_model()
     form_class = DevRadarUserUpdateForm
     template_name = 'accounts/forms/update_user_form.html'
-    #TODO get_success_url for user/programmer edit
-    #TODO change the name of edit, del user template
+
     def get_success_url(self):
         return reverse('profile')
 
     def dispatch(self, request, *args, **kwargs):
-        if request.user.groups.filter(name='Programmers').exists() and not (request.user.groups.filter(name='Editors').exists()):
-            return HttpResponseForbidden()
-        if not (request.user.groups.filter(name='Editors').exists() or request.user.is_superuser) and request.user != self.get_object():
-            return HttpResponseForbidden()
-        return super().dispatch(request, *args, **kwargs)
+        if request.user.groups.filter(
+                name='Editors').exists() or request.user.is_superuser or request.user == self.get_object():
+            return super().dispatch(request, *args, **kwargs)
+
+        return HttpResponseForbidden()
 
 class DeleteDevRadarUser(LoginRequiredMixin, DeleteView):
     model = get_user_model()
@@ -61,16 +60,15 @@ class DeleteDevRadarUser(LoginRequiredMixin, DeleteView):
         context['form'] = DevRadarUserDeleteForm(instance=self.get_object())
         return context
 
-    #TODO repetition
     def dispatch(self, request, *args, **kwargs):
-        if request.user.groups.filter(name='Programmers').exists() and not (request.user.groups.filter(name='Editors').exists()):
-            return HttpResponseForbidden()
-        if not (request.user.groups.filter(name='Editors').exists() or request.user.is_superuser) and request.user != self.get_object():
-            return HttpResponseForbidden()
-        return super().dispatch(request, *args, **kwargs)
+        if request.user.groups.filter(
+                name='Editors').exists() or request.user.is_superuser or request.user == self.get_object():
+            return super().dispatch(request, *args, **kwargs)
+
+        return HttpResponseForbidden()
 
     def get_success_url(self):
-        return reverse('profile')
+        return reverse('login')
 
 class ProfileView(LoginRequiredMixin, TemplateView):
     template_name = 'accounts/profile.html'

@@ -7,26 +7,33 @@
 
 {% block main_content %}
 
-{% if user.is_authenticated  %}
-<p>Hi, {{ user.get_username }}!</p>
-{% else %}
-<p>Hi, Anonymous!</p>
-{% endif %}
-
-{% if user.is_authenticated  %}
-<p>Your profile details are:</p>
-<p>Name: {{ user.get_full_name }}</p>
-{% else %}
-    <p>No profile details available.</p>
-{% endif %}
+        <div class="programmer-details__header">
 
     {% if user|has_group:"Programmers" %}
+        <img
+                src="{{ user.image.url }}"
+                alt="{{ user.get_full_name }}"
+                class="programmer-details__image"
+        >
+    {% endif %}
 
-    <a href="{% url 'update_programmer' user.slug%}"><button class="update-button">Edit</button></a>
-    <a href="{% url 'delete_programmer' user.slug%}"><button class="delete-button">Delete</button></a>
+
+    <p><strong>Име:</strong> {{ user.get_full_name }}</p>
+    <p><strong>Имейл:</strong> {{ user.email }}</p>
+    {% if user|has_group:"Programmers" %}
+        <p><strong>Телефон:</strong> {{ user.phone_number }}</p>
+    {% endif %}
+
+    <br>
+
+        <div style="display: flex; flex-direction: row; gap: 1em;" class="programmer-details__buttons">
+    {% if user|has_group:"Programmers" %}
+
+    <a href="{% url 'update_programmer' user.slug%}"><button class="update-button">Редактирай</button></a>
+    <a href="{% url 'delete_programmer' user.slug%}"><button class="delete-button">Изтрий профила</button></a>
     {% else %}
-        <a href="{% url 'update_user' user.id %}"><button class="update-button">Edit</button></a>
-        <a href="{% url 'delete_user' user.id %}"><button class="delete-button">Delete</button></a>
+        <a href="{% url 'update_user' user.id %}"><button class="update-button">Редактирай</button></a>
+        <a href="{% url 'delete_user' user.id %}"><button class="delete-button">Изтрий профила</button></a>
     {% endif %}
 
     <a href="{% url 'favourite_services' %}"><button class="delete-button">Списък с любими</button></a>
@@ -37,10 +44,17 @@
     {% csrf_token %}
     <button type="submit">Logout</button>
 </form>
+        </div>
+    </div>
 
+
+    {% if user|has_group:"Programmers" %}
+        <br>
+        <h2>Услуги, предлагани от мен:</h2>
     <div class="services-page__list">
-        {% if user|has_group:"Programmers" %}
+
         {% for service in user.services.all %}
+
             <div class="services-page__item">
                 {% include 'services/service_short_details.html' %}
             </div>

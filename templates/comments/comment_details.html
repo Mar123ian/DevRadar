@@ -1,4 +1,6 @@
+{% load filters %}
 <article class="comments-details">
+
 
     <h3 class="comments-details__author">
         {{ comment.author }}
@@ -11,5 +13,11 @@
     <p class="comments-details__timestamp">
         Създаден на: {{ comment.created_at }}
     </p>
+
+    {% if user.is_superuser or user == comment.author or user|has_group:"Editors" %}
+
+        <a href="{% url 'update_comment' comment.id %}"><button class="update-button">Редактирай</button></a>
+        <a href="{% url 'delete_comment' comment.id %}"><button class="delete-button">Изтрий</button></a>
+        {% endif %}
 
 </article>

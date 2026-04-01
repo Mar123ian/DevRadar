@@ -11,14 +11,10 @@ from services.models import Service
 
 
 # Create your views here.
-#TODO make permissions to groups
-#TODO every profile must be editable
-#TODO log req to view profile
-class CreateService(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
+class CreateService(LoginRequiredMixin, CreateView):
     model = Service
     form_class = CreateServiceForm
     template_name = 'services/forms/create_service_form.html'
-    permission_required = 'services.add_service'
 
 
     def get_success_url(self):
@@ -30,8 +26,13 @@ class CreateService(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
         if programmer.services and programmer.services.filter(name=service).exists():
             form.add_error('service',"Този програмист вече е предложил същата услуга!")
 
-        form.instance.programmer = self.request.user
+        form.instance.programmer = programmer
         return super().form_valid(form)
+
+    def dispatch(self, request, *args, **kwargs):
+        if not request.user.groups.filter(name='Programmers').exists():
+            return HttpResponseForbidden()
+        return super().dispatch(request, *args, **kwargs)
 
 class UpdateService(LoginRequiredMixin, UpdateView):
     model = Service
@@ -44,9 +45,10 @@ class UpdateService(LoginRequiredMixin, UpdateView):
         return reverse('service_details', kwargs={'service_slug': self.object.slug})
 
     def dispatch(self, request, *args, **kwargs):
-        if not (request.user.groups.filter(name='Editors').exists() or request.user.is_superuser) and request.user != self.get_object().programmer:
-            return HttpResponseForbidden()
-        return super().dispatch(request, *args, **kwargs)
+        if request.user.groups.filter(name='Editors').exists() or request.user.is_superuser or request.user == self.get_object().programmer:
+            return super().dispatch(request, *args, **kwargs)
+
+        return HttpResponseForbidden()
 
 class DeleteService(LoginRequiredMixin, DeleteView):
     model = Service
@@ -63,9 +65,11 @@ class DeleteService(LoginRequiredMixin, DeleteView):
         return reverse('all_services')
 
     def dispatch(self, request, *args, **kwargs):
-        if not (request.user.groups.filter(name='Editors').exists() or request.user.is_superuser) and request.user != self.get_object().programmer:
-            return HttpResponseForbidden()
-        return super().dispatch(request, *args, **kwargs)
+        if request.user.groups.filter(
+                name='Editors').exists() or request.user.is_superuser or request.user == self.get_object().programmer:
+            return super().dispatch(request, *args, **kwargs)
+
+        return HttpResponseForbidden()
     
 class AllServices(ListView):
     model = Service
@@ -108,7 +112,7 @@ class AllServices(ListView):
                 queryset = queryset.filter(max_price__lte=max_price)
 
             if desc_price:
-                return queryset.order_by('-min_price')
+                return queryset.distinct().order_by('-min_price')
 
         return queryset.distinct().order_by('min_price')
 
@@ -120,6 +124,7 @@ class AllServices(ListView):
         return context
 
 class FavouriteServices(AllServices):
+    template_name = 'services/favourite_services.html'
 
     def get_queryset(self):
         return super().get_queryset().filter(users=self.request.user)

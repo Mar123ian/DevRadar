@@ -10,7 +10,7 @@
     <h1>DevRadar API</h1>
 
     {% if token %}
-        <h3>Вашият токен: <span class="api-token" style="display: none;">{{ token }}</span><span class="api-placeholder">*********</span> <a style="color: #00b15e; display: none;" href="#" class="hide-api">Скрий</a><a style="color: #00b15e" href="#" class="show-api">Покажи</a></h3>
+        <h2>Вашият токен: <span class="api-token" style="display: none;">{{ token }}</span><span class="api-placeholder">*********</span> <a style="color: #00b15e; display: none;" href="#" class="hide-api">Скрий</a><a style="color: #00b15e" href="#" class="show-api">Покажи</a></h2>
         <p><i>Пазете токена си в тайна!</i></p>
 
         <script>
@@ -40,7 +40,7 @@
     </script>
 
     {% else %}
-        <h3>Генерирайте токен, за да можете да ползвате API услугата!</h3>
+        <h2>Генерирайте токен, за да можете да ползвате API услугата!</h2>
     {% endif %}
 
     <br>
@@ -56,6 +56,9 @@
 
 
     </form>
+
+    <br>
+    <h3>За най-правилно използване на API-то се запознайте с документацията, налична <a target="_blank" style="color: #00b15e" href="https://github.com/Mar123ian/DevRadar?tab=readme-ov-file#api">ТУК</a>.</h3>
 
 </section>
 {% endblock %}

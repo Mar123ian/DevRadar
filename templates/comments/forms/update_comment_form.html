@@ -1,7 +1,7 @@
 {% extends 'core/base.html' %}
 
 {% block title %}
-    <title>DevRadar | Изтриване на коментар</title>
+    <title>DevRadar | Редактиране на коментар</title>
 {% endblock %}
 
 {% block main_content %}
@@ -9,7 +9,7 @@
 <form
     method="post"
     enctype="multipart/form-data"
-    class="comments-delete-form"
+    class="comments-update-form"
 >
     {% csrf_token %}
 
@@ -21,7 +21,7 @@
         type="submit"
         class="comments-delete-form__button comments-delete-form__button--danger"
     >
-        Изтрий
+        Запази
     </button>
 </form>
 {% endblock %}

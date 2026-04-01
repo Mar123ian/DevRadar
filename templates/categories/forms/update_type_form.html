@@ -1,24 +1,24 @@
 {% extends 'core/base.html' %}
 
 {% block title %}
-    <title>DevRadar | Редактиране на потребител</title>
+    <title>DevRadar | Редактиране на тип услуга</title>
 {% endblock %}
 
 {% block main_content %}
 <form
     method="post"
     enctype="multipart/form-data"
-    class="programmer-update-form"
+    class="categories-type-create-form"
 >
     {% csrf_token %}
 
-    <div class="programmer-update-form__fields">
+    <div class="categories-type-create-form__fields">
         {{ form }}
     </div>
 
     <button
         type="submit"
-        class="programmer-update-form__button programmer-update-form__button--primary"
+        class="categories-type-create-form__button categories-type-create-form__button--primary"
     >
         Запази
     </button>

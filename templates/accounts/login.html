@@ -8,8 +8,11 @@
 <form method="post">
     {% csrf_token %}
     {{ form }}
-    <p>Нямате профил? <a href={% url "register" %}>Регистрирайте се!</a></p>
+    <p>Нямате профил? <a style="color: #00b15e" href={% url "register" %}>Регистрирайте се!</a></p>
+    <br>
 
-    <button type="submit">Login</button>
+
+
+    <button type="submit">ВХОД</button>
 </form>
 {% endblock %}

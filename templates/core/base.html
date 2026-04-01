@@ -53,7 +53,7 @@
                     {% endif %}
                 </ul>
 
-                {% if user.is_superuser or user|has_group:"Programmers" %}
+                {% if user|has_group:"Programmers" %}
                 <div class="nav-actions">
                     <a href="{% url 'create_service' %}" class="btn btn--primary">Предложи услуга</a>
                 </div>

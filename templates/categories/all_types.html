@@ -11,6 +11,7 @@
 
     <div class="categories-types__list">
         {% for type in types %}
+            <div class="categories-types_item">
             <a
                 href="{% url 'type_details' type.slug %}"
                 class="categories-types__item"
@@ -27,6 +28,7 @@
                     {{ type.description }}
                 </p>
             </a>
+            </div>
         {% empty %}
             <p class="categories-types__empty">
                 Няма намерени типове услуги.
