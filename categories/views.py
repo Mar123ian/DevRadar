@@ -10,40 +10,33 @@ from categories.models import Type, Technology
 
 
 # Create your views here.
-class CreateType(LoginRequiredMixin, CreateView):
+class CreateType(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
 
     model = Type
     form_class = CreateTypeForm
     template_name = 'categories/forms/create_type_form.html'
+    permission_required = ['categories.add_type']
 
     def get_success_url(self):
         return reverse('all_types')
 
-    def dispatch(self, request, *args, **kwargs):
-        if not (request.user.groups.filter(name='Editors').exists() or request.user.is_superuser):
-            return HttpResponseForbidden()
-        return super().dispatch(request, *args, **kwargs)
 
 
-class UpdateType(LoginRequiredMixin, UpdateView):
+class UpdateType(LoginRequiredMixin, PermissionRequiredMixin, UpdateView):
 
     model = Type
     form_class = UpdateTypeForm
     template_name = 'categories/forms/update_type_form.html'
+    permission_required = ['categories.change_type']
 
     def get_success_url(self):
         return reverse('all_types')
 
-    def dispatch(self, request, *args, **kwargs):
-        if not (request.user.groups.filter(name='Editors').exists() or request.user.is_superuser):
-            return HttpResponseForbidden()
-        return super().dispatch(request, *args, **kwargs)
 
-class DeleteType(LoginRequiredMixin, DeleteView):
+class DeleteType(LoginRequiredMixin, PermissionRequiredMixin, DeleteView):
     model = Type
     template_name = 'categories/forms/delete_type_form.html'
-    slug_field = 'slug'
-    slug_url_kwarg = 'type_slug'
+    permission_required = ['categories.delete_type']
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -53,23 +46,16 @@ class DeleteType(LoginRequiredMixin, DeleteView):
     def get_success_url(self):
         return reverse('all_types')
 
-    def dispatch(self, request, *args, **kwargs):
-        if not (request.user.groups.filter(name='Editors').exists() or request.user.is_superuser):
-            return HttpResponseForbidden()
-        return super().dispatch(request, *args, **kwargs)
 
-class CreateTechnology(LoginRequiredMixin, CreateView):
+class CreateTechnology(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
     model = Technology
     form_class = CreateTechnologyForm
     template_name = 'categories/forms/create_technology_form.html'
+    permission_required = ['categories.add_technology']
 
     def get_success_url(self):
         return reverse('home')
 
-    def dispatch(self, request, *args, **kwargs):
-        if not (request.user.groups.filter(name='Editors').exists() or request.user.is_superuser):
-            return HttpResponseForbidden()
-        return super().dispatch(request, *args, **kwargs)
 
 
 class AllTypes(ListView):

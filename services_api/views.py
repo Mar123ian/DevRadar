@@ -44,3 +44,9 @@ class ApiInfo(LoginRequiredMixin, TemplateView):
 
         return kwargs
 
+    def dispatch(self, request, *args, **kwargs):
+        if not request.user.groups.filter(name='Editors').exists():
+            return render(request, 'services_api/api_forbidden.html', {})
+
+        return super().dispatch(request, *args, **kwargs)
+

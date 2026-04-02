@@ -11,8 +11,8 @@
 
     {% if user.is_superuser  or user|has_group:"Editors" %}
 
-        <a href="{% url 'update_type' type.slug%}"><button class="update-button">Редактирай</button></a>
-        <a href="{% url 'delete_type' type.slug%}"><button class="delete-button">Изтрий</button></a>
+        <a href="{% url 'update_type' type.id%}"><button class="update-button">Редактирай</button></a>
+        <a href="{% url 'delete_type' type.id%}"><button class="delete-button">Изтрий</button></a>
         {% endif %}
 
     <div class="categories-type__header">

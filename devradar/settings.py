@@ -222,10 +222,12 @@ EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
 
 DEFAULT_FROM_EMAIL = 'devradar.no.reply@gmail.com'
 
-
-REDIS_PASSWORD = os.getenv("REDIS_KEY")
-encoded_pass = urllib.parse.quote_plus(REDIS_PASSWORD)
-REDIS_URL = f"rediss://:{encoded_pass}@devradar-redis.redis.cache.windows.net:6380/0?ssl_cert_reqs=none"
+if PRODUCTION:
+    REDIS_PASSWORD = os.getenv("REDIS_KEY")
+    encoded_pass = urllib.parse.quote_plus(REDIS_PASSWORD)
+    REDIS_URL = f"rediss://:{encoded_pass}@devradar-redis.redis.cache.windows.net:6380/0?ssl_cert_reqs=none"
+else:
+    REDIS_URL = "redis://localhost:6379/0"
 
 
 
@@ -235,14 +237,16 @@ REDIS_URL = f"rediss://:{encoded_pass}@devradar-redis.redis.cache.windows.net:63
 CELERY_BROKER_URL = REDIS_URL
 CELERY_RESULT_BACKEND = REDIS_URL
 
-CELERY_BROKER_USE_SSL = {"ssl_cert_reqs": ssl.CERT_NONE}
-CELERY_RESULT_BACKEND_USE_SSL = {"ssl_cert_reqs": ssl.CERT_NONE}
+if PRODUCTION:
 
-CELERY_BROKER_TRANSPORT_OPTIONS = {
-    'ssl': {
-        'ssl_cert_reqs': ssl.CERT_NONE
+    CELERY_BROKER_USE_SSL = {"ssl_cert_reqs": ssl.CERT_NONE}
+    CELERY_RESULT_BACKEND_USE_SSL = {"ssl_cert_reqs": ssl.CERT_NONE}
+
+    CELERY_BROKER_TRANSPORT_OPTIONS = {
+        'ssl': {
+            'ssl_cert_reqs': ssl.CERT_NONE
+        }
     }
-}
 
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
@@ -252,3 +256,9 @@ CELERY_RESULT_SERIALIZER = 'json'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication',
+    ],
+}

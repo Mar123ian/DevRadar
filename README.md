@@ -145,8 +145,8 @@ The DevRadar API allows authenticated users to programmatically interact with th
 The API requires Token-based authentication. Unauthenticated requests will be rejected.
 
 **1. How to get your API Token:**
-1. Log in to your DevRadar account via the web interface.
-2. Navigate to the API Info page (typically `/info/` or accessible via your profile).
+1. Log in to your DevRadar account via the web interface (you must be with Editor group).
+2. Navigate to the API Info page (`/api/info/` accessible via the main menu).
 3. Click the **"ВЗЕМИ API ТОКЕН"** (GET API TOKEN) button to generate a new token.
 4. *Note: If you already have a token and believe it has been compromised, you can click the button again to revoke the old one and generate a new one.*
 
@@ -160,14 +160,14 @@ Authorization: Token YOUR_SECRET_TOKEN_HERE
 
 ### Endpoints
 
-Base URL: `/services/` *(Note: Adjust this if your URLs are prefixed with something like `/api/` in your main `urls.py`)*
+Base URL: `/api/services/` *(Note: Adjust this if your URLs are prefixed with something like `/api/` in your main `urls.py`)*
 
-* `GET /services/` - Retrieve a list of all services.
-* `POST /services/` - Create a new service.
-* `GET /services/{id}/` - Retrieve details of a specific service.
-* `PUT /services/{id}/` - Update a specific service (requires all writable fields).
-* `PATCH /services/{id}/` - Partially update a specific service.
-* `DELETE /services/{id}/` - Delete a specific service.
+* `GET /api/services/` - Retrieve a list of all services.
+* `POST /api/services/` - Create a new service.
+* `GET /api/services/{id}/` - Retrieve details of a specific service.
+* `PUT /api/services/{id}/` - Update a specific service (requires all writable fields).
+* `PATCH /api/services/{id}/` - Partially update a specific service.
+* `DELETE /api/services/{id}/` - Delete a specific service.
 
 ### Fields and Schema
 
@@ -211,12 +211,13 @@ When making a `POST` (create) or `PUT/PATCH` (update) request, pass a direct, pu
 ### Examples
 
 #### Example Request: Creating a Service (POST)
-
-`bash
-curl -X POST http://yourdomain.com/services/ \
--H "Authorization: Token 9944b09199c62bcf9418ad846dd0e4bbdfc6ee4b" \
--H "Content-Type: application/json" \
--d '{
+You can use curl or Postman
+```bash
+curl -X POST http://127.0.0.1:8000/api/services/ -H "Authorization: Token dca4a7268c17a909fa61e7f58d6f141ab48378f3" -H "Content-Type: application/json" -d @data.json
+```
+data.json:
+```json
+{
     "name": "Fullstack Web Development",
     "description": "I will build a complete web application from scratch.",
     "min_price": 500.00,
@@ -225,12 +226,12 @@ curl -X POST http://yourdomain.com/services/ \
     "type": 1,
     "technologies": [2, 5, 8],
     "image_url": "https://example.com/my-portfolio-cover.jpg"
-}'
-`
+}
+```
 
 #### Example Response: Fetching a Service (GET)
 
-`json
+```json
 {
     "name": "Fullstack Web Development",
     "description": "I will build a complete web application from scratch.",
@@ -255,7 +256,7 @@ curl -X POST http://yourdomain.com/services/ \
     ],
     "comments": []
 }
-`
+```
 
 ## Configuration
 

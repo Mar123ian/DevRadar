@@ -36,7 +36,7 @@ class TechnologySerializer(serializers.ModelSerializer):
 
 class ServiceSerializer(serializers.ModelSerializer):
     image = serializers.ImageField(read_only=True)
-    image_url = serializers.URLField(write_only=True, required=False)
+    image_url = serializers.URLField(write_only=True)
 
     comments = CommentSerializer(many=True, read_only=True)
 
@@ -71,9 +71,11 @@ class ServiceSerializer(serializers.ModelSerializer):
         url = validated_data.pop("image_url", None)
 
         if url:
-            validated_data["image_url"] = self._get_image_file(url)
+            validated_data["image"] = self._get_image_file(url)
 
         return super().create(validated_data)
+
+
 
     def update(self, instance, validated_data):
         url = validated_data.pop("image_url", None)

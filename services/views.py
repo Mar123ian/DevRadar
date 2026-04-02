@@ -1,3 +1,5 @@
+from sqlite3 import IntegrityError
+
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from django.http import HttpResponseForbidden
 from django.shortcuts import render, redirect
@@ -5,6 +7,7 @@ from django.urls import reverse
 from django.views.generic import CreateView, DeleteView, ListView, DetailView
 from django.views.generic.edit import FormMixin, UpdateView
 
+from accounts.models import ProgrammerUser
 from comments.forms import CreateCommentForm
 from services.forms import CreateServiceForm, DeleteServiceForm, SearchSortAndFilterServicesForm, UpdateServiceForm
 from services.models import Service
@@ -21,10 +24,14 @@ class CreateService(LoginRequiredMixin, CreateView):
         return reverse('all_services')
 
     def form_valid(self, form):
-        service = form.cleaned_data.get('service')
+        service = form.cleaned_data.get('name')
         programmer = self.request.user
-        if programmer.services and programmer.services.filter(name=service).exists():
-            form.add_error('service',"Този програмист вече е предложил същата услуга!")
+
+        if programmer.services.all() and programmer.services.filter(name=service).exists():
+
+            form.add_error('name',"Този програмист вече е предложил същата услуга!")
+            return super().form_invalid(form)
+
 
         form.instance.programmer = programmer
         return super().form_valid(form)
