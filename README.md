@@ -19,8 +19,15 @@ A Django-based web application for discovering software development services, ca
 
 - Python 3.11+
 - Django 5.x
-- PostgreSQL (default)
-- HTML templates, CSS (static/styles.css)
+- PostgreSQL
+- Django REST Framework
+- Celery
+- Redis
+- Pillow
+- python-dotenv
+- psycopg2
+- whitenoise
+- Unidecode
 
 ## Project Structure
 
@@ -28,11 +35,15 @@ A Django-based web application for discovering software development services, ca
 DevRadar/
 ├─ manage.py
 ├─ requirements.txt
+├─ .dev.env
+├─ .dev.env.sample
+├─ LICENSE
 ├─ devradar/                # Project settings and root URLs
 │  ├─ settings.py
 │  └─ urls.py
 ├─ core/                    # Home page / base URLs
 │  └─ urls.py
+├─ accounts/
 ├─ categories/              # Types and Technologies
 │  ├─ models.py
 │  ├─ forms.py
@@ -52,9 +63,11 @@ DevRadar/
 │  ├─ models.py
 │  ├─ urls.py
 │  └─ views.py
+├─ services_api/
 ├─ templates/               # All HTML templates grouped by app
 ├─ static/                  # Static assets (styles.css)
-└─ media/                   # User-uploaded media (served in dev)
+├─ media/                   # User-uploaded media (served in dev)
+
 ```
 
 ## URLs Overview
@@ -62,10 +75,21 @@ DevRadar/
 Root URLConf: `devradar/urls.py`
 
 - `/` → core home
+- `/accounts/` → accounts app
+    - `/accounts/profile/` → user profile
+    - `/accounts/login/` → user login
+    - `/accounts/register-programmer/` → register as a programmer
+    - `/accounts/register/` → registration page
+    - `/accounts/register-user/` → register as a regular user
+    - `/accounts/logout/` → user logout
+    - `/accounts/reset-password/` → password reset
+    - `/accounts/update/<int:pk>/` → update regular user
+    - `/accounts/delete/<int:pk>/` → delete regular user
 - `/categories/` → categories app
   - `/categories/type/all/` → list all types
   - `/categories/type/create/` → create type
-  - `/categories/type/delete/<type_slug>/` → delete type
+  - `/categories/type/update/<int:pk>/` → update type
+  - `/categories/type/delete/<int:pk>/` → delete type
   - `/categories/type/<type_slug>/` → type details
   - `/categories/technology/create/` → create technology
 - `/services/` → services app
@@ -76,12 +100,43 @@ Root URLConf: `devradar/urls.py`
   - `/services/<service_slug>/` → service details
 - `/programmers/` → programmers app
   - `/programmers/all/` → list all programmers
-  - `/programmers/create/` → create programmer
   - `/programmers/update/<programmer_slug>/` → update programmer
   - `/programmers/delete/<programmer_slug>/` → delete programmer
   - `/programmers/<programmer_slug>/` → programmer details
+- `/comments/` → comments app
+    - `/comments/delete/<int:pk>/` → delete comment
+    - `/comments/update/<int:pk>/` → update comment
+- `/api/` → API app
+    - `/api/services/` → services API
+    - `/api/info/` → API info
 
 Admin: `/admin/`
+
+## Environment Variables
+
+Create a `.dev.env` file in the root directory of the project and add the following variables:
+
+```
+DB_NAME=devradar_db
+DB_USER=postgres-user
+DB_PASSWORD=password
+DB_HOST=127.0.0.1
+DB_PORT=5432
+SECRET_KEY=your-django-secret-key #some random string
+DEBUG=True
+ALLOWED_HOSTS=*
+PRODUCTION=False
+REDIS_URL=redis://localhost:6379/0
+EMAIL_BACKEND=django.core.mail.backends.console.EmailBackend
+```
+
+For production (using Microsoft Azure), you will need to set `PRODUCTION=True` and configure the following variables:
+
+```
+AZURE_ACCOUNT_KEY=<your_azure_account_key>
+REDIS_KEY=<your_redis_key>
+EMAIL_HOST_PASSWORD=<your_sendgrid_email_host_password>
+```
 
 ## Quick Start
 
@@ -104,34 +159,28 @@ python -m venv .venv
 pip install -r requirements.txt
 ```
 
-4) Create PostgreSQL database and configure `DATABASES` in `settings.py`:
-```py
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        "NAME": "mydatabase", # replace with your database name
-        "USER": "mydatabaseuser", # replace with your database username
-        "PASSWORD": "mypassword", # replace with your database password
-        "HOST": "127.0.0.1",
-        "PORT": "5432",
-    }
-}
-```
+4) Create a `.dev.env` file in the root of your project and add the environment variables as described in the "Environment Variables" section.
 
-5) Apply migrations and create a superuser
+5) Create PostgreSQL database and configure the environment variables. Also, you must have running Redis at `REDIS_URL` from the `.dev.env` file.
+
+6) Apply migrations and create a superuser
 
 ```
 python manage.py migrate
 python manage.py createsuperuser
 ```
 
-6) Run the development server
+7) Run the development server
 
 ```
 python manage.py runserver
 ```
+8) Run Celery
+```
+celery -A devradar worker --loglevel=info -P eventlet
+```
 
-7) Open in browser
+9) Open in browser
 
 - App: http://127.0.0.1:8000/
 - Admin: http://127.0.0.1:8000/admin/
@@ -160,7 +209,7 @@ Authorization: Token YOUR_SECRET_TOKEN_HERE
 
 ### Endpoints
 
-Base URL: `/api/services/` *(Note: Adjust this if your URLs are prefixed with something like `/api/` in your main `urls.py`)*
+Base URL: `/api/services/` 
 
 * `GET /api/services/` - Retrieve a list of all services.
 * `POST /api/services/` - Create a new service.
@@ -173,21 +222,22 @@ Base URL: `/api/services/` *(Note: Adjust this if your URLs are prefixed with so
 
 Because the API uses complex relational data, the payload you send (Write) differs from the payload you receive (Read). Read-only fields are ignored if you try to submit them, and write-only fields will never be returned in a GET response.
 
-| Field Name | Type | Access | Description |
-| :--- | :--- | :--- | :--- |
-| `name` | String | **Read / Write** | The title or name of the service. |
-| `description` | String | **Read / Write** | Detailed description of the service. |
-| `min_price` | Decimal/Float | **Read / Write** | The minimum price for the service. |
-| `max_price` | Decimal/Float | **Read / Write** | The maximum price for the service. |
-| `image` | URL | **Read-Only** | The path/URL to the stored image file on the server. Returned when fetching data. |
-| `image_url` | String (URL) | **Write-Only** | A direct URL to an external image. Used when creating/updating. *(See "Handling Images" below)*. |
-| `programmer_info` | Object | **Read-Only** | A nested object containing details about the programmer (`id`, `username`, `first_name`, `last_name`, `email`). |
-| `programmer` | Integer (ID) | **Write-Only** | The Primary Key (ID) of the programmer assigned to this service. |
-| `type_info` | Object | **Read-Only** | A nested object containing the full details of the service Type. |
-| `type` | Integer (ID) | **Write-Only** | The Primary Key (ID) of the Type category for this service. |
-| `technologies_info` | Array of Objects | **Read-Only** | A list of nested objects detailing the associated technologies. |
-| `technologies` | Array of Integers | **Write-Only** | A list of Primary Keys (IDs) of the Technologies associated with this service. |
-| `comments` | Array of Objects | **Read-Only** | A list of comments attached to the service. Includes `id`, `author`, `content`, and `created_at`. |
+| Field Name          | Type | Access           | Description |
+|:--------------------| :--- |:-----------------| :--- |
+| `id`                | Integer (ID) | **Read-Only**      | The Primary Key (ID) of the service. |
+| `name`              | String | **Read / Write** | The title or name of the service. |
+| `description`       | String | **Read / Write** | Detailed description of the service. |
+| `min_price`         | Decimal/Float | **Read / Write** | The minimum price for the service. |
+| `max_price`         | Decimal/Float | **Read / Write** | The maximum price for the service. |
+| `image`             | URL | **Read-Only**    | The path/URL to the stored image file on the server. Returned when fetching data. |
+| `image_url`         | String (URL) | **Write-Only**   | A direct URL to an external image. Used when creating/updating. *(See "Handling Images" below)*. |
+| `programmer_info`   | Object | **Read-Only**    | A nested object containing details about the programmer (`id`, `username`, `first_name`, `last_name`, `email`). |
+| `programmer`        | Integer (ID) | **Write-Only**   | The Primary Key (ID) of the programmer assigned to this service. |
+| `type_info`         | Object | **Read-Only**    | A nested object containing the full details of the service Type. |
+| `type`              | Integer (ID) | **Write-Only**   | The Primary Key (ID) of the Type category for this service. |
+| `technologies_info` | Array of Objects | **Read-Only**    | A list of nested objects detailing the associated technologies. |
+| `technologies`      | Array of Integers | **Write-Only**   | A list of Primary Keys (IDs) of the Technologies associated with this service. |
+| `comments`          | Array of Objects | **Read-Only**    | A list of comments attached to the service. Includes `id`, `author`, `content`, and `created_at`. |
 
 ### Handling Images (The `image_url` field)
 
@@ -213,7 +263,7 @@ When making a `POST` (create) or `PUT/PATCH` (update) request, pass a direct, pu
 #### Example Request: Creating a Service (POST)
 You can use curl or Postman
 ```bash
-curl -X POST http://127.0.0.1:8000/api/services/ -H "Authorization: Token dca4a7268c17a909fa61e7f58d6f141ab48378f3" -H "Content-Type: application/json" -d @data.json
+curl -X POST https://devradar-cfcjedeha8fqfpgq.switzerlandnorth-01.azurewebsites.net/api/services/ -H "Authorization: Token dca4a7268c17a909fa61e7f58d6f141ab48378f3" -H "Content-Type: application/json" -d @data.json
 ```
 data.json:
 ```json
@@ -233,29 +283,36 @@ data.json:
 
 ```json
 {
-    "name": "Fullstack Web Development",
-    "description": "I will build a complete web application from scratch.",
-    "min_price": 500.00,
-    "max_price": 2000.00,
-    "image": "/media/services/a1b2c3d4-e5f6-7890.jpg",
-    "programmer_info": {
-        "id": 3,
-        "username": "dev_guru",
-        "first_name": "John",
-        "last_name": "Doe",
-        "email": "john@example.com"
-    },
-    "type_info": {
         "id": 1,
-        "name": "Web Development"
-    },
-    "technologies_info": [
-        { "id": 2, "name": "Django" },
-        { "id": 5, "name": "React" },
-        { "id": 8, "name": "PostgreSQL" }
-    ],
-    "comments": []
-}
+        "name": "Fullstack Web Development",
+        "programmer_info": {
+            "id": 1,
+            "username": "user",
+            "first_name": "user",
+            "last_name": "user",
+            "email": "example@gmail.com"
+        },
+        "description": "I will build a complete web application from scratch.",
+        "image": "https://devradarstorage.blob.core.windows.net/media/services/d98123aa-e196-408a-8391-f8756152e1ef.jpg",
+        "type_info": {
+            "id": 1,
+            "slug": "izrabotka-na-sait",
+            "name": "Изработка на сайт",
+            "description": "Създаване на съвременен уебсайт",
+            "image": "https://devradarstorage.blob.core.windows.net/media/categories/types/%D0%B8%D0%B7%D1%82%D0%B5%D0%B3%D0%BB%D0%B5%D0%BD_%D1%84%D0%B0%D0%B9%D0%BB.png"
+        },
+        "technologies_info": [
+            {
+                "id": 1,
+                "slug": "django",
+                "name": "Django",
+                "image": "https://devradarstorage.blob.core.windows.net/media/categories/technologies/%D0%B8%D0%B7%D1%82%D0%B5%D0%B3%D0%BB%D0%B5%D0%BD_%D1%84%D0%B0%D0%B9%D0%BB.png"
+            }
+        ],
+        "min_price": "500.00",
+        "max_price": "2000.00",
+        "comments": []
+    }
 ```
 
 ## Configuration
@@ -271,17 +328,12 @@ All key settings are in `devradar/settings.py`.
   - MEDIA_URL = `media/`
   - MEDIA_ROOT configured; served in development via `static()` in `urls.py`
 
-### Environment variables (recommended for production)
-
-- SECRET_KEY
-- DEBUG (set to `False`)
-- ALLOWED_HOSTS
-- DATABASE_URL or discrete DB settings
-- STATIC_ROOT and MEDIA_ROOT paths
 
 ## Apps and Templates
 
 - Templates are organized under `templates/` by app:
+  - `accounts/`: profile details and forms (CRUD)
+  - `comments/`: comment details and forms (CRUD)
   - `services/`: all, details, short details and forms (create/update)
   - `programmers/`: all, details, and forms (create/update/delete)
   - `categories/`: all types, type details, technology details

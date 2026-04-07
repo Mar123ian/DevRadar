@@ -211,23 +211,27 @@ LOGGING = {
     },
 }
 
+if PRODUCTION:
+    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+    EMAIL_HOST = 'smtp.sendgrid.net'
+    EMAIL_PORT = 587
+    EMAIL_USE_TLS = True
 
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.sendgrid.net'
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
+    EMAIL_HOST_USER = 'apikey'
+    EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
 
-EMAIL_HOST_USER = 'apikey'
-EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
+    DEFAULT_FROM_EMAIL = 'devradar.no.reply@gmail.com'
+else:
+    EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+    DEFAULT_FROM_EMAIL = 'devradar.no.reply@gmail.com'
 
-DEFAULT_FROM_EMAIL = 'devradar.no.reply@gmail.com'
 
 if PRODUCTION:
     REDIS_PASSWORD = os.getenv("REDIS_KEY")
     encoded_pass = urllib.parse.quote_plus(REDIS_PASSWORD)
     REDIS_URL = f"rediss://:{encoded_pass}@devradar-redis.redis.cache.windows.net:6380/0?ssl_cert_reqs=none"
 else:
-    REDIS_URL = "redis://localhost:6379/0"
+    REDIS_URL = os.getenv("REDIS_URL")
 
 
 

@@ -53,9 +53,10 @@ class ServiceSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Service
-        fields = ['name', 'programmer', 'programmer_info', 'description',
+        fields = ['id', 'name', 'programmer', 'programmer_info', 'description',
                   'image', 'image_url', 'type', 'type_info', 'technologies',
                   'technologies_info', 'min_price', 'max_price', 'comments']
+        read_only_fields = ['id']
 
     def _get_image_file(self, url):
 
