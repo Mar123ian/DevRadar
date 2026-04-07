@@ -2,6 +2,8 @@
 
 A Django-based web application for discovering software development services, categorized by types and technologies, and linked to programmers. It provides CRUD operations, clean navigation across apps, and a simple UI.
 
+### URL FOR THE DEPLOYED VERSION: https://devradar-cfcjedeha8fqfpgq.switzerlandnorth-01.azurewebsites.net/
+
 ## Features
 
 - Services directory with create/read/update/delete (CRUD)
