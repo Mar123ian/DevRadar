@@ -9,6 +9,9 @@
 <article class="programmer-details">
 
     {% if user.is_superuser or user == programmer or user|has_group:"Editors" %}
+        <h1 class="programmer-details__name">
+           id: {{ programmer.id }}
+        </h1>
     <a href="{% url 'update_programmer' programmer.slug%}"><button class="update-button">Edit</button></a>
     <a href="{% url 'delete_programmer' programmer.slug%}"><button class="delete-button">Delete</button></a>
     {% endif %}
