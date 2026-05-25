@@ -8,12 +8,22 @@
 {% block main_content %}
 <article class="programmer-details">
 
+
+
+
     {% if user.is_superuser or user == programmer or user|has_group:"Editors" %}
         <h1 class="programmer-details__name">
            id: {{ programmer.id }}
         </h1>
     <a href="{% url 'update_programmer' programmer.slug%}"><button class="update-button">Edit</button></a>
     <a href="{% url 'delete_programmer' programmer.slug%}"><button class="delete-button">Delete</button></a>
+
+        {% if not programmer.is_banned %}
+    <a href="{% url 'ban_user' programmer.id %}"><button class="delete-button">Ban</button></a>
+            {% else %}
+                <a href="{% url 'unban_user' programmer.id %}"><button class="delete-button">Unban</button></a>
+            {% endif %}
+
     {% endif %}
 
     <div class="programmer-details__header">
@@ -31,6 +41,9 @@
         <p class="programmer-details__phone">
             {{ programmer.phone_number }}
         </p>
+
+                    <a href="{% url 'start_chat' programmer.id %}"><button class="update-button">ЗАПОЧНИ ЧАТ</button></a>
+
     </div>
 
     <section class="programmer-details__services">

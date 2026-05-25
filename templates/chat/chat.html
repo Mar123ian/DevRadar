@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Chat</title>
+
+    <style>
+        body {
+            font-family: Arial;
+            background: #f0f0f0;
+        }
+
+        .container {
+            width: 500px;
+            margin: 30px auto;
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+        }
+
+        #messages {
+            height: 400px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+
+        .msg {
+            padding: 6px;
+            margin-bottom: 5px;
+            background: #eee;
+            border-radius: 5px;
+        }
+
+        .input-row {
+            display: flex;
+            gap: 5px;
+        }
+
+        input {
+            flex: 1;
+            padding: 8px;
+        }
+
+        button {
+            padding: 8px 12px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <h3>Chat</h3>
+
+    <div id="messages"></div>
+
+    <div class="input-row">
+        <input type="text" id="text" placeholder="Write message...">
+        <button onclick="send()">Send</button>
+    </div>
+
+</div>
+
+<script>
+
+const userId = {{ user_id }};
+
+async function loadMessages() {
+    const res = await fetch(`/chat/messages/${userId}/`);
+    const data = await res.json();
+
+    const box = document.getElementById("messages");
+    box.innerHTML = "";
+
+    data.data.forEach(m => {
+        box.innerHTML += `<div class="msg">${m.text}</div>`;
+    });
+
+    box.scrollTop = box.scrollHeight;
+}
+
+async function send() {
+    const text = document.getElementById("text").value;
+
+    await fetch(`/chat/messages/${userId}/`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": "{{ csrf_token }}"
+        },
+        body: JSON.stringify({ text: text })
+    });
+
+    document.getElementById("text").value = "";
+    loadMessages();
+}
+
+loadMessages();
+setInterval(loadMessages, 2000);
+
+</script>
+
+</body>
+</html>

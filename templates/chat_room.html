@@ -1,0 +1,155 @@
+<div style="max-width:600px;margin:auto;font-family:Arial;">
+    <h3>Chat</h3>
+
+    <div id="chat-box"
+         style="border:1px solid #ccc;height:400px;overflow-y:auto;padding:10px;margin-bottom:10px;">
+        <div id="chat-box">
+    {% for msg in messages %}
+    <div style="margin-bottom:8px;">
+
+        <b>{{ msg.sender.get_full_name }}</b>:
+
+        {% if msg.text %}
+            {{ msg.text }}
+        {% endif %}
+
+        {% if msg.file %}
+            <br>
+<a href="{{ msg.file }}" target="_blank" rel="noopener noreferrer">📎 File</a>
+        {% endif %}
+
+    </div>
+{% endfor %}
+</div>
+    </div>
+
+    <input id="message-input" type="text" placeholder="Write message..."
+           style="width:70%;padding:8px;">
+
+    <input id="file-input" type="file">
+
+    <button onclick="sendMessage()" style="padding:8px;">
+        Send
+    </button>
+</div>
+
+<script>
+const threadId = "{{ thread.id }}";
+
+// ✅ fix ws/wss auto-detect
+const protocol = window.location.protocol === "https:" ? "wss" : "ws";
+
+const socket = new WebSocket(
+    protocol + "://" + window.location.host + "/ws/chat/" + threadId + "/"
+);
+
+// ----------------------
+// DEBUG EVENTS
+// ----------------------
+socket.onopen = function () {
+    console.log("✅ WebSocket OPENED");
+};
+
+socket.onerror = function (e) {
+    console.log("❌ WebSocket ERROR", e);
+};
+
+socket.onclose = function () {
+    console.log("🔴 WebSocket CLOSED");
+};
+
+// ----------------------
+// RECEIVE MESSAGE
+// ----------------------
+socket.onmessage = function(e) {
+    const data = JSON.parse(e.data);
+    const chatBox = document.getElementById("chat-box");
+
+    const messageDiv = document.createElement("div");
+
+    // Създаваме bold елемент за потребителското име (безопасно)
+    const userLabel = document.createElement("b");
+    userLabel.textContent = data.username + ": ";
+
+    // Създаваме текстово съдържание (автоматично екранира HTML символи)
+    const textSpan = document.createElement("span");
+    textSpan.textContent = data.message;
+
+    messageDiv.appendChild(userLabel);
+    messageDiv.appendChild(textSpan);
+
+    if (data.file) {
+        const br = document.createElement("br");
+        const link = document.createElement("a");
+        link.href = data.file; // Тук разчитаме на проверката в бекенда за сигурност
+        link.target = "_blank";
+        link.textContent = "📎 File";
+        messageDiv.appendChild(br);
+        messageDiv.appendChild(link);
+    }
+
+    chatBox.appendChild(messageDiv);
+    chatBox.scrollTop = chatBox.scrollHeight; // Автоматично скролване
+};
+
+// ----------------------
+// SEND MESSAGE (SAFE)
+// ----------------------
+function getCookie(name) {
+    let cookieValue = null;
+
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+
+        for (let cookie of cookies) {
+            cookie = cookie.trim();
+
+            if (cookie.startsWith(name + '=')) {
+                cookieValue = decodeURIComponent(
+                    cookie.substring(name.length + 1)
+                );
+                break;
+            }
+        }
+    }
+
+    return cookieValue;
+}
+
+const csrftoken = getCookie('csrftoken');
+
+async function sendMessage() {
+    const msg = document.getElementById("message-input").value;
+    const fileInput = document.getElementById("file-input");
+    const file = fileInput.files[0];
+
+    let fileUrl = null;
+
+    // 1. upload file first
+    if (file) {
+        const formData = new FormData();
+        formData.append("file", file);
+        formData.append("thread", threadId);
+
+        const res = await fetch("/chat/upload/", {
+    method: "POST",
+    headers: {
+        "X-CSRFToken": csrftoken
+    },
+    body: formData
+});
+
+        const data = await res.json();
+        fileUrl = data.url;
+    }
+
+    // 2. send via websocket
+    socket.send(JSON.stringify({
+        message: msg,
+        file: fileUrl
+    }));
+
+    document.getElementById("message-input").value = "";
+    fileInput.value = "";
+}
+</script>

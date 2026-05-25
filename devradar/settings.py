@@ -50,6 +50,7 @@ if PRODUCTION:
 # Application definition
 
 INSTALLED_APPS = [
+    'daphne',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -65,7 +66,9 @@ INSTALLED_APPS = [
     'categories.apps.CategoriesConfig',
     'core.apps.CoreConfig',
     'accounts.apps.AccountsConfig',
-    'services_api.apps.ServicesApiConfig'
+    'services_api.apps.ServicesApiConfig',
+    'chat.apps.ChatConfig',
+    'channels',
 
 ]
 
@@ -76,6 +79,7 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'middlewares.IsBannedMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
@@ -195,6 +199,7 @@ LOGIN_REDIRECT_URL = '/'
 LOGIN_URL = '/accounts/login/'
 
 
+
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -265,4 +270,16 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.TokenAuthentication',
     ],
+}
+
+
+ASGI_APPLICATION = "devradar.asgi.application"
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [("127.0.0.1", 6379)],
+        },
+    },
 }

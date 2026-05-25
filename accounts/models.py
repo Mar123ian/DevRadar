@@ -1,5 +1,8 @@
+from datetime import timedelta
+
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+from django.utils import timezone
 from django.utils.text import slugify
 from django.utils.translation import gettext_lazy as _
 from polymorphic.managers import PolymorphicManager
@@ -32,6 +35,38 @@ class DevRadarUser(PolymorphicModel,AbstractUser):
     def get_full_name(self):
         return f"{self.first_name} {self.last_name}"
 
+    def is_banned(self):
+
+        ban = self.bans.filter(ban_type = 'BAN').last()
+        if ban:
+            return ban.permanent or (ban.duration and ban.duration + ban.start_date > timezone.now())
+
+        return False
+
+    def is_chat_banned(self):
+
+        ban = self.bans.filter(ban_type='CHAT_BAN').last()
+        if ban:
+            return ban.permanent or (ban.duration and ban.duration + ban.start_date > timezone.now())
+
+        return False
+
+    def is_comments_banned(self):
+
+        ban = self.bans.filter(ban_type = 'COMMENTS_BAN').last()
+        if ban:
+            return ban.permanent or (ban.duration and ban.duration + ban.start_date > timezone.now())
+
+        return False
+
+    def is_offer_service_banned(self):
+
+        ban = self.bans.filter(ban_type = 'OFFER_SERVICE_BAN').last()
+        if ban:
+            return ban.permanent or (ban.duration and ban.duration + ban.start_date > timezone.now())
+
+        return False
+
 class ProgrammerUser(DevRadarUser):
     image = models.ImageField(upload_to='programmers/')
 
@@ -51,6 +86,25 @@ class ProgrammerUser(DevRadarUser):
                 self.slug = slugify(unidecode(self.get_full_name()))
 
         super().save(*args, **kwargs)
+
+class Ban(models.Model):
+    class BanType(models.TextChoices):
+        CHAT_BAN = 'CHAT_BAN', 'Chat ban'
+        COMMENTS_BAN = 'COMMENTS_BAN', 'Comments ban'
+        OFFER_SERVICE_BAN = 'OFFER_SERVICE_BAN', 'Ofer service ban'
+        BAN = 'BAN', 'Ban'
+
+    user = models.ForeignKey(DevRadarUser, on_delete=models.CASCADE, related_name='bans')
+    reason = models.CharField(max_length=150, blank=True)
+    start_date = models.DateTimeField(default=timezone.now)
+    duration = models.DurationField(blank=True)
+    permanent = models.BooleanField(default=False)
+
+    ban_type = models.CharField(
+        max_length=20,
+        choices=BanType.choices,
+        default=BanType.BAN,
+    )
 
 
 

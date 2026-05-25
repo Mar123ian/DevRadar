@@ -2,6 +2,7 @@ from django.core.mail import send_mail
 from django.dispatch import receiver
 from django.db.models.signals import post_save
 import services
+from comments.models import Comment
 from devradar import settings
 from services.models import Service
 from services.tasks import send_service_creation_email_task

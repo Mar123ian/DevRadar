@@ -174,6 +174,10 @@ class ServiceDetails(LoginRequiredMixin, FormMixin, DetailView):
         return redirect(self.get_success_url())
 
     def form_valid(self, form):
+
+        if self.request.user.is_comments_banned():
+            return HttpResponseForbidden()
+
         comment = form.save(commit=False)
         comment.service = self.object
         comment.author = self.request.user
