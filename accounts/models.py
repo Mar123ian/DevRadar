@@ -35,9 +35,9 @@ class DevRadarUser(PolymorphicModel,AbstractUser):
     def get_full_name(self):
         return f"{self.first_name} {self.last_name}"
 
-    def is_banned(self):
+    def is_full_banned(self):
 
-        ban = self.bans.filter(ban_type = 'BAN').last()
+        ban = self.bans.filter(ban_type = 'FULL_BAN').last()
         if ban:
             return ban.permanent or (ban.duration and ban.duration + ban.start_date > timezone.now())
 
@@ -87,24 +87,6 @@ class ProgrammerUser(DevRadarUser):
 
         super().save(*args, **kwargs)
 
-class Ban(models.Model):
-    class BanType(models.TextChoices):
-        CHAT_BAN = 'CHAT_BAN', 'Chat ban'
-        COMMENTS_BAN = 'COMMENTS_BAN', 'Comments ban'
-        OFFER_SERVICE_BAN = 'OFFER_SERVICE_BAN', 'Ofer service ban'
-        BAN = 'BAN', 'Ban'
-
-    user = models.ForeignKey(DevRadarUser, on_delete=models.CASCADE, related_name='bans')
-    reason = models.CharField(max_length=150, blank=True)
-    start_date = models.DateTimeField(default=timezone.now)
-    duration = models.DurationField(blank=True)
-    permanent = models.BooleanField(default=False)
-
-    ban_type = models.CharField(
-        max_length=20,
-        choices=BanType.choices,
-        default=BanType.BAN,
-    )
 
 
 

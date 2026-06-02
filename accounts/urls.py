@@ -6,7 +6,7 @@ from django.urls import path
 from django.views.generic import TemplateView
 
 from accounts.views import RegisterProgrammerUserView, RegisterDevRadarUserView, UpdateDevRadarUser, DeleteDevRadarUser, \
-    ProfileView, BanUser, DeleteBan
+    ProfileView
 
 urlpatterns = [
     path('profile/', ProfileView.as_view(), name='profile'),
@@ -22,7 +22,5 @@ urlpatterns = [
 
     path('update/<int:pk>/', UpdateDevRadarUser.as_view(), name='update_user'),
     path('delete/<int:pk>/', DeleteDevRadarUser.as_view(), name='delete_user'),
-    path('ban/<int:pk>/', BanUser.as_view(), name='ban_user'),
-    path('unban/<int:pk>/', DeleteBan.as_view(), name='unban_user'),
 
 ]

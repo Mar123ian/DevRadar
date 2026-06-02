@@ -13,7 +13,7 @@ class IsBannedMiddleware:
         user = request.user
 
         if request.user.is_authenticated and hasattr(request.user, 'bans'):
-            if user.is_banned():
+            if user.is_full_banned():
                 return HttpResponseForbidden()
             elif user.is_chat_banned() and request.path.startswith('/chat/'):
                 return HttpResponseForbidden()

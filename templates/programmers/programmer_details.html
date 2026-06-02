@@ -21,7 +21,7 @@
         {% if not programmer.is_banned %}
     <a href="{% url 'ban_user' programmer.id %}"><button class="delete-button">Ban</button></a>
             {% else %}
-                <a href="{% url 'unban_user' programmer.id %}"><button class="delete-button">Unban</button></a>
+                <a href=""><button class="delete-button">Unban</button></a>
             {% endif %}
 
     {% endif %}

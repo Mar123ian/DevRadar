@@ -11,8 +11,7 @@ from django.views import View
 from django.views.generic import CreateView, ListView, DetailView, DeleteView, UpdateView, TemplateView, FormView
 
 from accounts.forms import ProgrammerCreationForm, DevRadarUserCreationForm, DevRadarUserUpdateForm, \
-    DevRadarUserDeleteForm, DeleteBanForm, CreateBanForm
-from accounts.models import Ban
+    DevRadarUserDeleteForm
 
 
 # Create your views here.
@@ -74,57 +73,5 @@ class DeleteDevRadarUser(LoginRequiredMixin, DeleteView):
 
 class ProfileView(LoginRequiredMixin, TemplateView):
     template_name = 'accounts/profile.html'
-
-class BanUser(FormView):
-    form_class = CreateBanForm
-    template_name = 'accounts/forms/ban_user.html'
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['target_user'] = get_user_model().objects.get(pk=self.kwargs['pk'])
-        return context
-
-    #TODO permissions not dispatch
-    def dispatch(self, request, *args, **kwargs):
-        if request.user.groups.filter(name='Editors').exists():
-            return super().dispatch(request, *args, **kwargs)
-
-        return HttpResponseForbidden()
-
-    def form_valid(self, form):
-        target_user = get_object_or_404(get_user_model(), pk=self.kwargs['pk'])
-
-        ban_instance = form.save(commit=False)
-        ban_instance.user = target_user
-        ban_instance.save()
-
-        return super().form_valid(form)
-
-    def get_success_url(self):
-        return reverse('home')
-
-class DeleteBan(LoginRequiredMixin, DeleteView):
-    model = Ban
-    template_name = 'accounts/forms/unban_user.html'
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['form'] = DeleteBanForm(instance=self.get_object())
-        return context
-
-    def get_object(self, queryset=None):
-        ban = Ban.objects.filter(user=self.kwargs['pk']).last()
-        return ban
-
-    # TODO permissions not dispatch
-    def dispatch(self, request, *args, **kwargs):
-        if request.user.groups.filter(name='Editors').exists():
-            return super().dispatch(request, *args, **kwargs)
-
-        return HttpResponseForbidden()
-
-    def get_success_url(self):
-        return reverse('home')
-
 
 

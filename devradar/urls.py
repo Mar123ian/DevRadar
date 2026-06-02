@@ -30,6 +30,7 @@ urlpatterns = [
     path('comments/', include('comments.urls')),
     path('api/', include('services_api.urls')),
     path('chat/', include('chat.urls')),
+    path('moderation/', include('moderation.urls')),
 
 ] #+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 

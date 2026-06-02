@@ -69,6 +69,7 @@ INSTALLED_APPS = [
     'services_api.apps.ServicesApiConfig',
     'chat.apps.ChatConfig',
     'channels',
+    'moderation.apps.ModerationConfig'
 
 ]
 
