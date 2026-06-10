@@ -1,0 +1,64 @@
+{% extends 'core/base.html' %}
+
+{% block title %}
+    <title>DevRadar | Всички докладвани съпбщения</title>
+{% endblock %}
+
+{% block main_content %}
+
+<div class="content-wrapper">
+
+    <h1 class="report-title">Message Reports</h1>
+
+    <div class="report-list">
+
+        {% for report in reports %}
+        <div class="report-card">
+
+            <div class="report-card__header">
+                <span class="report-card__reason">
+                    {{ report.reason }}
+                </span>
+
+                <span class="report-card__date">
+                    {{ report.timestamp|date:"d M Y H:i" }}
+                </span>
+            </div>
+
+            <div class="report-card__body">
+                <p class="report-card__message">
+                    <strong>Message:</strong> {{ report.message.text }}
+                </p>
+
+                {% if report.message.file %}
+                        <a class="chat-file" href="{{ report.message.file }}" target="_blank">
+                            📎 File
+                        </a>
+                    {% endif %}
+
+                <p class="report-card__sender">
+                    <strong>Reported by:</strong> {{ report.sender }}
+                </p>
+
+                {% if report.description %}
+                <p class="report-card__description">
+                    {{ report.description }}
+                </p>
+                {% endif %}
+            </div>
+
+            <div class="report-card__footer">
+                <a href="{% url 'chat_room' report.message.thread_id %}" class="btn">
+                    Open chat
+                </a>
+
+            </div>
+
+        </div>
+        {% empty %}
+        <p class="empty-state">No reports found.</p>
+        {% endfor %}
+
+    </div>
+</div>
+{% endblock %}

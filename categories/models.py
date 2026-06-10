@@ -8,6 +8,8 @@ from core.mixins import CreatedAndUpdatedAtMixin
 # Create your models here.
 class CategoryBase(CreatedAndUpdatedAtMixin, models.Model):
     slug = models.SlugField(unique=True, blank=True)
+    is_deleted = models.BooleanField(default=False)
+
 
     class Meta:
         abstract = True

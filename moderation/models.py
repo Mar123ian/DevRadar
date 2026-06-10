@@ -2,6 +2,8 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils import timezone
 
+#TODO better soft del names
+
 
 # Create your models here.
 class Ban(models.Model):
@@ -17,11 +19,23 @@ class Ban(models.Model):
     duration = models.DurationField(blank=True)
     permanent = models.BooleanField(default=False)
 
+
     ban_type = models.CharField(
         max_length=20,
         choices=BanType.choices,
         default=BanType.FULL_BAN,
     )
+
+class ReportedMessage(models.Model):
+    ...
+
+class ReportedService(models.Model):
+    ...
+
+class ReportedComment(models.Model):
+    ...
+
+
 
 
 

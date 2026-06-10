@@ -2,6 +2,7 @@ from django.db import models
 from django.utils.text import slugify
 from unidecode import unidecode
 
+from core.managers import NonDeletedManager
 from core.mixins import CreatedAndUpdatedAtMixin
 
 
@@ -16,6 +17,11 @@ class Service(CreatedAndUpdatedAtMixin, models.Model):
     technologies = models.ManyToManyField('categories.Technology', related_name='services')
     min_price = models.DecimalField(max_digits=10, decimal_places=2, error_messages={'max_digits': 'Максималната дължина е 10 цифри!', 'decimal_places': 'Максималната дължина след десетичната запетая е 2 цифри!'})
     max_price = models.DecimalField(max_digits=10, decimal_places=2, error_messages={'max_digits': 'Максималната дължина е 10 цифри!', 'decimal_places': 'Максималната дължина след десетичната запетая е 2 цифри!'})
+    is_deleted = models.BooleanField(default=False)
+    is_deleted_due_to_ban = models.BooleanField(default=False)
+
+    objects = NonDeletedManager()
+    all_objects = models.Manager()
 
     class Meta:
         constraints = [

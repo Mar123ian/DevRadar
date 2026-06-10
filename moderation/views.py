@@ -7,6 +7,7 @@ from django.urls import reverse
 from django.utils import timezone
 from django.views.generic import DeleteView, FormView, TemplateView, UpdateView
 
+from accounts.models import ProgrammerUser
 from moderation.forms import CreateBanForm, DeleteBanForm, UpdateBanForm
 from moderation.models import Ban
 
@@ -27,9 +28,11 @@ class BanUser(FormView):
 
         return HttpResponseForbidden()
 
+    #TODO optimize
     def form_valid(self, form):
         target_user = get_object_or_404(get_user_model(), pk=self.kwargs['pk'])
         form_data = form.cleaned_data
+        ban_type = form_data['ban_type']
 
         if (target_user.is_chat_banned() and form_data['ban_type'] == 'CHAT_BAN' or
                 target_user.is_comments_banned() and form.ban_type == 'COMMENTS_BAN' or
@@ -41,6 +44,20 @@ class BanUser(FormView):
         ban_instance = form.save(commit=False)
         ban_instance.user = target_user
         ban_instance.save()
+
+        if ban_type == 'COMMENTS_BAN' or ban_type == 'FULL_BAN':
+
+            for comment in target_user.comments.all():
+                comment.is_deleted_due_to_ban = True
+                comment.save()
+
+        if ban_type == 'OFFER_SERVICE_BAN' or ban_type == 'FULL_BAN':
+
+
+            if isinstance(target_user, ProgrammerUser):
+                for service in target_user.services.all():
+                    service.is_deleted_due_to_ban = True
+                    service.save()
 
         return super().form_valid(form)
 
@@ -75,6 +92,27 @@ class DeleteBan(LoginRequiredMixin, DeleteView):
 
     def get_success_url(self):
         return reverse('home')
+
+    def form_valid(self, form):
+        target_user = self.get_object().user
+        ban_type = self.get_object().ban_type
+
+        #TODO repeated, optimize
+        if ban_type == 'COMMENTS_BAN' or ban_type == 'FULL_BAN':
+
+            for comment in target_user.comments.model.all_objects.all():
+                comment.is_deleted_due_to_ban = False
+                comment.save()
+
+        if ban_type == 'OFFER_SERVICE_BAN' or ban_type == 'FULL_BAN':
+
+
+            if isinstance(target_user, ProgrammerUser):
+                for service in target_user.services.model.all_objects.all():
+                    service.is_deleted_due_to_ban = False
+                    service.save()
+
+        return super().form_valid(form)
 
 
 class AllUsers(LoginRequiredMixin, TemplateView):
