@@ -25,7 +25,9 @@ class DevRadarUser(PolymorphicModel,AbstractUser):
 
     objects = DevRadarUserManager()
 
-
+    @property
+    def is_programmer(self):
+        return isinstance(self, ProgrammerUser)
 
     def __str__(self):
         return f"{self.first_name} {self.last_name}"

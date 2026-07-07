@@ -11,7 +11,7 @@ class ProgrammerForm(forms.ModelForm):
     class Meta:
         model = ProgrammerUser
 
-        fields = ['first_name', 'last_name', 'image', 'email', 'phone_number']
+        fields = ['username', 'first_name', 'last_name', 'image', 'email', 'phone_number']
 
         labels = {
             'first_name': 'Собствено име',

@@ -2,23 +2,27 @@ from cProfile import Profile
 
 from django.contrib.auth.views import LoginView, LogoutView, PasswordResetView, PasswordResetConfirmView, \
     PasswordResetDoneView, PasswordResetCompleteView
-from django.urls import path
+from django.urls import path, include
 from django.views.generic import TemplateView
 
+from accounts import views
 from accounts.views import RegisterProgrammerUserView, RegisterDevRadarUserView, UpdateDevRadarUser, DeleteDevRadarUser, \
     ProfileView
 
 urlpatterns = [
+    path('resend_email/', views.resend_confirmation, name='resend_email'),
+path('', include('allauth.urls')),
+    path('upgrade-profile/', views.upgrade_to_programmer, name='upgrade_to_programmer'),
     path('profile/', ProfileView.as_view(), name='profile'),
     path('login/', LoginView.as_view(template_name='accounts/login.html'), name='login'),
     path('register-programmer/', RegisterProgrammerUserView.as_view(), name='register_programmer'),
-    path('register/', TemplateView.as_view(template_name="accounts/register.html"), name='register'),
+    #path('register/', TemplateView.as_view(template_name="accounts/register.html"), name='register'),
     path('register-user/', RegisterDevRadarUserView.as_view(), name='register_user'),
     path('logout/', LogoutView.as_view(http_method_names=['post']), name='logout'),
-    path('reset-password/', PasswordResetView.as_view(), name='reset-password'),
-    path('password_reset_confirm/<uidb64>/<token>/', PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
-    path('password_reset_done/', PasswordResetDoneView.as_view(), name='password_reset_done'),
-    path('password_reset_complete/', PasswordResetCompleteView.as_view(), name='password_reset_complete'),
+    #path('reset-password/', PasswordResetView.as_view(), name='reset-password'),
+    #path('password_reset_confirm/<uidb64>/<token>/', PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
+    #path('password_reset_done/', PasswordResetDoneView.as_view(), name='password_reset_done'),
+    #path('password_reset_complete/', PasswordResetCompleteView.as_view(), name='password_reset_complete'),
 
     path('update/<int:pk>/', UpdateDevRadarUser.as_view(), name='update_user'),
     path('delete/<int:pk>/', DeleteDevRadarUser.as_view(), name='delete_user'),

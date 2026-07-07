@@ -3,7 +3,7 @@ from django.db import models
 
 from categories.models import Type, Technology
 from core.mixins import DisableFieldsMixin
-from services.models import Service
+from services.models import Service, ServiceReport
 
 
 class ServiceForm(forms.ModelForm):

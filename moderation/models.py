@@ -26,14 +26,28 @@ class Ban(models.Model):
         default=BanType.FULL_BAN,
     )
 
-class ReportedMessage(models.Model):
-    ...
+from django.db import models
+from django.conf import settings
 
-class ReportedService(models.Model):
-    ...
+class BaseReport(models.Model):
+    class ReasonChoices(models.TextChoices):
+        SPAM = "spam", "Спам"
+        HARASSMENT = "harassment", "Тормоз"
+        HATE_SPEECH = "hate_speech", "Реч на омразата"
+        VIOLENCE = "violence", "Насилие или заплахи"
+        SEXUAL_CONTENT = "sexual_content", "Сексуално съдържание"
+        SCAM = "scam", "Измама"
+        MISINFORMATION = "misinformation", "Дезинформация"
+        COPYRIGHT = "copyright", "Нарушение на авторски права"
+        OTHER = "other", "Друго"
 
-class ReportedComment(models.Model):
-    ...
+    sender = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    timestamp = models.DateTimeField(auto_now_add=True)
+    reason = models.CharField(choices=ReasonChoices.choices, default=ReasonChoices.OTHER)
+    description = models.TextField(blank=True, null=True)
+
+    class Meta:
+        abstract = True
 
 
 

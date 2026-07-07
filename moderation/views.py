@@ -1,6 +1,7 @@
 from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import ValidationError
+from django.forms import modelform_factory
 from django.http import HttpResponseForbidden
 from django.shortcuts import get_object_or_404
 from django.urls import reverse
@@ -8,7 +9,7 @@ from django.utils import timezone
 from django.views.generic import DeleteView, FormView, TemplateView, UpdateView
 
 from accounts.models import ProgrammerUser
-from moderation.forms import CreateBanForm, DeleteBanForm, UpdateBanForm
+from moderation.forms import CreateBanForm, DeleteBanForm, UpdateBanForm, BaseReportForm
 from moderation.models import Ban
 
 
@@ -160,3 +161,32 @@ class AllUsers(LoginRequiredMixin, TemplateView):
 
         context['users'] = users
         return context
+
+
+from django.views.generic import FormView
+from django.shortcuts import get_object_or_404
+
+
+class BaseCreateReportView(FormView):
+    model_to_report = None
+    report_model = None
+    object_target_field = ''
+
+    def dispatch(self, request, *args, **kwargs):
+        self.target_object = get_object_or_404(self.model_to_report, pk=kwargs['pk'])
+        return super().dispatch(request, *args, **kwargs)
+
+    def form_valid(self, form):
+        report = form.save(commit=False)
+        report.sender = self.request.user
+
+        setattr(report, self.object_target_field, self.target_object)
+
+        report.save()
+        return super().form_valid(form)
+
+    def get_form_class(self):
+        return modelform_factory(
+            self.report_model,
+            form=BaseReportForm
+        )

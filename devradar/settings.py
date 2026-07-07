@@ -69,7 +69,14 @@ INSTALLED_APPS = [
     'services_api.apps.ServicesApiConfig',
     'chat.apps.ChatConfig',
     'channels',
-    'moderation.apps.ModerationConfig'
+    'moderation.apps.ModerationConfig',
+# Allauth
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+
+    # Google provider
+    'allauth.socialaccount.providers.google',
 
 ]
 
@@ -81,8 +88,11 @@ MIDDLEWARE = [
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'middlewares.IsBannedMiddleware',
+    'django.middleware.locale.LocaleMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'allauth.account.middleware.AccountMiddleware',
+    'middlewares.BlockUnverifiedEmailMiddleware'
 ]
 
 ROOT_URLCONF = 'devradar.urls'
@@ -98,10 +108,16 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+
+
             ],
         },
     },
 ]
+
+LANGUAGE_CODE = 'bg'
+USE_I18N = True
+
 
 WSGI_APPLICATION = 'devradar.wsgi.application'
 AUTH_USER_MODEL = 'accounts.DevRadarUser'
@@ -284,3 +300,41 @@ CHANNEL_LAYERS = {
         },
     },
 }
+
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+    'allauth.account.auth_backends.AuthenticationBackend',
+]
+
+SITE_ID = 1
+
+ACCOUNT_LOGIN_METHODS = {'email', 'username'}
+ACCOUNT_SIGNUP_FIELDS = ['email*', 'username*', 'password1*', 'password2*']
+ACCOUNT_EMAIL_VERIFICATION = 'mandatory'   # 👈 важно
+ACCOUNT_UNIQUE_EMAIL = True
+LOGOUT_REDIRECT_URL = '/accounts/login/'
+
+# Автоматично свързва социалния акаунт (Google) със съществуващия локален акаунт по имейл
+SOCIALACCOUNT_AUTO_SIGNUP = True
+ACCOUNT_EMAIL_REQUIRED = True
+
+# Важно: Свързва профилите, ако имейлите съвпадат
+SOCIALACCOUNT_ADAPTER = 'devradar.adapters.CustomSocialAccountAdapter'
+SOCIALACCOUNT_EMAIL_AUTHENTICATION_AUTO_CONNECT = True
+
+# settings.py
+SOCIALACCOUNT_PROVIDERS = {
+    'google': {
+        'SCOPE': [
+            'profile',
+            'email',
+        ],
+        'AUTH_PARAMS': {
+            'access_type': 'online',
+            'prompt': 'select_account'  # <- това принуждава Google да пита кой акаунт
+        }
+    }
+}
+ACCOUNT_ADAPTER = 'devradar.adapters.CustomAccountAdapter'
+ACCOUNT_ALLOW_EMAIL_CHANGE = True
+ACCOUNT_USERNAME_GENERATOR = "accounts.utils.generate_username_from_email"

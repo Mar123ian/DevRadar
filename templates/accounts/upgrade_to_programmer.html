@@ -1,0 +1,17 @@
+<!-- upgrade_to_programmer.html -->
+{% extends "core/base.html" %} <!-- Промени с твоето базово име -->
+
+{% block main_content %}
+<div class="container mt-5">
+    <h2>Стани програмист в DevRadar</h2>
+    <p>Добави телефон и профилна снимка, за да започнеш да предлагаш услугите си.</p>
+
+    <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        {{ form.as_p }}
+
+        <button type="submit" class="btn btn-primary">Надгради профила</button>
+    </form>
+</div>
+{% endblock %}

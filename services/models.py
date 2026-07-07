@@ -1,9 +1,11 @@
+from django.conf import settings
 from django.db import models
 from django.utils.text import slugify
 from unidecode import unidecode
 
 from core.managers import NonDeletedManager
 from core.mixins import CreatedAndUpdatedAtMixin
+from moderation.models import BaseReport
 
 
 # Create your models here.
@@ -36,3 +38,7 @@ class Service(CreatedAndUpdatedAtMixin, models.Model):
             self.slug = slugify(unidecode(self.programmer.slug + ' ' + self.name))
         super().save(*args, **kwargs)
 
+
+
+class ServiceReport(BaseReport):
+    service = models.ForeignKey(Service, on_delete=models.CASCADE)

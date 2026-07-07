@@ -65,3 +65,12 @@ class UpdateBanForm(BaseBanForm):
         self.fields['ban_type'].widget.attrs['disabled'] = True
         self.fields['ban_type'].required = False
 
+from django import forms
+
+class BaseReportForm(forms.ModelForm):
+    class Meta:
+        fields = ['reason', 'description']
+        # widgets = {
+        #     'reason': forms.Select(attrs={'class': 'form-select'}),
+        #     'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 4}),
+        # }

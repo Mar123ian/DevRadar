@@ -1,14 +1,14 @@
 {% extends 'core/base.html' %}
 
 {% block title %}
-    <title>DevRadar | Всички докладвани съобщения</title>
+    <title>DevRadar | Всички докладвани услуги</title>
 {% endblock %}
 
 {% block main_content %}
 
 <div class="content-wrapper">
 
-    <h1 class="report-title">Message Reports</h1>
+    <h1 class="report-title">Service Reports</h1>
 
     <div class="report-list">
 
@@ -27,14 +27,10 @@
 
             <div class="report-card__body">
                 <p class="report-card__message">
-                    <strong>Message:</strong> {{ report.message.text }}
+                    <strong>Име на услугата:</strong> {{ report.service.name }}
                 </p>
 
-                {% if report.message.file %}
-                        <a class="chat-file" href="{{ report.message.file }}" target="_blank">
-                            📎 File
-                        </a>
-                    {% endif %}
+
 
                 <p class="report-card__sender">
                     <strong>Reported by:</strong> {{ report.sender }}
@@ -48,8 +44,8 @@
             </div>
 
             <div class="report-card__footer">
-                <a href="{% url 'chat_room' report.message.thread_id %}" class="btn">
-                    Open chat
+                <a href="{% url 'service_details' report.service.slug %}" class="btn">
+                    Виж услугата
                 </a>
 
             </div>

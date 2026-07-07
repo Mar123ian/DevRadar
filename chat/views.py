@@ -6,7 +6,8 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.views.generic import CreateView
 
-from .forms import MessageReportForm
+from moderation.mixins import EditorOrSuperuserRequiredMixin
+from moderation.views import BaseCreateReportView
 from .models import Thread, MessageReport
 from .models import Message
 
@@ -102,38 +103,20 @@ from django.views.generic.edit import FormView
 from django.urls import reverse
 from django.shortcuts import get_object_or_404
 
-class CreateMessageReport(FormView):
+class CreateMessageReport(BaseCreateReportView):
     template_name = 'chat/forms/create_message_report.html'
-    form_class = MessageReportForm
-
-    def dispatch(self, request, *args, **kwargs):
-        self.message = get_object_or_404(Message, pk=kwargs['pk'])
-        self.thread_id = self.message.thread_id
-        return super().dispatch(request, *args, **kwargs)
-
-
-    def form_valid(self, form):
-        message_report = form.save(commit=False)
-        message_report.sender = self.request.user
-        message_report.message = self.message
-        message_report.save()
-        return super().form_valid(form)
+    model_to_report = Message
+    object_target_field = 'message'
+    report_model = MessageReport
 
     def get_success_url(self):
-        return reverse('chat_room', kwargs={'thread_id': self.thread_id})
+        return reverse('chat_room', kwargs={'thread_id': self.target_object.thread_id})
 
 from django.views.generic import ListView
 from .models import MessageReport
 
-class MessageReportListView(ListView):
+class MessageReportListView(EditorOrSuperuserRequiredMixin, ListView):
     model = MessageReport
     template_name = 'chat/message_report_list.html'
     context_object_name = 'reports'
     ordering = ['-timestamp']
-
-    # TODO permissions not dispatch
-    def dispatch(self, request, *args, **kwargs):
-        if request.user.groups.filter(name='Editors').exists() or request.user.is_superuser:
-            return super().dispatch(request, *args, **kwargs)
-
-        return HttpResponseForbidden()

@@ -1,0 +1,15 @@
+
+<h1>Confirm your email</h1>
+
+<p>Please confirm your email address to continue.</p>
+
+<p>{{ user }}</p>
+
+<hr>
+
+<form method="post" action="{% url 'resend_email' %}">
+    {% csrf_token %}
+    <input type="hidden" name="key" value="61{{ user }}">
+    <button type="submit">Resend confirmation email</button>
+</form>
+

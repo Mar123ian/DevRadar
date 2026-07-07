@@ -8,7 +8,9 @@ from django.views.generic import CreateView, DeleteView, ListView, DetailView
 from django.views.generic.edit import FormMixin, UpdateView
 
 from accounts.models import ProgrammerUser
+from chat.models import MessageReport
 from comments.forms import CreateCommentForm
+from moderation.mixins import EditorOrSuperuserRequiredMixin
 from services.forms import CreateServiceForm, DeleteServiceForm, SearchSortAndFilterServicesForm, UpdateServiceForm
 from services.models import Service
 
@@ -187,5 +189,32 @@ class ServiceDetails(LoginRequiredMixin, FormMixin, DetailView):
     def get_success_url(self):
         return reverse('service_details', kwargs={'service_slug': self.object.slug})
 
+
+
+from django.views.generic.edit import FormView
+from django.urls import reverse
+from django.shortcuts import get_object_or_404
+
+from django.urls import reverse
+from moderation.views import BaseCreateReportView
+from services.models import Service, ServiceReport
+
+class CreateServiceReport(BaseCreateReportView):
+    template_name = 'services/forms/create_service_report.html'
+    model_to_report = Service
+    object_target_field = 'service'
+    report_model = ServiceReport
+
+    def get_success_url(self):
+        return reverse('service_details', kwargs={'service_slug': self.target_object.slug})
+
+from django.views.generic import ListView
+from .models import ServiceReport
+
+class ServiceReportListView(EditorOrSuperuserRequiredMixin, ListView):
+    model = ServiceReport
+    template_name = 'services/service_report_list.html'
+    context_object_name = 'reports'
+    ordering = ['-timestamp']
 
 

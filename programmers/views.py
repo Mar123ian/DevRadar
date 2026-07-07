@@ -1,3 +1,4 @@
+from allauth.account.models import EmailAddress
 from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from django.http import HttpResponseForbidden
@@ -34,6 +35,38 @@ class UpdateProgrammer(LoginRequiredMixin, UpdateView):
             return super().dispatch(request, *args, **kwargs)
 
         return HttpResponseForbidden()
+
+    def form_valid(self, form):
+        user = self.get_object()
+        new_email = form.cleaned_data['email']
+
+        # --- handle email separately ---
+        if new_email != user.email:
+            UserModel = get_user_model()
+
+            if UserModel.objects.filter(email=new_email).count() == 0:
+                # DO NOT update user.email here
+
+                # mark existing email as non-primary (soft state)
+                EmailAddress.objects.filter(user=user).delete()
+
+                # create pending email
+                email_obj, created = EmailAddress.objects.get_or_create(
+                    user=user,
+                    email=new_email,
+                    defaults={
+                        "verified": False,
+                        "primary": False,
+                    }
+                )
+
+                # send verification
+                email_obj.send_confirmation(self.request)
+
+                # IMPORTANT: prevent ModelForm from overwriting email immediately
+                form.instance.email = user.email
+
+        return super().form_valid(form)
 
 
 class DeleteProgrammer(LoginRequiredMixin, DeleteView):

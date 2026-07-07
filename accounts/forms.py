@@ -103,3 +103,18 @@ class DevRadarUserUpdateForm(DevRadarUserBaseForm):
 class DevRadarUserDeleteForm(DisableFieldsMixin, DevRadarUserBaseForm):
     pass
 
+class UpgradeToProgrammerForm(forms.ModelForm):
+    class Meta:
+        model = ProgrammerUser
+        fields = ['phone_number', 'image']
+        widgets = {
+            'phone_number': forms.TextInput(attrs={'class': 'form-control', 'placeholder': '+359...'}),
+            'image': forms.FileInput(attrs={'class': 'form-control'}),
+        }
+        labels = {
+            'phone_number': 'Телефонен номер',
+            'image': 'Профилна снимка',
+        }
+
+class ResendConfirmationForm(forms.Form):
+    email = forms.EmailField()
