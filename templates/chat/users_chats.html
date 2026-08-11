@@ -1,0 +1,52 @@
+{% extends 'core/base.html' %}
+
+{% load simple_tags %}
+
+{% block title %}
+    <title>DevRadar | Моите чатове</title>
+{% endblock %}
+
+{% block main_content %}
+<section class="services-page">
+
+    {% block header %}
+        <h1>Моите чатове</h1>
+    {% endblock %}
+
+    <br>
+    <div class="chats">
+    {% for thread in threads %}
+        <a href="{% url 'chat_room' thread.id %}">
+            <div class="chat-item__header">
+                <span class="chat-item__name">
+                    {% if thread.users.all.first.username != user.username %}
+                        {{ thread.users.all.first.get_full_name }}
+                    {% else %}
+                        {{ thread.users.all.last.get_full_name }}
+                    {% endif %}
+                </span>
+                <span class="chat-item__time">
+                    {{ thread.message_set.last.timestamp|date:"H:i, d.m.Y" }}
+                </span>
+            </div>
+
+            <div class="chat-item__message">
+                {{ thread.message_set.last.text|default:"Няма съобщения" }}
+            </div>
+        </a>
+    {% empty %}
+        <p class="chats-page__empty">
+            Няма намерени чатове.
+        </p>
+    {% endfor %}
+</div>
+
+
+
+</section>
+
+{% endblock %}
+
+
+
+

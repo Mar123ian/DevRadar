@@ -21,7 +21,7 @@ class DevRadarUser(PolymorphicModel,AbstractUser):
     first_name = models.CharField(_("first name"), max_length=150, error_messages={'max_length': 'Максималната дължина е 100 символа!'})
     last_name = models.CharField(_("last name"), max_length=150, blank=True)
     favourites = models.ManyToManyField('services.Service', related_name='users', blank=True)
-    email = models.EmailField(_("email address"), unique=True, error_messages={'unique': 'Програмист с този имейл вече съществува!'})
+    email = models.EmailField(_("email address"), unique=True, error_messages={'unique': 'Потребител с този имейл вече съществува!'})
 
     objects = DevRadarUserManager()
 
@@ -39,7 +39,7 @@ class DevRadarUser(PolymorphicModel,AbstractUser):
 
     def is_full_banned(self):
 
-        ban = self.bans.filter(ban_type = 'FULL_BAN').last()
+        ban = self.bans.filter(ban_type = 'FULL_BAN', active=True).last()
         if ban:
             return ban.permanent or (ban.duration and ban.duration + ban.start_date > timezone.now())
 
@@ -47,7 +47,7 @@ class DevRadarUser(PolymorphicModel,AbstractUser):
 
     def is_chat_banned(self):
 
-        ban = self.bans.filter(ban_type='CHAT_BAN').last()
+        ban = self.bans.filter(ban_type='CHAT_BAN', active=True).last()
         if ban:
             return ban.permanent or (ban.duration and ban.duration + ban.start_date > timezone.now())
 
@@ -55,7 +55,7 @@ class DevRadarUser(PolymorphicModel,AbstractUser):
 
     def is_comments_banned(self):
 
-        ban = self.bans.filter(ban_type = 'COMMENTS_BAN').last()
+        ban = self.bans.filter(ban_type = 'COMMENTS_BAN', active=True).last()
         if ban:
             return ban.permanent or (ban.duration and ban.duration + ban.start_date > timezone.now())
 
@@ -63,7 +63,7 @@ class DevRadarUser(PolymorphicModel,AbstractUser):
 
     def is_offer_service_banned(self):
 
-        ban = self.bans.filter(ban_type = 'OFFER_SERVICE_BAN').last()
+        ban = self.bans.filter(ban_type = 'OFFER_SERVICE_BAN', active=True).last()
         if ban:
             return ban.permanent or (ban.duration and ban.duration + ban.start_date > timezone.now())
 

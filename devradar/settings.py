@@ -22,8 +22,17 @@ from dotenv import load_dotenv
 BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(BASE_DIR / ".dev.env")
 
+USE_I18N = True
+# Задайте български като основен език
+LANGUAGE_CODE = 'bg'
 
+# Уверете се, че българският е в списъка с поддържани езици
+from django.utils.translation import gettext_lazy as _
 
+LANGUAGES = [
+    ('bg', _('Bulgarian')),
+    ('en', _('English')),
+]
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
@@ -89,6 +98,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'middlewares.IsBannedMiddleware',
     'django.middleware.locale.LocaleMiddleware',
+    'middlewares.ForceDefaultLanguageMiddleware', # Вашият middleware
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'allauth.account.middleware.AccountMiddleware',
@@ -214,6 +224,8 @@ if not PRODUCTION:
 LOGOUT_REDIRECT_URL = '/accounts/login/'
 LOGIN_REDIRECT_URL = '/'
 LOGIN_URL = '/accounts/login/'
+ACCOUNT_SET_PASSWORD_REDIRECT_URL = '/accounts/profile/'
+ACCOUNT_CHANGE_PASSWORD_REDIRECT_URL = '/accounts/profile/'
 
 
 
@@ -338,3 +350,10 @@ SOCIALACCOUNT_PROVIDERS = {
 ACCOUNT_ADAPTER = 'devradar.adapters.CustomAccountAdapter'
 ACCOUNT_ALLOW_EMAIL_CHANGE = True
 ACCOUNT_USERNAME_GENERATOR = "accounts.utils.generate_username_from_email"
+
+ACCOUNT_RATE_LIMITS = {}
+ACCOUNT_EMAIL_CONFIRMATION_COOLDOWN = 0
+
+ACCOUNT_FORMS = {
+    'signup': 'accounts.forms.DevRadarUserCreationForm',
+}

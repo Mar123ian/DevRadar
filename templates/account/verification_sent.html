@@ -1,15 +1,33 @@
+{% extends 'core/base.html' %}
 
-<h1>Confirm your email</h1>
+{% block title %}
+<title>DevRadar | {% block head_title %}{% endblock %}</title>
+{% endblock %}
 
-<p>Please confirm your email address to continue.</p>
+{% block main_content %}
+<p>
+    Имейл потвърждението е изпратено на {{ request.session.pending_verification_email|default:"No info" }}!
+</p>
 
-<p>{{ user }}</p>
-
-<hr>
+    <br><br>
 
 <form method="post" action="{% url 'resend_email' %}">
+    <p>Не получи имейла?</p>
+    <br>
     {% csrf_token %}
-    <input type="hidden" name="key" value="61{{ user }}">
-    <button type="submit">Resend confirmation email</button>
+    <button type="submit" class="update-button">
+        Изпрати линка отново
+    </button>
 </form>
 
+    {% if user.is_authenticated %}
+    <form method="post" action="{% url 'restore_old_email' %}">
+    <p>Ако сте сгрешили новия си имейл, можете да го смените:</p>
+    <br>
+    {% csrf_token %}
+    <button type="submit" class="update-button">
+        Смени имейл
+    </button>
+</form>
+    {% endif %}
+{% endblock %}

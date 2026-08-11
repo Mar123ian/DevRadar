@@ -1,13 +1,17 @@
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.files.storage import default_storage
 from django.db import transaction
+from django.db.models import Q
+from django.db.models.aggregates import Max
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
-from django.views.generic import CreateView
+from django.views.generic import CreateView, DeleteView, UpdateView
 
 from moderation.mixins import EditorOrSuperuserRequiredMixin
 from moderation.views import BaseCreateReportView
+from .forms import UpdateMessageForm
 from .models import Thread, MessageReport
 from .models import Message
 
@@ -87,10 +91,13 @@ def upload_file(request):
 
 @login_required
 def chat_room(request, thread_id):
+    is_editor_or_admin = request.user.is_superuser or request.user.groups.filter(name='Editors').exists()
 
-
-    thread = get_object_or_404(Thread, id=thread_id, users=request.user.id)
-
+#TODO check what this does
+    thread = get_object_or_404(
+        Thread,
+        Q(id=thread_id) & (Q(users=request.user) if not is_editor_or_admin else Q())
+    )
 
     messages = Message.objects.filter(thread=thread).order_by("timestamp")
 
@@ -99,7 +106,7 @@ def chat_room(request, thread_id):
         "messages": messages
     })
 
-from django.views.generic.edit import FormView
+from django.views.generic.edit import FormView, BaseDeleteView
 from django.urls import reverse
 from django.shortcuts import get_object_or_404
 
@@ -120,3 +127,45 @@ class MessageReportListView(EditorOrSuperuserRequiredMixin, ListView):
     template_name = 'chat/message_report_list.html'
     context_object_name = 'reports'
     ordering = ['-timestamp']
+
+
+class UpdateMessage(LoginRequiredMixin, UpdateView):
+
+    model = Message
+    form_class = UpdateMessageForm
+    template_name = 'chat/forms/update_message_form.html'
+
+    def get_success_url(self):
+        return reverse('chat_room', kwargs={'thread_id': self.object.thread_id})+"#message-"+str(self.object.id)
+
+    def dispatch(self, request, *args, **kwargs):
+        if request.user.groups.filter(name='Editors').exists() or request.user.is_superuser or request.user == self.get_object().sender:
+            return super().dispatch(request, *args, **kwargs)
+
+        return HttpResponseForbidden()
+
+class DeleteMessage(LoginRequiredMixin, DeleteView):
+    model = Message
+    template_name = 'chat/forms/delete_message_form.html'
+
+
+    def get_success_url(self):
+        return reverse('chat_room', kwargs={'thread_id': self.object.thread_id})
+
+    def dispatch(self, request, *args, **kwargs):
+        if request.user.groups.filter(name='Editors').exists() or request.user.is_superuser or request.user == self.get_object().sender:
+            return super().dispatch(request, *args, **kwargs)
+
+        return HttpResponseForbidden()
+
+class UsersChats(ListView):
+    model = Thread
+    template_name = 'chat/users_chats.html'
+    context_object_name = 'threads'
+
+    def get_queryset(self):
+        return Thread.objects.filter(
+            users=self.request.user
+        ).annotate(
+            latest_message_time=Max('message__timestamp')
+        ).order_by('-latest_message_time')

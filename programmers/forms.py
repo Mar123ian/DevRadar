@@ -48,11 +48,52 @@ class ProgrammerForm(forms.ModelForm):
 
         }
 
+
+
 class CreateProgrammerForm(ProgrammerForm):
     pass
 
 class UpdateProgrammerForm(ProgrammerForm):
-    pass
+
+    def __init__(self, *args, **kwargs):
+        # Вземаме request от подадените аргументи при създаване на формата
+        self.request = kwargs.pop('request', None)
+        super().__init__(*args, **kwargs)
+
+    def clean_email(self):
+        new_email = self.cleaned_data.get('email')
+
+        # self.instance е текущият потребител
+        if self.instance and self.instance.pk:
+            # Проверяваме дали имейлът се променя
+            if new_email != self.instance.email:
+                # Проверяваме дали потребителят НЯМА парола (влязъл е само през Social Login)
+                if not self.instance.has_usable_password():
+                    raise forms.ValidationError(
+                        "Трябва първо да създадете парола за профила си, тъй като промяната на имейла ще премахне входа с Google."
+                    )
+
+        return new_email
+
+    def save(self, commit=True):
+        # 1. Записваме обновената променлива `user` чрез стандартния ModelForm save
+        user = super().save(commit=False)
+
+        # 2. Обновяваме полетата от cleaned_data
+        user.username = self.cleaned_data['username']
+        user.first_name = self.cleaned_data['first_name']
+        user.last_name = self.cleaned_data['last_name']
+        print("in save")
+        # 3. Достъпваме request през self.request, ако ни е необходим за сесията
+        if self.request:
+            print("in if")
+            self.request.session["pending_verification_email"] = self.cleaned_data.get('email')
+
+        # 4. Запазваме потребителя в базата данни
+        if commit:
+            user.save()
+
+        return user
 
 class DeleteProgrammerForm(DisableFieldsMixin, ProgrammerForm):
     pass

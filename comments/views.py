@@ -4,7 +4,9 @@ from django.urls import reverse
 from django.views.generic import UpdateView, DeleteView
 
 from comments.forms import UpdateCommentForm, DeleteCommentForm
-from comments.models import Comment
+from comments.models import Comment, CommentReport
+from moderation.mixins import EditorOrSuperuserRequiredMixin
+from moderation.views import BaseCreateReportView
 
 
 class UpdateComment(LoginRequiredMixin, UpdateView):
@@ -40,3 +42,24 @@ class DeleteComment(LoginRequiredMixin, DeleteView):
             return super().dispatch(request, *args, **kwargs)
 
         return HttpResponseForbidden()
+
+from django.urls import reverse
+from django.shortcuts import get_object_or_404
+
+class CreateCommentReport(BaseCreateReportView):
+    template_name = 'comments/forms/create_comment_report.html'
+    model_to_report = Comment
+    object_target_field = 'comment'
+    report_model = CommentReport
+
+    def get_success_url(self):
+        return reverse('service_details', kwargs={'service_slug': self.target_object.service.slug})
+
+from django.views.generic import ListView
+from .models import CommentReport
+
+class CommentReportListView(EditorOrSuperuserRequiredMixin, ListView):
+    model = CommentReport
+    template_name = 'comments/comment_report_list.html'
+    context_object_name = 'reports'
+    ordering = ['-timestamp']

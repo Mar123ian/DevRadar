@@ -1,6 +1,7 @@
 from django.db import models
 
 from core.managers import NonDeletedManager
+from moderation.models import BaseReport
 
 
 # Create your models here.
@@ -22,4 +23,7 @@ class Comment(models.Model):
     def __str__(self):
         #return f"{self.author} - {self.content}"
         return f"{self.content}"
+
+class CommentReport(BaseReport):
+    comment = models.ForeignKey(Comment, on_delete=models.CASCADE)
 

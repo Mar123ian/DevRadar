@@ -23,7 +23,7 @@
 
             <div class="chat-row {% if msg.sender == request.user %}own{% else %}other{% endif %}">
 
-                <div class="chat-bubble">
+                <div class="chat-bubble" id="message-{{ msg.id }}">
 
                     <div class="chat-meta">
                         <b>{{ msg.sender.get_full_name }}</b>
@@ -36,7 +36,13 @@
                         </div>
                     {% endif %}
 
+                    {% if msg.sender != user %}
                     <a href="{% url 'report_message' msg.id %}">Докладвай</a>
+                        {% elif msg.sender == user or user.is_superuser or user|has_group:"Editors" %}
+                            <a href="{% url 'delete_message' msg.id %}">Изтрий</a>
+                    <a href="{% url 'update_message' msg.id %}">Редактирай</a>
+
+                {% endif %}
 
                     {% if msg.file %}
                         <a class="chat-file" href="{{ msg.file }}" target="_blank">
@@ -71,6 +77,12 @@
     </button>
 
 </div>
+
+    <script>
+    const CURRENT_USER_NAME = "{{ request.user.username|escapejs }}";
+    const IS_SUPERUSER = {{ request.user.is_superuser|yesno:"true,false" }};
+    const IS_EDITOR = {{ request.user|has_group:"Editors"|yesno:"true,false" }};
+</script>
 
 <script>
 const threadId = "{{ thread.id }}";
@@ -139,6 +151,36 @@ socket.onmessage = function(e) {
         link.target = "_blank";
         link.textContent = "📎 File";
         bubble.appendChild(link);
+    }
+
+    // ACTIONS (Докладвай / Изтрий / Редактирай)
+
+        const actions = document.createElement("div");
+        actions.classList.add("chat-actions");
+
+        if (!isOwn) {
+            // Докладвай
+            const reportLink = document.createElement("a");
+            reportLink.href = `/chat/report_message/${data.id}/`; // Заменете с реалния си URL адрес
+            reportLink.textContent = "Докладвай";
+            actions.appendChild(reportLink);
+        } else if (isOwn || IS_SUPERUSER || IS_EDITOR) {
+            // Изтрий
+            const deleteLink = document.createElement("a");
+            deleteLink.href = `/chat/delete/${data.id}/`; // Заменете с реалния си URL адрес
+            deleteLink.textContent = "Изтрий";
+            actions.appendChild(deleteLink);
+
+            actions.appendChild(document.createTextNode(" "));
+
+            // Редактирай
+            const updateLink = document.createElement("a");
+            updateLink.href = `/chat/update/${data.id}/`; // Заменете с реалния си URL адрес
+            updateLink.textContent = "Редактирай";
+            actions.appendChild(updateLink);
+
+
+        bubble.appendChild(actions);
     }
 
     row.appendChild(bubble);

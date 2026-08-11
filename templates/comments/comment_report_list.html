@@ -1,14 +1,14 @@
 {% extends 'core/base.html' %}
 
 {% block title %}
-    <title>DevRadar | Всички докладвани съобщения</title>
+    <title>DevRadar | Всички докладвани коментари</title>
 {% endblock %}
 
 {% block main_content %}
 
 <div class="content-wrapper">
 
-    <h1 class="report-title">Message Reports</h1>
+    <h1 class="report-title">Comments Reports</h1>
 
     <div class="report-list">
 
@@ -27,17 +27,13 @@
 
             <div class="report-card__body">
                 <p class="report-card__message">
-                    <strong>Message:</strong> {{ report.message.text }}
+                    <strong>Comment:</strong> {{ report.comment.content }}
                 </p>
 
-                {% if report.message.file %}
-                        <a class="chat-file" href="{{ report.message.file }}" target="_blank">
-                            📎 File
-                        </a>
-                    {% endif %}
+
 
                 <p class="report-card__sender">
-                    <strong>Message sender:</strong> {{ report.message.sender.username }}
+                    <strong>Comment author:</strong> {{ report.comment.author }}
                 </p>
                 <p class="report-card__sender">
                     <strong>Reported by:</strong> {{ report.sender.username }}
@@ -51,8 +47,12 @@
             </div>
 
             <div class="report-card__footer">
-                <a href="{% url 'chat_room' report.message.thread_id %}#message-{{ report.message.id }}" class="btn">
-                    Open chat
+                <a href="{% url 'service_details' report.comment.service.slug %}" class="btn">
+                    Виж коментираната услуга
+                </a>
+
+                <a href="{% url 'delete_comment' report.comment.id %}" class="btn">
+                    Изтрий коментара
                 </a>
 
             </div>

@@ -7,11 +7,15 @@ from django.views.generic import TemplateView
 
 from accounts import views
 from accounts.views import RegisterProgrammerUserView, RegisterDevRadarUserView, UpdateDevRadarUser, DeleteDevRadarUser, \
-    ProfileView
+    ProfileView, ResendEmailView, RestoreOldEmail
 
 urlpatterns = [
-    path('resend_email/', views.resend_confirmation, name='resend_email'),
-path('', include('allauth.urls')),
+    path('restore_old_email/', RestoreOldEmail.as_view(), name='restore_old_email'),
+    path(
+        "resend-confirmation-email/",
+        ResendEmailView.as_view(),
+        name="resend_email",
+    ),path('', include('allauth.urls')),
     path('upgrade-profile/', views.upgrade_to_programmer, name='upgrade_to_programmer'),
     path('profile/', ProfileView.as_view(), name='profile'),
     path('login/', LoginView.as_view(template_name='accounts/login.html'), name='login'),

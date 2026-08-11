@@ -4,6 +4,7 @@ from allauth.socialaccount.adapter import DefaultSocialAccountAdapter
 from allauth.account.models import EmailAddress
 from django.contrib.auth import get_user_model
 from allauth.socialaccount.models import SocialAccount
+from django.urls import reverse
 
 
 class CustomSocialAccountAdapter(DefaultSocialAccountAdapter):
@@ -75,41 +76,41 @@ User = get_user_model()
 
 class CustomAccountAdapter(DefaultAccountAdapter):
 
-    def is_open_for_signup(self, request):
-        email = request.POST.get('email')
+    def get_password_change_redirect_url(self, request):
+        #TODO да казва че е успешно, анимация докато зарежда
+        return reverse('profile')
+
+
+    def clean_email(self, email):
+        email = super().clean_email(email)
+        print(f"--- [DEBUG] Започва проверка за имейл: {email} ---")
 
         if email:
-            email = email.lower().strip()
+            email_lower = email.lower().strip()
+            unverified_emails = EmailAddress.objects.filter(email__iexact=email_lower, verified=False)
 
-            # Намираме всички НЕпотвърдени записи за този имейл в системата
-            unverified_emails = EmailAddress.objects.filter(email=email, verified=False)
+            print(f"[DEBUG] Намерени непотвърдени записи: {unverified_emails.count()}")
 
             for unverified_email in unverified_emails:
                 user = unverified_email.user
+                print(f"[DEBUG] Проверка на потребител: {user.username} (ID: {user.id})")
 
-                # Проверяваме дали този потребител има И ДРУГИ имейли (т.е. сменил е имейла си)
                 other_emails = EmailAddress.objects.filter(user=user).exclude(id=unverified_email.id)
 
                 if other_emails.exists():
-                    # СЛУЧАЙ 2: Потребителят е редактирал имейла си на чужд.
-                    # Намираме най-новия потвърден или просто предишния му имейл по дата.
-                    # Сортираме по дата на добавяне (или първичния ключ), за да вземем по-стария
+                    print(f"[DEBUG] Потребителят {user.username} има други имейли. Връщаме стария.")
                     old_email_address = other_emails.order_by('id').first()
-
-                    # 1. Изтриваме само спорния нов непотвърден имейл адрес
                     unverified_email.delete()
 
-                    # 2. Връщаме стария имейл като главен (primary)
                     old_email_address.primary = True
                     old_email_address.save()
 
-                    # 3. Синхронизираме и основния модел на потребителя (User.email)
                     user.email = old_email_address.email
                     user.save()
                 else:
-                    # СЛУЧАЙ 1: Това е просто изоставен непотвърден профил (старата логика)
-                    # Изтриваме целия потребител
+                    print(f"[DEBUG] Потребителят {user.username} няма други имейли. ИЗТРИВАМЕ целия профил.")
+                    # Ако имаш модели, свързани с User чрез models.PROTECT, това изтриване ще гръмне.
                     user.delete()
+                    print("[DEBUG] Успешно изтриване!")
 
-        return super().is_open_for_signup(request)
-
+        return email

@@ -68,6 +68,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 "message": message,
                 "file": file_url,
                 "username": username,
+                "id": msg.id
             }
         )
 

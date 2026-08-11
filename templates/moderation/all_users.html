@@ -23,6 +23,15 @@
                             <div class="helptext">{{ u.get_full_name }}</div>
                             <div class="helptext">{{ u.email }}</div>
                             <div class="helptext">ID: {{ u.id }}</div>
+
+                            <div class="helptext">Последно влизане: {{ u.last_login }}</div>
+                            <div class="helptext">Дата на присъединяване: {{ u.date_joined }}</div>
+
+                            {% if u.is_programmer %}
+                                <br>
+                                <a href="{% url 'programmer_details' u.programmer_slug %}"><button class="update-button" type="button">Подробности за програмиста</button></a>
+
+                            {% endif %}
                         </div>
 
                         <div>
@@ -49,6 +58,31 @@
                                 </ul>
                             {% else %}
                                 <div style="font-weight: 700; color: var(--primary);">Няма активен бан</div>
+                            {% endif %}
+
+                        {% if u.unactive_bans %}
+                                <div style="font-weight: 700; color: var(--danger);">Неактивни банове:</div>
+                                <ul class="helptext" style="margin-top:6px;">
+                                    {% for ban in u.unactive_bans %}
+                                        <li>
+                                            <strong>{{ ban.get_ban_type_display }}</strong>
+                                            <p>Наложен на: {{ ban.start_date }}</p>
+                                            {% if ban.permanent %}
+                                                &nbsp; — постоянен
+                                            {% else %}
+                                                {% if ban.duration %}
+                                                    &nbsp; — до {{ ban.start_date|date:"d.m.Y H:i" }} + {{ ban.duration }}
+                                                {% endif %}
+                                            {% endif %}
+                                            {% if ban.reason %}
+                                                <div class="helptext">Причина: {{ ban.reason }}</div>
+                                            {% endif %}
+
+                                        </li>
+                                    {% endfor %}
+                                </ul>
+                            {% else %}
+                                <div style="font-weight: 700; color: var(--primary);">Няма неактивни банове</div>
                             {% endif %}
                         </div>
                     </div>

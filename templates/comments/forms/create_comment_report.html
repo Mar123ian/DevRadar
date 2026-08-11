@@ -1,0 +1,26 @@
+{% extends 'core/base.html' %}
+
+{% block title %}
+    <title>DevRadar | Докладване</title>
+{% endblock %}
+
+{% block main_content %}
+<form
+    method="post"
+    enctype="multipart/form-data"
+    class="categories-technology-create-form"
+>
+    {% csrf_token %}
+
+    <div class="categories-technology-create-form__fields">
+        {{ form }}
+    </div>
+
+    <button
+        type="submit"
+        class="categories-technology-create-form__button categories-technology-create-form__button--primary"
+    >
+        Изпрати
+    </button>
+</form>
+{% endblock %}

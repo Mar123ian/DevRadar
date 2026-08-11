@@ -12,7 +12,9 @@ def email_confirmed_sync(sender, request, email_address, **kwargs):
     email_address.verified = True
     email_address.save()
 
-    print('Email confirmed.')
+    EmailAddress.objects.filter(user=user, primary=False).exclude(pk=email_address.pk).delete()
+
+    print('Email confirmed!')
 
     # 2) sync to User model
     user.email = email_address.email

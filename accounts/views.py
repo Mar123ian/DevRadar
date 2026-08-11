@@ -1,5 +1,6 @@
 from http.client import responses
 
+from allauth.socialaccount.models import SocialAccount
 from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
@@ -8,7 +9,7 @@ from django.contrib.auth.mixins import PermissionRequiredMixin, LoginRequiredMix
 from django.contrib.auth.models import Group
 from django.contrib.contenttypes.models import ContentType
 from django.db import connection, transaction
-from django.http import HttpResponseForbidden
+from django.http import HttpResponseForbidden, HttpRequest
 from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse_lazy, reverse
 from django.views import View
@@ -16,7 +17,7 @@ from django.views.generic import CreateView, ListView, DetailView, DeleteView, U
 
 from accounts.forms import ProgrammerCreationForm, DevRadarUserCreationForm, DevRadarUserUpdateForm, \
     DevRadarUserDeleteForm, UpgradeToProgrammerForm
-from accounts.models import ProgrammerUser
+from accounts.models import ProgrammerUser, DevRadarUser
 from django.contrib.auth import login
 
 # Create your views here.
@@ -57,6 +58,13 @@ class UpdateDevRadarUser(LoginRequiredMixin, UpdateView):
 
         return HttpResponseForbidden()
 
+    def get_form_kwargs(self):
+        # Вземаме стандартните kwargs (които съдържат instance, data и files)
+        kwargs = super().get_form_kwargs()
+        # Добавяме request към тях, за да се прихване в __init__ на формуляра
+        kwargs['request'] = self.request
+        return kwargs
+
     def form_valid(self, form):
         user = self.get_object()
         new_email = form.cleaned_data['email']
@@ -66,9 +74,14 @@ class UpdateDevRadarUser(LoginRequiredMixin, UpdateView):
             UserModel = get_user_model()
 
             if UserModel.objects.filter(email=new_email).count() == 0:
+                # 1. Изтриваме Google / Social връзките на потребителя
+                SocialAccount.objects.filter(user=user, provider='google').delete()
+                # Забележка: Ако искаш да изтриеш ВСИЧКИ социални входове (не само Google), ползвай:
+                # SocialAccount.objects.filter(user=user).delete()
+
                 # DO NOT update user.email here
                 # mark existing email as non-primary (soft state)
-                EmailAddress.objects.filter(user=user).delete()
+                EmailAddress.objects.filter(user=user).update(primary=False)
 
                 # create pending email
                 email_obj, created = EmailAddress.objects.get_or_create(
@@ -111,6 +124,17 @@ class ProfileView(LoginRequiredMixin, TemplateView):
     template_name = 'accounts/profile.html'
 
 
+from django.contrib import messages
+from django.contrib.auth import login
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import Group
+from django.contrib.contenttypes.models import ContentType
+from django.db import connection, transaction
+from django.shortcuts import redirect, render
+from django.utils.text import slugify
+from unidecode import unidecode
+
+
 @login_required
 def upgrade_to_programmer(request):
     user = request.user
@@ -118,51 +142,52 @@ def upgrade_to_programmer(request):
     # 1. Проверяваме дали вече не е програмист
     if user.is_programmer:
         messages.info(request, "Вие вече сте регистриран като програмист!")
-        return redirect('home')  # Смени 'home' с името на началната ти страница
+        return redirect('home')
 
     if request.method == 'POST':
         form = UpgradeToProgrammerForm(request.POST, request.FILES)
 
         if form.is_valid():
-            user = request.user
+            phone_number = form.cleaned_data['phone_number']
+            uploaded_image = form.cleaned_data.get('image')
 
-            # Използваме трансакция – ако нещо се провали, нищо няма да се изтрие
+            # 2. Генерираме slug за програмиста
+            full_name = user.get_full_name() or user.username
+            base_slug = slugify(unidecode(full_name))
+            count = ProgrammerUser.objects.filter(slug=base_slug).count()
+            slug = f"{base_slug}{count + 1}" if count > 0 else base_slug
+
             with transaction.atomic():
-                # 1. Запазваме оригиналната парола и всички базови данни
-                user_data = {
-                    'id': user.id,
-                    'username': user.username,
-                    'email': user.email,
-                    'password': user.password,
-                    'first_name': user.first_name,
-                    'last_name': user.last_name,
-                    'is_active': user.is_active,
-                    'is_staff': user.is_staff,
-                    'is_superuser': user.is_superuser,
-                    'date_joined': user.date_joined,
-                    'last_login': user.last_login,
-                    # Добавете и вашите други специфични полета от DevRadarUser тук, ако има такива (напр. slug)
-                }
+                # А) Записваме изображението през Storage API на Django (ако има такова)
+                image_path = ''
+                if uploaded_image:
+                    temp_programmer = ProgrammerUser(image=uploaded_image)
+                    temp_programmer.image.save(uploaded_image.name, uploaded_image, save=False)
+                    image_path = temp_programmer.image.name
 
-                # 2. Изтриваме стария профил (това освобождава username и ID-то)
-                user.delete()
+                # Б) Обновяваме polymorphic_ctype в родителската таблица без да променяме другите полета
+                programmer_ct = ContentType.objects.get_for_model(ProgrammerUser)
+                DevRadarUser.objects.filter(pk=user.pk).update(polymorphic_ctype=programmer_ct)
 
-                # 3. Създаваме изцяло новия програмист със същите базови данни + новите полета
-                programmer = ProgrammerUser(
-                    **user_data,
-                    phone_number=form.cleaned_data['phone_number'],
-                    image=form.cleaned_data.get('image')
-                )
+                # В) Вмъкваме запис ДИРЕКТНО в таблицата на ProgrammerUser
+                child_table = ProgrammerUser._meta.db_table
+                with connection.cursor() as cursor:
+                    cursor.execute(
+                        f"""
+                        INSERT INTO {child_table} (devradaruser_ptr_id, phone_number, image, slug)
+                        VALUES (%s, %s, %s, %s)
+                        """,
+                        [user.pk, phone_number, image_path, slug]
+                    )
 
+                # Г) Добавяме към групата "Programmers"
+                group, _ = Group.objects.get_or_create(name="Programmers")
+                user.groups.add(group)
 
+            # 3. Вземаме обновения обект от базата данни (Django го зарежда като ProgrammerUser)
+            programmer = ProgrammerUser.objects.get(pk=user.pk)
 
-                # 4. Записваме обекта. Django ще създаде коректно редовете и в двете таблици.
-                programmer.save()
-
-                group, created = Group.objects.get_or_create(name="Programmers")
-                programmer.groups.add(group)
-
-            # 5. Тъй като изтрихме стария потребител, логваме новия обект обратно в сесията
+            # 4. Презареждаме сесията
             login(request, programmer, backend='django.contrib.auth.backends.ModelBackend')
 
             messages.success(request, "Успешно надградихте профила си!")
@@ -172,26 +197,103 @@ def upgrade_to_programmer(request):
 
     return render(request, 'accounts/upgrade_to_programmer.html', {'form': form})
 
+
 from django.contrib import messages
 from django.shortcuts import redirect
-from allauth.account.models import EmailAddress, EmailConfirmation
+from django.views import View
+
+from allauth.account.models import EmailAddress
 
 
-def resend_confirmation(request):
-    if request.method == "POST":
-        key = request.POST.get("key")
+from django.contrib import messages
+from django.shortcuts import redirect
+from django.views import View
 
-        try:
-            confirmation = EmailConfirmation.objects.get(key=key)
-            email_address = confirmation.email_address
-            print(email_address)
-            if not email_address.verified:
-                email_address.send_confirmation(request)
+from allauth.account.models import EmailAddress
 
-        except EmailConfirmation.DoesNotExist:
+
+class ResendEmailView(View):
+
+
+    def post(self, request, *args, **kwargs):
+
+        email_address = None
+        print(11)
+        # 1. Ако има логнат потребител - търсим негов непотвърден email
+        if request.user.is_authenticated:
             print(1)
-            pass
+            email_address = (
+                EmailAddress.objects
+                .filter(
+                    user=request.user,
+                    verified=False,
+                    primary=True,
+                ).first()
+            )
 
-        messages.info(request, "If possible, we resent the email.")
+        # 2. Ако няма - използваме session-а от регистрацията
+        if not email_address:
+            print(2)
+            email = request.session.get(
+                "pending_verification_email"
+            )
 
-    return redirect(request.META.get("HTTP_REFERER", "/"))
+            if email:
+                email_address = (
+                    EmailAddress.objects
+                    .filter(
+                        email=email,
+                        verified=False
+                    )
+                    .first()
+                )
+
+                print(email_address)
+                print(email)
+        # TODO проверка какво прави
+        if not email_address:
+            messages.error(
+                request,
+                "No pending email verification found."
+            )
+            return redirect("account_signup")
+
+        # изпращане на confirmation email
+        email_address.send_confirmation(request)
+
+        messages.success(
+            request,
+            "A new confirmation email has been sent."
+        )
+
+        return redirect(
+            "account_email_verification_sent"
+        )
+
+    def dispatch(self, request, *args, **kwargs):
+        print(f"Заявка метод: {request.method} | Потребител логнат: {request.user.is_authenticated}")
+        return super().dispatch(request, *args, **kwargs)
+
+class RestoreOldEmail(View):
+
+    def post(self, request: HttpRequest, *args, **kwargs):
+        EmailAddress.objects.filter(user=request.user, verified=False).delete()
+        email = EmailAddress.objects.filter(user=request.user, verified=True).first()
+        email.primary = True
+        email.save()
+        email_in_text = email.email
+        request.user.email = email_in_text
+
+        if request.user.is_programmer:
+            return redirect("update_programmer", programmer_slug = request.user.slug)
+
+        else:
+            return redirect("update_user", pk=request.user.id)
+
+    def dispatch(self, request: HttpRequest, *args, **kwargs):
+        primary_emails = EmailAddress.objects.filter(user=request.user, primary=True)
+        if not (request.user.is_authenticated and not primary_emails):
+            return HttpResponseForbidden()
+
+        else:
+            return super().dispatch(request, *args, **kwargs)

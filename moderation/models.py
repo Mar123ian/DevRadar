@@ -18,6 +18,7 @@ class Ban(models.Model):
     start_date = models.DateTimeField(default=timezone.now)
     duration = models.DurationField(blank=True)
     permanent = models.BooleanField(default=False)
+    active = models.BooleanField(default=True)
 
 
     ban_type = models.CharField(

@@ -1,4 +1,5 @@
 from allauth.account.models import EmailAddress
+from allauth.socialaccount.models import SocialAccount
 from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from django.http import HttpResponseForbidden
@@ -27,6 +28,14 @@ class UpdateProgrammer(LoginRequiredMixin, UpdateView):
     slug_url_kwarg = 'programmer_slug'
     template_name = 'programmers/forms/update_programmer_form.html'
 
+
+    def get_form_kwargs(self):
+        # Вземаме стандартните kwargs (които съдържат instance, data и files)
+        kwargs = super().get_form_kwargs()
+        # Добавяме request към тях, за да се прихване в __init__ на формуляра
+        kwargs['request'] = self.request
+        return kwargs
+
     def get_success_url(self):
         return reverse('programmer_details', kwargs={'programmer_slug': self.object.slug})
 
@@ -45,10 +54,14 @@ class UpdateProgrammer(LoginRequiredMixin, UpdateView):
             UserModel = get_user_model()
 
             if UserModel.objects.filter(email=new_email).count() == 0:
-                # DO NOT update user.email here
+                # 1. Изтриваме Google / Social връзките на потребителя
+                SocialAccount.objects.filter(user=user, provider='google').delete()
+                # Забележка: Ако искаш да изтриеш ВСИЧКИ социални входове (не само Google), ползвай:
+                # SocialAccount.objects.filter(user=user).delete()
 
+                # DO NOT update user.email here
                 # mark existing email as non-primary (soft state)
-                EmailAddress.objects.filter(user=user).delete()
+                EmailAddress.objects.filter(user=user).update(primary=False)
 
                 # create pending email
                 email_obj, created = EmailAddress.objects.get_or_create(

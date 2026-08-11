@@ -27,6 +27,13 @@
     <br>
 
         <div style="display: flex; flex-direction: row; gap: 1em;" class="programmer-details__buttons">
+            {% if user.has_usable_password %}
+            <a href="{% url 'account_change_password' %}"><button class="update-button">Промяна на парола</button></a>
+                {% else %}
+                <a href="{% url 'account_set_password' %}"><button class="update-button">Създаване на парола</button></a>
+
+        {% endif %}
+
     {% if user|has_group:"Programmers" %}
 
     <a href="{% url 'update_programmer' user.slug%}"><button class="update-button">Редактирай</button></a>
@@ -38,25 +45,30 @@
 
     <a href="{% url 'favourite_services' %}"><button class="delete-button">Списък с любими</button></a>
 
-        {% if user.is_authenticated %}
-    {% if user.is_programmer %}
-        <!-- Ако вече е програмист, му показваме менюто за услуги -->
 
-    {% else %}
-        <!-- Ако е обикновен потребител, му даваме бутон за надграждане -->
-        <a href="{% url 'upgrade_to_programmer' %}" class="btn btn-warning">
-            Стани Програмист
-        </a>
-    {% endif %}
-{% endif %}
+
 
 
 <form method="post" action="{% url 'logout' %}">
     {% csrf_token %}
-    <button type="submit">Logout</button>
+    <button type="submit">Изход</button>
 </form>
+
+                {% if user.is_authenticated %}
+    {% if user.is_programmer %}
+        <!-- Ако вече е програмист, му показваме менюто за услуги -->
+
+    {% else %}
+
+                <a href="{% url 'upgrade_to_programmer' %}"><button class="update-button upgrade-button">Стани Програмист</button></a>
+
+    {% endif %}
+{% endif %}
+
         </div>
     </div>
+
+
 
 
     {% if user|has_group:"Programmers" %}

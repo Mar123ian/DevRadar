@@ -2,7 +2,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import ValidationError
 from django.forms import modelform_factory
-from django.http import HttpResponseForbidden
+from django.http import HttpResponseForbidden, HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 from django.urls import reverse
 from django.utils import timezone
@@ -97,6 +97,7 @@ class DeleteBan(LoginRequiredMixin, DeleteView):
     def form_valid(self, form):
         target_user = self.get_object().user
         ban_type = self.get_object().ban_type
+        ban = self.get_object()
 
         #TODO repeated, optimize
         if ban_type == 'COMMENTS_BAN' or ban_type == 'FULL_BAN':
@@ -113,7 +114,11 @@ class DeleteBan(LoginRequiredMixin, DeleteView):
                     service.is_deleted_due_to_ban = False
                     service.save()
 
-        return super().form_valid(form)
+        # Деактивиране на бана вместо физическо изтриване
+        ban.active = False
+        ban.save()
+
+        return HttpResponseRedirect(self.get_success_url())
 
 
 class AllUsers(LoginRequiredMixin, TemplateView):
@@ -135,20 +140,25 @@ class AllUsers(LoginRequiredMixin, TemplateView):
         def _is_active(ban: Ban) -> bool:
             if not ban:
                 return False
-            if ban.permanent:
+            if ban.active and ban.permanent:
                 return True
-            if ban.duration:
+            if ban.active and ban.duration:
                 return ban.start_date + ban.duration > timezone.now()
             return False
 
         for u in users:
             active_bans = []
+            unactive_bans = []
             for ban in u.bans.all().order_by('-start_date'):
                 if _is_active(ban):
                     active_bans.append(ban)
+                else:
+                    unactive_bans.append(ban)
 
             # Attach computed fields used by the template
             u.active_bans = active_bans
+            u.unactive_bans = unactive_bans
+
             if active_bans:
                 first = active_bans[0]
                 u.active_ban_type = first.ban_type
