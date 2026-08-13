@@ -21,6 +21,84 @@
 </head>
 <body>
     <header class="main-header">
+    {% if is_chat_banned or is_comments_banned or is_offer_service_banned %}
+    <div class="alert alert-warning">
+
+        {# --- БАН ЗА ЧАТ --- #}
+        {% if is_chat_banned %}
+            <h3>Достъпът ви до чата е ограничен, поради нарушения на Правилата.</h3>
+            {% if chat_ban_reason %}
+                <p>Причина: {{ chat_ban_reason }}</p>
+            {% endif %}
+            {% if chat_ban_duration %}
+                <p>Продължителност на ограничението: {{ chat_ban_duration }}</p>
+            {% else %}
+                <p>Ограничението е за постоянно.</p>
+            {% endif %}
+        {% endif %}
+
+            {% if messages %}
+                <h3>Следните Ваши съобщения нарушават нашите правила и бяха премахнати:</h3>
+                {% for message in messages %}
+                    <p>{{ message.text }}</p>
+                    <p>Причина: {{ message.last_violation_info.reason }}</p>
+                    <p>Изтрито на: {{ message.last_violation_info.deleted_at }}</p>
+                {% endfor %}
+            {% endif %}
+            <hr>
+
+
+        {# --- БАН ЗА КОМЕНТАРИ --- #}
+        {% if is_comments_banned %}
+            <h3>Достъпът ви да коментирате е ограничен, поради нарушения на Правилата.</h3>
+            {% if comments_ban_reason %}
+                <p>Причина: {{ comments_ban_reason }}</p>
+            {% endif %}
+            {% if comments_ban_duration %}
+                <p>Продължителност на ограничението: {{ comments_ban_duration }}</p>
+            {% else %}
+                <p>Ограничението е за постоянно.</p>
+            {% endif %}
+        {% endif %}
+
+            {% if comments %}
+                <h3>Следните Ваши коментари нарушават нашите правила и бяха премахнати:</h3>
+                {% for comment in comments %}
+                    <p>{{ comment.text }}</p>
+                    <p>Причина: {{ comment.last_violation_info.reason }}</p>
+                    <p>Изтрит на: {{ comment.last_violation_info.deleted_at }}</p>
+                {% endfor %}
+            {% endif %}
+            <hr>
+
+
+        {# --- БАН ЗА УСЛУГИ --- #}
+        {% if is_offer_service_banned %}
+            <h3>Достъпът ви да предлагате услуги е ограничен, поради нарушения на Правилата.</h3>
+            {% if offer_service_ban_reason %}
+                <p>Причина: {{ offer_service_ban_reason }}</p>
+            {% endif %}
+            {% if offer_service_ban_duration %}
+                <p>Продължителност на ограничението: {{ offer_service_ban_duration }}</p>
+            {% else %}
+                <p>Ограничението е за постоянно.</p>
+            {% endif %}
+        {% endif %}
+
+            {% if services %}
+                <h3>Следните Ваши услуги нарушават нашите правила и бяха премахнати:</h3>
+                {% for service in services %}
+                    <p>{{ service.name }}</p>
+                    <p>Причина: {{ service.last_violation_info.reason }}</p>
+                    <p>Изтрит на: {{ service.last_violation_info.deleted_at }}</p>
+                {% endfor %}
+            {% endif %}
+            <hr>
+
+
+        <a href="#">Опция за обжалване</a>
+    </div>
+{% endif %}
         <nav class="nav-container">
             <a href="/" class="logo">Dev<span>Radar</span></a>
 
@@ -53,6 +131,7 @@
                             <li><a href="{% url 'all_reported_messages' %}">Докладвани съобщения</a></li>
                             <li><a href="{% url 'all_reported_services' %}">Докладвани услуги</a></li>
                             <li><a href="{% url 'all_reported_comments' %}">Докладвани коментари</a></li>
+                            <li><a href="{% url 'all_reported_programmers' %}">Докладвани програмисти</a></li>
                         </ul>
                     </li>
                     {% endif %}

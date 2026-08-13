@@ -1,9 +1,13 @@
 from django.urls import path
 
 from services.views import CreateService, DeleteService, AllServices, ServiceDetails, UpdateService, FavouriteServices, \
-    CreateServiceReport, ServiceReportListView
+    CreateServiceReport, ServiceReportListView, DeleteServiceDueToViolation, RestoreServiceFromViolation
 
 urlpatterns = [
+
+path("delete_service_due_to_violation/<int:pk>/", DeleteServiceDueToViolation.as_view(), name='delete_service_due_to_violation'),
+    path("restore_service_from_violation/<int:pk>/", RestoreServiceFromViolation.as_view(),
+         name='restore_service_from_violation'),
     path("all_reported_services/", ServiceReportListView.as_view(), name='all_reported_services'),
 
     path('all/', AllServices.as_view(), name='all_services'),

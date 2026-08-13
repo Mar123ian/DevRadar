@@ -69,6 +69,19 @@ class DevRadarUser(PolymorphicModel,AbstractUser):
 
         return False
 
+    def deleted_comments(self):
+        return self.comments.filter(is_deleted_due_to_violation=True)
+
+
+    def deleted_messages(self):
+        return self.messages.filter(is_deleted_due_to_violation=True)
+
+    def new_deleted_comments(self):
+        return self.deleted_comments().filter(is_user_informed_about_violation=False)
+
+    def new_deleted_messages(self):
+        return self.deleted_messages().filter(is_user_informed_about_violation=False)
+
 class ProgrammerUser(DevRadarUser):
     image = models.ImageField(upload_to='programmers/')
 
@@ -88,6 +101,12 @@ class ProgrammerUser(DevRadarUser):
                 self.slug = slugify(unidecode(self.get_full_name()))
 
         super().save(*args, **kwargs)
+
+    def deleted_services(self):
+        return self.services.filter(is_deleted_due_to_violation=True)
+
+    def new_deleted_services(self):
+        return self.deleted_services().filter(is_user_informed_about_violation=False)
 
 
 

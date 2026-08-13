@@ -2,7 +2,9 @@ from django.db import models, IntegrityError
 from django.utils.text import slugify
 from unidecode import unidecode
 
+from accounts.models import ProgrammerUser
 from core.mixins import CreatedAndUpdatedAtMixin
+from moderation.models import BaseReport
 
 
 # Create your models here.
@@ -32,6 +34,10 @@ class Programmer(CreatedAndUpdatedAtMixin, models.Model):
 
     def get_full_name(self):
         return f"{self.first_name} {self.last_name}"
+
+
+class ProgrammerReport(BaseReport):
+    programmer = models.ForeignKey(ProgrammerUser, on_delete=models.CASCADE, related_name='reports')
 
 
 

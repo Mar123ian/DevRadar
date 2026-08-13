@@ -14,7 +14,9 @@
 
         {% for report in reports %}
         <div class="report-card">
-
+        {% if report.comment.is_deleted_due_to_violation %}
+                    <p><i>Коментарът е изтрит.</i></p>
+                    {% endif %}
             <div class="report-card__header">
                 <span class="report-card__reason">
                     {{ report.reason }}
@@ -33,7 +35,7 @@
 
 
                 <p class="report-card__sender">
-                    <strong>Comment author:</strong> {{ report.comment.author }}
+                    <strong>Comment author:</strong> {{ report.comment.author.username }}
                 </p>
                 <p class="report-card__sender">
                     <strong>Reported by:</strong> {{ report.sender.username }}
@@ -51,9 +53,18 @@
                     Виж коментираната услуга
                 </a>
 
-                <a href="{% url 'delete_comment' report.comment.id %}" class="btn">
+                {% if not report.comment.is_deleted_due_to_violation %}
+                    <a href="{% url 'delete_comment_due_to_violation' report.comment.id %}" class="btn">
                     Изтрий коментара
                 </a>
+            {% else %}
+                <a href="{% url 'restore_comment_from_violation' report.comment.id %}" class="btn">
+                    Възстанови коментара
+                </a>
+                {% endif %}
+
+                <a href="{% url 'delete_comment' report.comment.id %}"><button class="delete-button">Изтрий коментара от сървъра</button></a>
+
 
             </div>
 

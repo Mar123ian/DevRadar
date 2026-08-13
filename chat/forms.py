@@ -23,3 +23,4 @@ class UpdateMessageForm(MessageForm):
 
 class DeleteMessageForm(DisableFieldsMixin, MessageForm):
     pass
+

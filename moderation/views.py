@@ -2,14 +2,15 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import ValidationError
 from django.forms import modelform_factory
-from django.http import HttpResponseForbidden, HttpResponseRedirect
-from django.shortcuts import get_object_or_404
+from django.http import HttpResponseForbidden, HttpResponseRedirect, HttpResponseNotFound
+from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
 from django.utils import timezone
 from django.views.generic import DeleteView, FormView, TemplateView, UpdateView
 
 from accounts.models import ProgrammerUser
-from moderation.forms import CreateBanForm, DeleteBanForm, UpdateBanForm, BaseReportForm
+from moderation.forms import CreateBanForm, DeleteBanForm, UpdateBanForm, BaseReportForm, \
+    DeleteContentDueToViolationForm, RestoreContentFromViolationForm
 from moderation.models import Ban
 
 
@@ -35,10 +36,10 @@ class BanUser(FormView):
         form_data = form.cleaned_data
         ban_type = form_data['ban_type']
 
-        if (target_user.is_chat_banned() and form_data['ban_type'] == 'CHAT_BAN' or
-                target_user.is_comments_banned() and form.ban_type == 'COMMENTS_BAN' or
-        target_user.is_full_banned() and form.ban_type == 'FULL_BAN' or
-        target_user.is_offer_service_banned() and form.ban_type == 'OFFER_SERVICE_BAN'):
+        if (target_user.is_chat_banned() and ban_type == 'CHAT_BAN' or
+                target_user.is_comments_banned() and ban_type == 'COMMENTS_BAN' or
+        target_user.is_full_banned() and ban_type == 'FULL_BAN' or
+        target_user.is_offer_service_banned() and ban_type == 'OFFER_SERVICE_BAN'):
             form.add_error(None, "Потребителят вече има такъв бан. Изтрийте стария, преди да добавяте нов или редактирайте настоящия!")
             return super().form_invalid(form)
 
@@ -51,6 +52,12 @@ class BanUser(FormView):
             for comment in target_user.comments.all():
                 comment.is_deleted_due_to_ban = True
                 comment.save()
+
+        if ban_type == 'CHAT_BAN' or ban_type == 'FULL_BAN':
+
+            for message in target_user.messages.all():
+                message.is_deleted_due_to_ban = True
+                message.save()
 
         if ban_type == 'OFFER_SERVICE_BAN' or ban_type == 'FULL_BAN':
 
@@ -102,15 +109,21 @@ class DeleteBan(LoginRequiredMixin, DeleteView):
         #TODO repeated, optimize
         if ban_type == 'COMMENTS_BAN' or ban_type == 'FULL_BAN':
 
-            for comment in target_user.comments.model.all_objects.all():
+            for comment in target_user.comments.model.objects.all():
                 comment.is_deleted_due_to_ban = False
                 comment.save()
+
+        if ban_type == 'CHAT_BAN' or ban_type == 'FULL_BAN':
+
+            for message in target_user.messages.all():
+                message.is_deleted_due_to_ban = False
+                message.save()
 
         if ban_type == 'OFFER_SERVICE_BAN' or ban_type == 'FULL_BAN':
 
 
             if isinstance(target_user, ProgrammerUser):
-                for service in target_user.services.model.all_objects.all():
+                for service in target_user.services.model.objects.all():
                     service.is_deleted_due_to_ban = False
                     service.save()
 
@@ -184,6 +197,14 @@ class BaseCreateReportView(FormView):
 
     def dispatch(self, request, *args, **kwargs):
         self.target_object = get_object_or_404(self.model_to_report, pk=kwargs['pk'])
+
+        if not isinstance(self.target_object, ProgrammerUser):
+            if self.target_object.is_deleted_due_to_violation or self.target_object.is_deleted_due_to_ban:
+                return HttpResponseNotFound()
+        else:
+            if self.target_object.is_full_banned():
+                return HttpResponseForbidden()
+
         return super().dispatch(request, *args, **kwargs)
 
     def form_valid(self, form):
@@ -200,3 +221,67 @@ class BaseCreateReportView(FormView):
             self.report_model,
             form=BaseReportForm
         )
+
+
+
+class DeleteContentDueToViolationBase(LoginRequiredMixin, DeleteView):
+    form_class = DeleteContentDueToViolationForm
+    template_name = 'moderation/forms/delete_content_due_to_violation_form.html'
+
+    def dispatch(self, request, *args, **kwargs):
+        if request.user.groups.filter(name='Editors').exists() or request.user.is_superuser:
+            return super().dispatch(request, *args, **kwargs)
+
+        return HttpResponseForbidden()
+
+    def form_valid(self, form):
+        # Вземаме съобщението от базата
+        self.object = self.get_object()
+
+        # Попълваме данните за софт делийт
+        self.object.is_deleted_due_to_violation = True
+        self.object.last_violation_info = {
+            'reason': form.cleaned_data['reason'],
+            'deleted_by_user_id': self.request.user.id,
+            'deleted_by_username': self.request.user.username,
+            'deleted_at': timezone.now().isoformat(),
+        }
+        self.object.save()
+
+        # НЕ извикваме super().form_valid(form), за да НЕ изтрие Django записа от базата
+        return redirect(self.get_success_url())
+
+
+class RestoreContentFromViolationBase(LoginRequiredMixin, UpdateView):
+    form_class = RestoreContentFromViolationForm
+    template_name = 'moderation/forms/restore_content_from_violation_form.html'
+
+
+    def dispatch(self, request, *args, **kwargs):
+        if request.user.groups.filter(name='Editors').exists() or request.user.is_superuser:
+            return super().dispatch(request, *args, **kwargs)
+
+        return HttpResponseForbidden()
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs.pop('instance', None)  # Премахва instance аргумента
+        return kwargs
+
+    def form_valid(self, form):
+        self.object = self.get_object()
+
+        # Премахваме флага за изтриване
+        self.object.is_deleted_due_to_violation = False
+
+        # Запазваме историята в JSON полето
+        info = self.object.last_violation_info or {}
+        info['restored_by_user_id'] = self.request.user.id
+        info['restored_by_username'] = self.request.user.username
+        info['restored_at'] = timezone.now().isoformat()
+        info['restoration_reason'] = form.cleaned_data.get('restoration_reason', '')
+
+        self.object.last_violation_info = info
+        self.object.save()
+
+        return redirect(self.get_success_url())

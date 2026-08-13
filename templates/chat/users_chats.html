@@ -31,7 +31,13 @@
             </div>
 
             <div class="chat-item__message">
+                {% if not thread.message_set.last.is_deleted_due_to_violation and not thread.message_set.last.is_deleted_due_to_ban %}
+
                 {{ thread.message_set.last.text|default:"Няма съобщения" }}
+                {% else %}
+
+                    <p><i>Съобщението е изтрито, поради нарушение.</i></p>
+                {% endif %}
             </div>
         </a>
     {% empty %}

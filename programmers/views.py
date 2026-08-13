@@ -2,14 +2,16 @@ from allauth.account.models import EmailAddress
 from allauth.socialaccount.models import SocialAccount
 from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
-from django.http import HttpResponseForbidden
+from django.http import HttpResponseForbidden, HttpResponseNotFound
 from django.shortcuts import render
 from django.urls import reverse
 from django.views.generic import CreateView, DeleteView, ListView, DetailView, UpdateView
 
 from accounts.models import ProgrammerUser
+from moderation.mixins import EditorOrSuperuserRequiredMixin
+from moderation.views import BaseCreateReportView
 from programmers.forms import CreateProgrammerForm, DeleteProgrammerForm, UpdateProgrammerForm
-from programmers.models import Programmer
+from programmers.models import Programmer, ProgrammerReport
 
 
 # Create your views here.
@@ -112,6 +114,7 @@ class AllProgrammers(ListView):
 
 
 
+
 class ProgrammerDetails(LoginRequiredMixin, DetailView):
     model = ProgrammerUser
     template_name = 'programmers/programmer_details.html'
@@ -121,3 +124,27 @@ class ProgrammerDetails(LoginRequiredMixin, DetailView):
 
     def get_queryset(self):
         return super().get_queryset().prefetch_related('services')
+
+    def dispatch(self, request, *args, **kwargs):
+        if self.get_object().is_full_banned():
+            return HttpResponseNotFound()
+
+        return super().dispatch(request, *args, **kwargs)
+
+
+class CreateProgrammerReport(BaseCreateReportView):
+    template_name = 'programmers/forms/create_programmer_report.html'
+    model_to_report = ProgrammerUser
+    object_target_field = 'programmer'
+    report_model = ProgrammerReport
+
+    def get_success_url(self):
+        return reverse('programmer_details', kwargs={'programmer_slug': self.target_object.slug})
+
+from django.views.generic import ListView
+
+class ProgrammerReportListView(EditorOrSuperuserRequiredMixin, ListView):
+    model = ProgrammerReport
+    template_name = 'programmers/programmer_report_list.html'
+    context_object_name = 'reports'
+    ordering = ['-timestamp']

@@ -15,6 +15,9 @@
         {% for report in reports %}
         <div class="report-card">
 
+        {% if report.message.is_deleted_due_to_violation %}
+                    <p><i>Съобщението е изтрито.</i></p>
+                    {% endif %}
             <div class="report-card__header">
                 <span class="report-card__reason">
                     {{ report.reason }}
@@ -48,14 +51,50 @@
                     {{ report.description }}
                 </p>
                 {% endif %}
+
+
+                {% if report.context_messages.all %}
+            <div class="report-card__context">
+                <strong>Context History:</strong>
+                <ul class="context-messages-list">
+                    {% for ctx_msg in report.context_messages.all|dictsort:"timestamp" %}
+                    <li class="context-message">
+
+                        <span class="context-message__time">[{{ ctx_msg.timestamp|date:"H:i d M" }}]</span>
+                        <strong class="context-message__sender">{{ ctx_msg.sender.username }}:</strong>
+                        <span class="context-message__text">{{ ctx_msg.text }} {% if ctx_msg.is_deleted_due_to_violation %}
+                    <i>Съобщението е изтрито, поради нарушение.</i>
+                    {% endif %}</span>
+                        {% if ctx_msg.file %}
+                            <a class="chat-file" href="{{ ctx_msg.file.url }}" target="_blank">📎 File</a>
+                        {% endif %}
+                    {% if not report.message.is_deleted_due_to_violation %}
+                <a href="{% url 'delete_message_due_to_violation' ctx_msg.id %}"><button class="delete-button">Изтрий съобщението</button></a>
+            {% else %}
+                    <a href="{% url 'restore_message_from_violation' ctx_msg.id %}"><button class="delete-button">Възстанови съобщението</button></a>
+
+                {% endif %}
+                    </li>
+                    {% endfor %}
+                </ul>
             </div>
+            {% endif %}
+
+            </div>
+
 
             <div class="report-card__footer">
-                <a href="{% url 'chat_room' report.message.thread_id %}#message-{{ report.message.id }}" class="btn">
-                    Open chat
-                </a>
+                {% if not report.message.is_deleted_due_to_violation %}
+                <a href="{% url 'delete_message_due_to_violation' report.message.id %}"><button class="delete-button">Изтрий съобщението</button></a>
+            {% else %}
+                    <a href="{% url 'restore_message_from_violation' report.message.id %}"><button class="delete-button">Възстанови съобщението</button></a>
+
+                {% endif %}
+                            <br><br>
+                <a href="{% url 'delete_message' report.message.id %}"><button class="delete-button">Изтрий съобщението от сървъра</button></a>
 
             </div>
+
 
         </div>
         {% empty %}

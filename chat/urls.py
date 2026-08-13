@@ -2,11 +2,15 @@ from django.conf.urls.static import static
 from django.urls import path, include
 
 from chat import views
-from chat.views import CreateMessageReport, MessageReportListView, DeleteMessage, UpdateMessage, UsersChats
+from chat.views import CreateMessageReport, MessageReportListView, DeleteMessage, UpdateMessage, UsersChats, \
+    DeleteMessageDueToViolation, RestoreMessageFromViolation
 from devradar import settings
 
 urlpatterns = [
     path("chats/", UsersChats.as_view(), name='users_chats'),
+    path("delete_message_due_to_violation/<int:pk>/", DeleteMessageDueToViolation.as_view(), name='delete_message_due_to_violation'),
+    path("restore_message_from_violation/<int:pk>/", RestoreMessageFromViolation.as_view(),
+         name='restore_message_from_violation'),
 
     path('start/<int:user_id>/', views.start_chat, name='start_chat'),
     path('<int:thread_id>/', views.chat_room, name='chat_room'),

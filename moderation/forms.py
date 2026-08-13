@@ -74,3 +74,27 @@ class BaseReportForm(forms.ModelForm):
         #     'reason': forms.Select(attrs={'class': 'form-select'}),
         #     'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 4}),
         # }
+
+class DeleteContentDueToViolationForm(forms.Form):
+    reason = forms.CharField(
+        widget=forms.Textarea(attrs={
+            'class': 'form-control',
+            'rows': 3,
+            'placeholder': 'Опишете причината за нарушението...'
+        }),
+        label="Причина за премахването",
+        required=True,
+        help_text="Описаната причина ще се запише в служебния дневник за нарушения."
+    )
+
+class RestoreContentFromViolationForm(forms.Form):
+    restoration_reason = forms.CharField(
+        widget=forms.Textarea(attrs={
+            'class': 'form-control',
+            'rows': 3,
+            'placeholder': 'По желание: Опишете защо съдържанието се възстановява...'
+        }),
+        label="Причина за възстановяване",
+        required=False,
+        help_text="Описаната причина ще се запише в служебната история."
+    )

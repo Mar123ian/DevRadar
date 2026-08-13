@@ -1,0 +1,27 @@
+{% extends 'core/base.html' %}
+
+{% block title %}
+    <title>DevRadar | Възстановяване на съобщение</title>
+{% endblock %}
+
+{% block main_content %}
+
+<form
+    method="post"
+    enctype="multipart/form-data"
+    class="comments-update-form"
+>
+    {% csrf_token %}
+
+    <div class="comments-update-form__fields">
+        {{ form }}
+    </div>
+
+    <button
+        type="submit"
+        class="comments-delete-form__button comments-delete-form__button--danger"
+    >
+        Възстанови
+    </button>
+</form>
+{% endblock %}

@@ -10,6 +10,7 @@
 
 
 
+            <a href="{% url 'report_programmer' programmer.id %}">Докладвай</a>
 
     {% if user.is_superuser or user == programmer or user|has_group:"Editors" %}
         <h1 class="programmer-details__name">

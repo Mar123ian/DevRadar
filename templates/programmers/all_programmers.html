@@ -8,6 +8,7 @@
 <section class="programmers-list">
 
     {% for programmer in programmers %}
+        {% if not programmer.is_full_banned %}
         <a href="{% url 'programmer_details' programmer.slug %}" class="programmers-list__link">
         <div class="programmer-card">
 
@@ -24,6 +25,7 @@
 
         </div>
         </a>
+        {% endif %}
     {% empty %}
         <p class="programmers-list__empty">
             Няма намерени програмисти.

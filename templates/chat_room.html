@@ -21,6 +21,8 @@
 
             {% for msg in messages %}
 
+
+
             <div class="chat-row {% if msg.sender == request.user %}own{% else %}other{% endif %}">
 
                 <div class="chat-bubble" id="message-{{ msg.id }}">
@@ -28,7 +30,7 @@
                     <div class="chat-meta">
                         <b>{{ msg.sender.get_full_name }}</b>
                     </div>
-
+                    {% if not msg.is_deleted_due_to_violation and not msg.is_deleted_due_to_ban %}
                     {% if msg.text %}
                         <div class="chat-text">
                             {{ msg.text }}
@@ -50,9 +52,14 @@
                         </a>
                     {% endif %}
 
+                {% else %}
+                    <p><i>Съобщението е изтрито, поради нарушение.</i></p>
+                {% endif %}
+
                 </div>
 
             </div>
+
 
             {% endfor %}
 

@@ -1,14 +1,14 @@
 {% extends 'core/base.html' %}
 
 {% block title %}
-    <title>DevRadar | Всички докладвани услуги</title>
+    <title>DevRadar | Всички докладвани програмисти</title>
 {% endblock %}
 
 {% block main_content %}
 
 <div class="content-wrapper">
 
-    <h1 class="report-title">Service Reports</h1>
+    <h1 class="report-title">Programmer Reports</h1>
 
     <div class="report-list">
 
@@ -27,7 +27,7 @@
 
             <div class="report-card__body">
                 <p class="report-card__message">
-                    <strong>Име на услугата:</strong> {{ report.service.name }}
+                    <strong>Потребителско име на програмиста:</strong> {{ report.programmer.username }}
                 </p>
 
 
@@ -44,20 +44,10 @@
             </div>
 
             <div class="report-card__footer">
-                <a href="{% url 'service_details' report.service.slug %}" class="btn">
-                    Виж услугата
+                <a href="{% url 'programmer_details' report.programmer.slug %}" class="btn">
+                    Виж програмиста
                 </a>
 
-                {% if not report.service.is_deleted_due_to_violation %}
-                    <a href="{% url 'delete_service_due_to_violation' report.service.id %}" class="btn">
-                    Изтрий услугата
-                </a>
-            {% else %}
-                <a href="{% url 'restore_service_from_violation' report.service.id %}" class="btn">
-                    Възстанови услугата
-                </a>
-                {% endif %}
-                <a href="{% url 'delete_service' report.service.id %}"><button class="delete-button">Изтрий услугата от сървъра</button></a>
 
             </div>
 

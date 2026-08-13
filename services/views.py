@@ -1,7 +1,7 @@
 from sqlite3 import IntegrityError
 
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
-from django.http import HttpResponseForbidden
+from django.http import HttpResponseForbidden, HttpResponseNotFound
 from django.shortcuts import render, redirect
 from django.urls import reverse
 from django.views.generic import CreateView, DeleteView, ListView, DetailView
@@ -54,7 +54,11 @@ class UpdateService(LoginRequiredMixin, UpdateView):
         return reverse('service_details', kwargs={'service_slug': self.object.slug})
 
     def dispatch(self, request, *args, **kwargs):
-        if request.user.groups.filter(name='Editors').exists() or request.user.is_superuser or request.user == self.get_object().programmer:
+        self.object = self.get_object()
+
+        if (request.user.groups.filter(name='Editors').exists() or request.user.is_superuser or
+                (request.user == self.get_object().programmer and not (
+                        self.object.is_deleted_due_to_violation or self.object.is_deleted_due_to_ban))):
             return super().dispatch(request, *args, **kwargs)
 
         return HttpResponseForbidden()
@@ -74,8 +78,10 @@ class DeleteService(LoginRequiredMixin, DeleteView):
         return reverse('all_services')
 
     def dispatch(self, request, *args, **kwargs):
-        if request.user.groups.filter(
-                name='Editors').exists() or request.user.is_superuser or request.user == self.get_object().programmer:
+        self.object = self.get_object()
+
+        if (request.user.groups.filter(name='Editors').exists() or request.user.is_superuser or
+                (request.user == self.get_object().programmer and not (self.object.is_deleted_due_to_violation or self.object.is_deleted_due_to_ban))):
             return super().dispatch(request, *args, **kwargs)
 
         return HttpResponseForbidden()
@@ -93,7 +99,7 @@ class AllServices(ListView):
         return  min(per_page, 100)
 
     def get_queryset(self):
-        queryset = super().get_queryset().select_related('programmer', 'type').prefetch_related('technologies', 'comments')
+        queryset = super().get_queryset().filter(is_deleted_due_to_violation=False, is_deleted_due_to_ban=False).select_related('programmer', 'type').prefetch_related('technologies', 'comments')
         self.form = SearchSortAndFilterServicesForm(self.request.GET)
 
         if self.form.is_valid():
@@ -147,7 +153,12 @@ class ServiceDetails(LoginRequiredMixin, FormMixin, DetailView):
     form_class = CreateCommentForm
 
     def get_queryset(self):
-        return super().get_queryset().select_related('programmer', 'type').prefetch_related('technologies', 'comments')
+        return (
+            super().get_queryset()
+            .filter(is_deleted_due_to_violation=False, is_deleted_due_to_ban=False)  # Automatically returns 404 if soft-deleted
+            .select_related('programmer', 'type')
+            .prefetch_related('technologies', 'comments')
+        )
 
     def post(self, request, *args, **kwargs):
         action = request.POST.get('action', None)
@@ -191,12 +202,14 @@ class ServiceDetails(LoginRequiredMixin, FormMixin, DetailView):
 
 
 
+
+
 from django.views.generic.edit import FormView
 from django.urls import reverse
 from django.shortcuts import get_object_or_404
 
 from django.urls import reverse
-from moderation.views import BaseCreateReportView
+from moderation.views import BaseCreateReportView, DeleteContentDueToViolationBase, RestoreContentFromViolationBase
 from services.models import Service, ServiceReport
 
 class CreateServiceReport(BaseCreateReportView):
@@ -216,5 +229,18 @@ class ServiceReportListView(EditorOrSuperuserRequiredMixin, ListView):
     template_name = 'services/service_report_list.html'
     context_object_name = 'reports'
     ordering = ['-timestamp']
+
+class DeleteServiceDueToViolation(DeleteContentDueToViolationBase):
+    model = Service
+
+    def get_success_url(self):
+        return reverse('all_reported_services')
+
+
+class RestoreServiceFromViolation(RestoreContentFromViolationBase):
+    model = Service
+
+    def get_success_url(self):
+        return reverse('all_reported_services')
 
 

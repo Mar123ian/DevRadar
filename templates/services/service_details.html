@@ -69,12 +69,14 @@
         </div>
 
         <div class="service-details__comment-list">
-            {% for comment in service.comments.all %}
+            {% for comment in service.active_comments %}
+
+                <div class="service-details__comment">
+
+                    {% include 'comments/comment_details.html' %}
                 {% if comment.author != user %}
                     <a href="{% url 'report_comment' comment.id %}">Докладвай</a>
                 {% endif %}
-                <div class="service-details__comment">
-                    {% include 'comments/comment_details.html' %}
                 </div>
             {% empty %}
                 <p class="service-details__no-comments">

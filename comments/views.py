@@ -6,7 +6,7 @@ from django.views.generic import UpdateView, DeleteView
 from comments.forms import UpdateCommentForm, DeleteCommentForm
 from comments.models import Comment, CommentReport
 from moderation.mixins import EditorOrSuperuserRequiredMixin
-from moderation.views import BaseCreateReportView
+from moderation.views import BaseCreateReportView, DeleteContentDueToViolationBase, RestoreContentFromViolationBase
 
 
 class UpdateComment(LoginRequiredMixin, UpdateView):
@@ -19,7 +19,10 @@ class UpdateComment(LoginRequiredMixin, UpdateView):
         return reverse('service_details', kwargs={'service_slug': self.get_object().service.slug})
 
     def dispatch(self, request, *args, **kwargs):
-        if request.user.groups.filter(name='Editors').exists() or request.user.is_superuser or request.user == self.get_object().author:
+        self.object = self.get_object()
+
+        if (request.user.groups.filter(name='Editors').exists() or request.user.is_superuser or
+                (request.user == self.get_object().author and not (self.object.is_deleted_due_to_violation or self.object.is_deleted_due_to_ban))):
             return super().dispatch(request, *args, **kwargs)
 
         return HttpResponseForbidden()
@@ -38,7 +41,10 @@ class DeleteComment(LoginRequiredMixin, DeleteView):
         return reverse('service_details', kwargs={'service_slug': self.get_object().service.slug})
 
     def dispatch(self, request, *args, **kwargs):
-        if request.user.groups.filter(name='Editors').exists() or request.user.is_superuser or request.user == self.get_object().author:
+        self.object = self.get_object()
+
+        if (request.user.groups.filter(name='Editors').exists() or request.user.is_superuser or
+                (request.user == self.get_object().author and not (self.object.is_deleted_due_to_violation or self.object.is_deleted_due_to_ban))):
             return super().dispatch(request, *args, **kwargs)
 
         return HttpResponseForbidden()
@@ -63,3 +69,17 @@ class CommentReportListView(EditorOrSuperuserRequiredMixin, ListView):
     template_name = 'comments/comment_report_list.html'
     context_object_name = 'reports'
     ordering = ['-timestamp']
+
+
+class DeleteCommentDueToViolation(DeleteContentDueToViolationBase):
+    model = Comment
+
+    def get_success_url(self):
+        return reverse('all_reported_comments')
+
+
+class RestoreCommentFromViolation(RestoreContentFromViolationBase):
+    model = Comment
+
+    def get_success_url(self):
+        return reverse('all_reported_comments')
