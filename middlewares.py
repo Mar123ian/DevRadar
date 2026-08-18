@@ -15,7 +15,7 @@ class IsBannedMiddleware:
         if request.user.is_authenticated and hasattr(request.user, 'bans'):
             if user.is_full_banned():
                 return HttpResponseForbidden()
-            elif user.is_chat_banned() and request.path.startswith('/chat/'):
+            elif user.is_chat_banned() and request.path.startswith('/chat/') and not request.path.startswith('/chat/appeal_message_violation'):
                 return HttpResponseForbidden()
             elif user.is_comments_banned() and request.path.startswith('/comments/'):
                 return HttpResponseForbidden()

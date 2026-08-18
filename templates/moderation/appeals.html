@@ -1,0 +1,58 @@
+{% extends "core/base.html" %}
+
+{% block main_content %}
+<div class="container py-4">
+    <div class="card shadow-sm">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">Жалби (Appeals)</h5>
+        </div>
+        <div class="card-body p-0">
+            {% if appeals %}
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                        <tr>
+                            <th>Тип</th>
+                            <th>Съдържание</th>
+                            <th>Мотивация</th>
+                            <th>Подадена на</th>
+                            <th class="text-end">Действие</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for a in appeals %}
+                            <tr>
+                                <td class="text-muted text-uppercase small">{{ a.type }}</td>
+                                <td>
+                                    {% if a.url %}
+                                        <a href="{{ a.url }}" class="text-decoration-none">Виж</a>
+                                    {% else %}
+                                        {{ a.content }}
+                                    {% endif %}
+                                </td>
+                                <td>{{ a.description }}</td>
+                                <td>{{ a.created_at|date:"Y-m-d H:i" }}</td>
+                                <td class="text-end">
+                                    {% if a.type|slice:"-3:" != 'ban' %}
+                                    <form method="post">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="type" value="{{ a.type }}">
+                                        <input type="hidden" name="appeal_id" value="{{ a.id }}">
+                                        <button type="submit" class="btn btn-success btn-sm">Приеми</button>
+                                    </form>
+
+                                    {% endif %}
+
+                                </td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="text-center p-4 text-muted">Няма чакащи жалби.</div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

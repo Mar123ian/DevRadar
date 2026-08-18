@@ -1,7 +1,8 @@
 from django.urls import path
 
 from services.views import CreateService, DeleteService, AllServices, ServiceDetails, UpdateService, FavouriteServices, \
-    CreateServiceReport, ServiceReportListView, DeleteServiceDueToViolation, RestoreServiceFromViolation
+    CreateServiceReport, ServiceReportListView, DeleteServiceDueToViolation, RestoreServiceFromViolation, \
+    CreateServiceAppeal
 
 urlpatterns = [
 
@@ -17,5 +18,6 @@ path("delete_service_due_to_violation/<int:pk>/", DeleteServiceDueToViolation.as
     path('update/<slug:service_slug>/', UpdateService.as_view(), name='update_service'),
     path('<slug:service_slug>/', ServiceDetails.as_view(), name='service_details'),
 path("report_service/<int:pk>/", CreateServiceReport.as_view(), name='report_service'),
+path("appeal_service_violation/<int:pk>/", CreateServiceAppeal.as_view(), name='appeal_service_violation'),
 
 ]

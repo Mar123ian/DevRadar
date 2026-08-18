@@ -1,17 +1,18 @@
 from django.contrib.auth import get_user_model
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.core.exceptions import ValidationError
 from django.forms import modelform_factory
 from django.http import HttpResponseForbidden, HttpResponseRedirect, HttpResponseNotFound
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
 from django.utils import timezone
-from django.views.generic import DeleteView, FormView, TemplateView, UpdateView
+from django.views.generic import DeleteView, FormView, TemplateView, UpdateView, ListView
 
 from accounts.models import ProgrammerUser
+from comments.models import CommentAppeal
 from moderation.forms import CreateBanForm, DeleteBanForm, UpdateBanForm, BaseReportForm, \
-    DeleteContentDueToViolationForm, RestoreContentFromViolationForm
-from moderation.models import Ban
+    DeleteContentDueToViolationForm, RestoreContentFromViolationForm, BaseAppealForm
+from moderation.models import Ban, BaseAppeal, BanAppeal
 
 
 class BanUser(FormView):
@@ -223,6 +224,35 @@ class BaseCreateReportView(FormView):
         )
 
 
+class BaseCreateAppealView(FormView):
+    model_to_appeal = None
+    appeal_model = None
+    object_target_field = ''
+
+    def dispatch(self, request, *args, **kwargs):
+        self.target_object = get_object_or_404(self.model_to_appeal, pk=kwargs['pk'])
+
+        #TODO if
+
+
+
+        return super().dispatch(request, *args, **kwargs)
+
+    def form_valid(self, form):
+        appeal = form.save(commit=False)
+        appeal.sender = self.request.user
+
+        setattr(appeal, self.object_target_field, self.target_object)
+
+        appeal.save()
+        return super().form_valid(form)
+
+    def get_form_class(self):
+        return modelform_factory(
+            self.appeal_model,
+            form=BaseAppealForm
+        )
+
 
 class DeleteContentDueToViolationBase(LoginRequiredMixin, DeleteView):
     form_class = DeleteContentDueToViolationForm
@@ -285,3 +315,166 @@ class RestoreContentFromViolationBase(LoginRequiredMixin, UpdateView):
         self.object.save()
 
         return redirect(self.get_success_url())
+
+
+from django.shortcuts import render
+from django.contrib.auth.decorators import login_required
+
+
+@login_required
+def user_violations_and_bans_view(request):
+    user = request.user
+
+    # 1. Вземаме активните и изтеклите банове
+    user_bans = user.bans.all().order_by('-start_date')
+
+    # 2. Вземаме съдържанието, премахнато заради нарушения
+    deleted_comments = user.deleted_comments()
+    deleted_messages = user.deleted_messages()
+
+    deleted_services = []
+    if user.is_programmer:
+        # ProgrammerUser наследява и има метод deleted_services
+        deleted_services = user.deleted_services()
+
+    context = {
+        'user_bans': user_bans,
+        'deleted_comments': deleted_comments,
+        'deleted_messages': deleted_messages,
+        'deleted_services': deleted_services,
+    }
+    return render(request, 'moderation/violations_history.html', context)
+
+
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.http import HttpResponseForbidden
+from django.shortcuts import redirect
+from django.views.generic import TemplateView
+
+from comments.models import CommentAppeal
+from services.models import ServiceAppeal
+from chat.models import MessageAppeal
+
+
+class AppealsView(LoginRequiredMixin, TemplateView):
+    template_name = 'moderation/appeals.html'
+
+    def dispatch(self, request, *args, **kwargs):
+        # Достъп само за Editors или суперпотребители
+        if request.user.groups.filter(name='Editors').exists() or request.user.is_superuser:
+            return super().dispatch(request, *args, **kwargs)
+        return HttpResponseForbidden()
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        ban_appeals = list(BanAppeal.objects.filter(accepted=False).select_related('ban'))
+        comment_appeals = list(CommentAppeal.objects.filter(accepted=False).select_related('comment'))
+        service_appeals = list(ServiceAppeal.objects.filter(accepted=False).select_related('service'))
+        message_appeals = list(MessageAppeal.objects.filter(accepted=False).select_related('message'))
+
+        items = []
+
+        for a in ban_appeals:
+            content = getattr(a, 'ban', None)
+
+            if a.ban.is_active():
+                items.append({
+                    'id': a.id,
+                    'ban_id': a.ban.id,
+                    'type': a.ban.ban_type.lower(),
+                    'created_at': getattr(a, 'timestamp', None),
+                    'content': str(content) if content is not None else '',
+                    # TODO single user page
+                    'url': reverse('all_users')+'#user-'+str(a.ban.user.id),
+                    'description': a.description,
+                })
+
+        for a in comment_appeals:
+            content = getattr(a, 'comment', None)
+            items.append({
+                'id': a.id,
+                'type': 'comment',
+                'created_at': getattr(a, 'timestamp', None),
+                'content': str(content) if content is not None else '',
+                'url': content.get_absolute_url() if content and hasattr(content, 'get_absolute_url') else None,
+                'description': a.description,
+            })
+
+        for a in service_appeals:
+            content = getattr(a, 'service', None)
+            items.append({
+                'id': a.id,
+                'type': 'service',
+                'created_at': getattr(a, 'timestamp', None),
+                'content': str(content) if content is not None else '',
+                'url': reverse('service_details', kwargs={'service_slug': a.service.slug}),
+                'description': a.description,
+
+            })
+
+        for a in message_appeals:
+            content = getattr(a, 'message', None).text
+            items.append({
+                'id': a.id,
+                'type': 'message',
+                'created_at': getattr(a, 'timestamp', None),
+                'content': str(content) if content is not None else '',
+                'url': content.get_absolute_url() if content and hasattr(content, 'get_absolute_url') else None,
+                'description': a.description,
+
+            })
+
+        # Сортираме по дата (най-новите първи)
+        items.sort(key=lambda x: (x['created_at'] is not None, x['created_at']), reverse=True)
+
+        context['appeals'] = items
+        return context
+
+    def post(self, request, *args, **kwargs):
+        # Приемане на жалба и възстановяване на съдържанието
+        appeal_type = request.POST.get('type')
+        appeal_id = request.POST.get('appeal_id')
+
+        model_map = {
+            'ban': BanAppeal,
+            'comment': CommentAppeal,
+            'service': ServiceAppeal,
+            'message': MessageAppeal,
+        }
+        Model = model_map.get(appeal_type)
+
+        if Model and appeal_id:
+            try:
+                appeal = Model.objects.get(pk=appeal_id, accepted=False)
+                # Маркираме жалбата като приета
+                appeal.accepted = True
+                appeal.save(update_fields=['accepted'])
+
+                if not isinstance(appeal, BanAppeal):
+                    # Възстановяваме съдържанието (махаме флага за нарушение)
+                    target = None
+                    for attr in ('comment', 'service', 'message'):
+                        if hasattr(appeal, attr):
+                            target = getattr(appeal, attr)
+                            break
+
+                    if target is not None and hasattr(target, 'is_deleted_due_to_violation'):
+                        target.is_deleted_due_to_violation = False
+                        target.violation_appeal.delete()
+                        target.save(update_fields=['is_deleted_due_to_violation'])
+            except Model.DoesNotExist:
+                pass
+
+        return redirect(self.request.path)
+
+
+class CreateBanAppeal(BaseCreateAppealView):
+    template_name = 'moderation/forms/create_ban_appeal.html'
+    model_to_appeal = Ban
+    object_target_field = 'ban'
+    appeal_model = BanAppeal
+
+    #TODO url
+    def get_success_url(self):
+        return reverse('home')

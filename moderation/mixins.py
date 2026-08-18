@@ -30,5 +30,6 @@ class ViolationSoftDeleteMixin(models.Model):
         default=False,
     )
 
+
     class Meta:
         abstract = True

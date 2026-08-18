@@ -75,6 +75,10 @@ class BaseReportForm(forms.ModelForm):
         #     'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 4}),
         # }
 
+class BaseAppealForm(forms.ModelForm):
+    class Meta:
+        fields = ['description']
+
 class DeleteContentDueToViolationForm(forms.Form):
     reason = forms.CharField(
         widget=forms.Textarea(attrs={

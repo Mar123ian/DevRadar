@@ -3,7 +3,7 @@ from django.conf import settings
 
 from core.managers import NonDeletedManager
 from moderation.mixins import ViolationSoftDeleteMixin
-from moderation.models import BaseReport
+from moderation.models import BaseReport, BaseAppeal
 
 
 class Thread(models.Model):
@@ -24,3 +24,6 @@ class Message(ViolationSoftDeleteMixin, models.Model):
 class MessageReport(BaseReport):
     message = models.ForeignKey(Message, on_delete=models.CASCADE, related_name='reports')
     context_messages = models.ManyToManyField(Message, related_name='message_reports')
+
+class MessageAppeal(BaseAppeal):
+    message = models.OneToOneField(Message, on_delete=models.CASCADE, related_name='violation_appeal')

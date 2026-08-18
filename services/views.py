@@ -12,7 +12,7 @@ from chat.models import MessageReport
 from comments.forms import CreateCommentForm
 from moderation.mixins import EditorOrSuperuserRequiredMixin
 from services.forms import CreateServiceForm, DeleteServiceForm, SearchSortAndFilterServicesForm, UpdateServiceForm
-from services.models import Service
+from services.models import Service, ServiceAppeal
 
 
 # Create your views here.
@@ -153,9 +153,18 @@ class ServiceDetails(LoginRequiredMixin, FormMixin, DetailView):
     form_class = CreateCommentForm
 
     def get_queryset(self):
+
+        if self.request.user.groups.filter(name='Editors').exists() or self.request.user.is_superuser:
+            return (
+                super().get_queryset()
+                .select_related('programmer', 'type')
+                .prefetch_related('technologies', 'comments')
+            )
+
         return (
             super().get_queryset()
-            .filter(is_deleted_due_to_violation=False, is_deleted_due_to_ban=False)  # Automatically returns 404 if soft-deleted
+            .filter(is_deleted_due_to_violation=False,
+                    is_deleted_due_to_ban=False)  # Automatically returns 404 if soft-deleted
             .select_related('programmer', 'type')
             .prefetch_related('technologies', 'comments')
         )
@@ -209,7 +218,8 @@ from django.urls import reverse
 from django.shortcuts import get_object_or_404
 
 from django.urls import reverse
-from moderation.views import BaseCreateReportView, DeleteContentDueToViolationBase, RestoreContentFromViolationBase
+from moderation.views import BaseCreateReportView, DeleteContentDueToViolationBase, RestoreContentFromViolationBase, \
+    BaseCreateAppealView
 from services.models import Service, ServiceReport
 
 class CreateServiceReport(BaseCreateReportView):
@@ -220,6 +230,15 @@ class CreateServiceReport(BaseCreateReportView):
 
     def get_success_url(self):
         return reverse('service_details', kwargs={'service_slug': self.target_object.slug})
+
+class CreateServiceAppeal(BaseCreateAppealView):
+    template_name = 'services/forms/create_service_appeal.html'
+    model_to_appeal = Service
+    object_target_field = 'service'
+    appeal_model = ServiceAppeal
+
+    def get_success_url(self):
+        return reverse('home')
 
 from django.views.generic import ListView
 from .models import ServiceReport

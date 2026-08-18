@@ -21,7 +21,7 @@
 </head>
 <body>
     <header class="main-header">
-    {% if is_chat_banned or is_comments_banned or is_offer_service_banned %}
+    {% if False %}
     <div class="alert alert-warning">
 
         {# --- БАН ЗА ЧАТ --- #}
@@ -132,6 +132,7 @@
                             <li><a href="{% url 'all_reported_services' %}">Докладвани услуги</a></li>
                             <li><a href="{% url 'all_reported_comments' %}">Докладвани коментари</a></li>
                             <li><a href="{% url 'all_reported_programmers' %}">Докладвани програмисти</a></li>
+                            <li><a href="{% url 'appeals' %}">Обжалвания</a></li>
                         </ul>
                     </li>
                     {% endif %}

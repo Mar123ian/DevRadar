@@ -6,7 +6,7 @@ from unidecode import unidecode
 from core.managers import NonDeletedManager
 from core.mixins import CreatedAndUpdatedAtMixin
 from moderation.mixins import ViolationSoftDeleteMixin
-from moderation.models import BaseReport
+from moderation.models import BaseReport, BaseAppeal
 
 
 # Create your models here.
@@ -45,3 +45,6 @@ class Service(ViolationSoftDeleteMixin, CreatedAndUpdatedAtMixin, models.Model):
 
 class ServiceReport(BaseReport):
     service = models.ForeignKey(Service, on_delete=models.CASCADE, related_name='reports')
+
+class ServiceAppeal(BaseAppeal):
+    service = models.OneToOneField(Service, on_delete=models.CASCADE, related_name='violation_appeal')

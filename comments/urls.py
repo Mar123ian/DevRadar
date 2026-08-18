@@ -1,7 +1,7 @@
 from django.urls import path, include
 
 from comments.views import DeleteComment, UpdateComment, CreateCommentReport, CommentReportListView, \
-    RestoreCommentFromViolation, DeleteCommentDueToViolation
+    RestoreCommentFromViolation, DeleteCommentDueToViolation, CreateCommentAppeal
 
 urlpatterns = [
 
@@ -12,6 +12,7 @@ path("delete_comment_due_to_violation/<int:pk>/", DeleteCommentDueToViolation.as
         path('update/<int:pk>/', UpdateComment.as_view(), name='update_comment'),
 path("report_comment/<int:pk>/", CreateCommentReport.as_view(), name='report_comment'),
     path("all_reported_comments/", CommentReportListView.as_view(), name='all_reported_comments'),
+path("appeal_comment_violation/<int:pk>/", CreateCommentAppeal.as_view(), name='appeal_comment_violation'),
 
 
 ]

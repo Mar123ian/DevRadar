@@ -11,10 +11,11 @@ from django.utils import timezone
 from django.views.generic import CreateView, DeleteView, UpdateView
 
 from moderation.mixins import EditorOrSuperuserRequiredMixin
-from moderation.views import BaseCreateReportView, DeleteContentDueToViolationBase, RestoreContentFromViolationBase
+from moderation.views import BaseCreateReportView, DeleteContentDueToViolationBase, RestoreContentFromViolationBase, \
+    BaseCreateAppealView
 
 from .forms import UpdateMessageForm
-from .models import Thread, MessageReport
+from .models import Thread, MessageReport, MessageAppeal
 from .models import Message
 
 User = get_user_model()
@@ -139,6 +140,16 @@ class CreateMessageReport(BaseCreateReportView):
         report.context_messages.add(*before_messages, *after_messages)
 
         return response
+
+
+class CreateMessageAppeal(BaseCreateAppealView):
+    template_name = 'chat/forms/create_message_appeal.html'
+    model_to_appeal = Message
+    object_target_field = 'message'
+    appeal_model = MessageAppeal
+
+    def get_success_url(self):
+        return reverse('home')
 
 from django.views.generic import ListView
 from .models import MessageReport

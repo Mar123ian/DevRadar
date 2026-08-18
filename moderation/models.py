@@ -1,6 +1,8 @@
 from django.core.exceptions import ValidationError
-from django.db import models
+from django.db import models, transaction, IntegrityError
 from django.utils import timezone
+
+
 
 #TODO better soft del names
 
@@ -27,6 +29,13 @@ class Ban(models.Model):
         default=BanType.FULL_BAN,
     )
 
+    def is_active(self):
+        if self.active and self.permanent:
+            return True
+        if self.active and self.duration:
+            return self.start_date + self.duration > timezone.now()
+        return False
+
 from django.db import models
 from django.conf import settings
 
@@ -49,6 +58,40 @@ class BaseReport(models.Model):
 
     class Meta:
         abstract = True
+
+class BaseAppeal(models.Model):
+    description = models.TextField(blank=False, null=False)
+    timestamp = models.DateTimeField(auto_now_add=True)
+    sender = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    accepted = models.BooleanField(default=False)
+
+    class Meta:
+        abstract = True
+
+    def save(self, *args, **kwargs):
+
+        try:
+            with transaction.atomic():
+                super().save(*args, **kwargs)
+        except IntegrityError:
+            # 1. Взимаме точния клас на настоящия обект (ServiceAppeal, CommentAppeal и т.н.)
+            model_class = self._meta.model
+
+            # 2. Изтриваме стария запис
+            # (За ServiceAppeal търси по self.service, за CommentAppeal - по self.comment и т.н.)
+            if hasattr(self, 'service'):
+                model_class.objects.filter(service=self.service).delete()
+            elif hasattr(self, 'comment'):
+                model_class.objects.filter(comment=self.comment).delete()
+            elif hasattr(self, 'message'):
+                model_class.objects.filter(message=self.message).delete()
+
+            # 3. Записваме новия обект наново
+            super().save(*args, **kwargs)
+
+
+class BanAppeal(BaseAppeal):
+    ban = models.OneToOneField(Ban, on_delete=models.CASCADE, related_name='violation_appeal')
 
 
 

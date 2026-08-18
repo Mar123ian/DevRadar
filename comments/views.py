@@ -4,9 +4,10 @@ from django.urls import reverse
 from django.views.generic import UpdateView, DeleteView
 
 from comments.forms import UpdateCommentForm, DeleteCommentForm
-from comments.models import Comment, CommentReport
+from comments.models import Comment, CommentReport, CommentAppeal
 from moderation.mixins import EditorOrSuperuserRequiredMixin
-from moderation.views import BaseCreateReportView, DeleteContentDueToViolationBase, RestoreContentFromViolationBase
+from moderation.views import BaseCreateReportView, DeleteContentDueToViolationBase, RestoreContentFromViolationBase, \
+    BaseCreateAppealView
 
 
 class UpdateComment(LoginRequiredMixin, UpdateView):
@@ -60,6 +61,17 @@ class CreateCommentReport(BaseCreateReportView):
 
     def get_success_url(self):
         return reverse('service_details', kwargs={'service_slug': self.target_object.service.slug})
+
+
+class CreateCommentAppeal(BaseCreateAppealView):
+    template_name = 'comments/forms/create_comment_appeal.html'
+    model_to_appeal = Comment
+    object_target_field = 'comment'
+    appeal_model = CommentAppeal
+
+    #TODO url
+    def get_success_url(self):
+        return reverse('home')
 
 from django.views.generic import ListView
 from .models import CommentReport
