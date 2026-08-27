@@ -40,15 +40,42 @@
                                         <input type="hidden" name="appeal_id" value="{{ a.id }}">
                                         <button type="submit" class="btn btn-success btn-sm">Приеми</button>
                                     </form>
-
                                     {% endif %}
-
                                 </td>
                             </tr>
                         {% endfor %}
                         </tbody>
                     </table>
                 </div>
+
+                <!-- Блок за пагинация -->
+                {% if is_paginated %}
+                    <div class="p-3 d-flex justify-content-between align-items-center border-top">
+                        <div>
+                            Страница {{ page_obj.number }} от {{ page_obj.paginator.num_pages }}
+                        </div>
+                        <ul class="pagination mb-0">
+                            {% if page_obj.has_previous %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page=1">&laquo; Първа</a>
+                                </li>
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Предишна</a>
+                                </li>
+                            {% endif %}
+
+                            {% if page_obj.has_next %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page_obj.next_page_number }}">Следваща</a>
+                                </li>
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">Последна &raquo;</a>
+                                </li>
+                            {% endif %}
+                        </ul>
+                    </div>
+                {% endif %}
+
             {% else %}
                 <div class="text-center p-4 text-muted">Няма чакащи жалби.</div>
             {% endif %}

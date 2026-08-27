@@ -1,0 +1,26 @@
+{% extends 'core/base.html' %}
+
+{% block title %}
+<title>Достъпът е ограничен | Чат</title>
+{% endblock %}
+
+{% block main_content %}
+<div class="content-wrapper">
+    <div class="programmer-details__header" style="text-align:center; margin-bottom: 24px;">
+        <h1 class="service-details__title">Ограничение в чата</h1>
+        <p class="hero-lead">В момента нямате достъп до чата и изпращането на съобщения.</p>
+    </div>
+
+    <div class="service-card" style="max-width: 860px; margin: 0 auto;">
+        <div class="service-card__title" style="color: var(--danger);">Бан за чат</div>
+        <div class="service-card__description">
+            <p>Достъпът ви до чата е ограничен поради нарушения на правилата за комуникация.</p>
+            <p class="helptext">Можете да прегледате детайли и да подадете жалба от секцията „Нарушения“.</p>
+            <div style="display:flex; gap: 12px; flex-wrap: wrap; margin-top: 12px;">
+                <a href="{% url 'violations' user.id %}" class="update-button" style="text-decoration:none;">Виж нарушения и обжалвай</a>
+                <a href="/" class="delete-button" style="text-decoration:none; background: var(--gray-200); color: var(--dark); border: none;">Към началото</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -13,14 +13,14 @@ class IsBannedMiddleware:
         user = request.user
 
         if request.user.is_authenticated and hasattr(request.user, 'bans'):
-            if user.is_full_banned():
-                return HttpResponseForbidden()
+            if user.is_full_banned() and not request.path.startswith('/moderation/violations/') and not request.path.startswith('/moderation/appeal'):
+                return render(request, 'moderation/banned_full.html', status=403)
             elif user.is_chat_banned() and request.path.startswith('/chat/') and not request.path.startswith('/chat/appeal_message_violation'):
-                return HttpResponseForbidden()
+                return render(request, 'moderation/banned_chat.html', status=403)
             elif user.is_comments_banned() and request.path.startswith('/comments/'):
-                return HttpResponseForbidden()
+                return render(request, 'moderation/banned_comments.html', status=403)
             elif user.is_offer_service_banned() and (request.path.startswith('/services/create/') or request.path.startswith('/services/update/') or request.path.startswith('/services/delete/')):
-                return HttpResponseForbidden()
+                return render(request, 'moderation/banned_services.html', status=403)
 
         response = self.get_response(request)
 
@@ -28,7 +28,7 @@ class IsBannedMiddleware:
 
 
 from allauth.account.models import EmailAddress
-from django.shortcuts import redirect
+from django.shortcuts import redirect, render
 
 class BlockUnverifiedEmailMiddleware:
     def __init__(self, get_response):

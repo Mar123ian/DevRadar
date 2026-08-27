@@ -1,0 +1,26 @@
+{% extends 'core/base.html' %}
+
+{% block title %}
+<title>Достъпът е ограничен | Услуги</title>
+{% endblock %}
+
+{% block main_content %}
+<div class="content-wrapper">
+    <div class="programmer-details__header" style="text-align:center; margin-bottom: 24px;">
+        <h1 class="service-details__title">Ограничение за услуги</h1>
+        <p class="hero-lead">Не можете да създавате, редактирате или изтривате услуги в момента.</p>
+    </div>
+
+    <div class="service-card" style="max-width: 860px; margin: 0 auto;">
+        <div class="service-card__title" style="color: var(--danger);">Бан за предлагане на услуги</div>
+        <div class="service-card__description">
+            <p>Достъпът ви до предлагане на услуги е ограничен поради нарушения на правилата на платформата.</p>
+            <p class="helptext">Ако считате, че има грешка, посетете страницата „Нарушения“, за да видите детайли и да подадете жалба.</p>
+            <div style="display:flex; gap: 12px; flex-wrap: wrap; margin-top: 12px;">
+                <a href="{% url 'violations' user.id %}" class="update-button" style="text-decoration:none;">Виж нарушения и обжалвай</a>
+                <a href="{% url 'all_services' %}" class="delete-button" style="text-decoration:none; background: var(--gray-200); color: var(--dark); border: none;">Виж услуги</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

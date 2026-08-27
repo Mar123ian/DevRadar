@@ -1,0 +1,26 @@
+{% extends 'core/base.html' %}
+
+{% block title %}
+<title>Достъпът е ограничен | Пълен бан</title>
+{% endblock %}
+
+{% block main_content %}
+<div class="content-wrapper">
+    <div class="programmer-details__header" style="text-align:center; margin-bottom: 24px;">
+        <h1 class="service-details__title">Акаунтът ви е ограничен</h1>
+        <p class="hero-lead">Достъпът до функционалностите на платформата е временно или постоянно ограничен.</p>
+    </div>
+
+    <div class="service-card" style="max-width: 860px; margin: 0 auto;">
+        <div class="service-card__title" style="color: var(--danger);">Пълен бан</div>
+        <div class="service-card__description">
+            <p>Акаунтът ви е с активен бан. По време на този период не можете да използвате основните функционалности на платформата.</p>
+            <p class="helptext">Ако смятате, че това е грешка, можете да подадете жалба от страницата с нарушения.</p>
+            <div style="display:flex; gap: 12px; flex-wrap: wrap; margin-top: 12px;">
+                <a href="{% url 'violations' user.id %}" class="update-button" style="text-decoration:none;">Виж нарушения и обжалвай</a>
+                <a href="/" class="delete-button" style="text-decoration:none; background: var(--gray-200); color: var(--dark); border: none;">Към началото</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

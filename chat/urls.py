@@ -3,7 +3,7 @@ from django.urls import path, include
 
 from chat import views
 from chat.views import CreateMessageReport, MessageReportListView, DeleteMessage, UpdateMessage, UsersChats, \
-    DeleteMessageDueToViolation, RestoreMessageFromViolation, CreateMessageAppeal
+    DeleteMessageDueToViolation, RestoreMessageFromViolation, CreateMessageAppeal, load_older_messages
 from devradar import settings
 
 urlpatterns = [
@@ -11,7 +11,11 @@ path("appeal_message_violation/<int:pk>/", CreateMessageAppeal.as_view(), name='
 
     path("chats/", UsersChats.as_view(), name='users_chats'),
 
-
+path(
+    '<int:thread_id>/load_older/',
+    load_older_messages,
+    name='load_older_messages',
+),
 
     path("delete_message_due_to_violation/<int:pk>/", DeleteMessageDueToViolation.as_view(), name='delete_message_due_to_violation'),
     path("restore_message_from_violation/<int:pk>/", RestoreMessageFromViolation.as_view(),

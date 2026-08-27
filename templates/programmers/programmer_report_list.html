@@ -30,8 +30,6 @@
                     <strong>Потребителско име на програмиста:</strong> {{ report.programmer.username }}
                 </p>
 
-
-
                 <p class="report-card__sender">
                     <strong>Reported by:</strong> {{ report.sender.username }}
                 </p>
@@ -47,8 +45,6 @@
                 <a href="{% url 'programmer_details' report.programmer.slug %}" class="btn">
                     Виж програмиста
                 </a>
-
-
             </div>
 
         </div>
@@ -57,5 +53,22 @@
         {% endfor %}
 
     </div>
+
+    <!-- Навигация за пагинация -->
+    {% if is_paginated %}
+        <div class="pagination">
+            {% if page_obj.has_previous %}
+                <a href="?page=1">&laquo; Първа</a>
+                <a href="?page={{ page_obj.previous_page_number }}">Предишна</a>
+            {% endif %}
+
+            <span>Страница {{ page_obj.number }} от {{ page_obj.paginator.num_pages }}</span>
+
+            {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}">Следваща</a>
+                <a href="?page={{ page_obj.paginator.num_pages }}">Последна &raquo;</a>
+            {% endif %}
+        </div>
+    {% endif %}
 </div>
 {% endblock %}

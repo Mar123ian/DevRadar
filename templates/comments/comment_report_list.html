@@ -55,12 +55,12 @@
 
                 {% if not report.comment.is_deleted_due_to_violation %}
                     <a href="{% url 'delete_comment_due_to_violation' report.comment.id %}" class="btn">
-                    Изтрий коментара
-                </a>
-            {% else %}
-                <a href="{% url 'restore_comment_from_violation' report.comment.id %}" class="btn">
-                    Възстанови коментара
-                </a>
+                        Изтрий коментара
+                    </a>
+                {% else %}
+                    <a href="{% url 'restore_comment_from_violation' report.comment.id %}" class="btn">
+                        Възстанови коментара
+                    </a>
                 {% endif %}
 
                 <a href="{% url 'delete_comment' report.comment.id %}"><button class="delete-button">Изтрий коментара от сървъра</button></a>
@@ -74,5 +74,23 @@
         {% endfor %}
 
     </div>
+
+    <!-- Навигация за пагинация -->
+    {% if is_paginated %}
+        <div class="pagination">
+            {% if page_obj.has_previous %}
+                <a href="?page=1">&laquo; Първа</a>
+                <a href="?page={{ page_obj.previous_page_number }}">Предишна</a>
+            {% endif %}
+
+            <span>Страница {{ page_obj.number }} от {{ page_obj.paginator.num_pages }}</span>
+
+            {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}">Следваща</a>
+                <a href="?page={{ page_obj.paginator.num_pages }}">Последна &raquo;</a>
+            {% endif %}
+        </div>
+    {% endif %}
+
 </div>
 {% endblock %}

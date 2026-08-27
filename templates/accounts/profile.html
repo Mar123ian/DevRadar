@@ -7,86 +7,86 @@
 
 {% block main_content %}
 
-        <div class="programmer-details__header">
+    <div class="programmer-details__header">
 
-    {% if user|has_group:"Programmers" %}
-        <img
+        {% if user|has_group:"Programmers" %}
+            <img
                 src="{{ user.image.url }}"
                 alt="{{ user.get_full_name }}"
                 class="programmer-details__image"
-        >
-    {% endif %}
+            >
+        {% endif %}
 
+        <p><strong>Име:</strong> {{ user.get_full_name }}</p>
+        <p><strong>Имейл:</strong> {{ user.email }}</p>
+        {% if user|has_group:"Programmers" %}
+            <p><strong>Телефон:</strong> {{ user.phone_number }}</p>
+        {% endif %}
 
-    <p><strong>Име:</strong> {{ user.get_full_name }}</p>
-    <p><strong>Имейл:</strong> {{ user.email }}</p>
-    {% if user|has_group:"Programmers" %}
-        <p><strong>Телефон:</strong> {{ user.phone_number }}</p>
-    {% endif %}
-
-    <br>
+        <br>
 
         <div style="display: flex; flex-direction: row; gap: 1em;" class="programmer-details__buttons">
             {% if user.has_usable_password %}
-            <a href="{% url 'account_change_password' %}"><button class="update-button">Промяна на парола</button></a>
-                {% else %}
+                <a href="{% url 'account_change_password' %}"><button class="update-button">Промяна на парола</button></a>
+            {% else %}
                 <a href="{% url 'account_set_password' %}"><button class="update-button">Създаване на парола</button></a>
+            {% endif %}
 
-        {% endif %}
+            {% if user|has_group:"Programmers" %}
+                <a href="{% url 'update_programmer' user.slug%}"><button class="update-button">Редактирай</button></a>
+                <a href="{% url 'delete_programmer' user.slug%}"><button class="delete-button">Изтрий профила</button></a>
+            {% else %}
+                <a href="{% url 'update_user' user.id %}"><button class="update-button">Редактирай</button></a>
+                <a href="{% url 'delete_user' user.id %}"><button class="delete-button">Изтрий профила</button></a>
+            {% endif %}
 
-    {% if user|has_group:"Programmers" %}
+            <a href="{% url 'favourite_services' %}"><button class="delete-button">Списък с любими</button></a>
+            <a href="{% url 'violations' user.id %}"><button class="update-button">Нарушения</button></a>
 
-    <a href="{% url 'update_programmer' user.slug%}"><button class="update-button">Редактирай</button></a>
-    <a href="{% url 'delete_programmer' user.slug%}"><button class="delete-button">Изтрий профила</button></a>
-    {% else %}
-        <a href="{% url 'update_user' user.id %}"><button class="update-button">Редактирай</button></a>
-        <a href="{% url 'delete_user' user.id %}"><button class="delete-button">Изтрий профила</button></a>
-    {% endif %}
+            <form method="post" action="{% url 'logout' %}">
+                {% csrf_token %}
+                <button type="submit">Изход</button>
+            </form>
 
-    <a href="{% url 'favourite_services' %}"><button class="delete-button">Списък с любими</button></a>
-
-
-
-
-
-<form method="post" action="{% url 'logout' %}">
-    {% csrf_token %}
-    <button type="submit">Изход</button>
-</form>
-
-                {% if user.is_authenticated %}
-    {% if user.is_programmer %}
-        <!-- Ако вече е програмист, му показваме менюто за услуги -->
-
-    {% else %}
-
-                <a href="{% url 'upgrade_to_programmer' %}"><button class="update-button upgrade-button">Стани Програмист</button></a>
-
-    {% endif %}
-{% endif %}
-
+            {% if user.is_authenticated %}
+                {% if not user.is_programmer %}
+                    <a href="{% url 'upgrade_to_programmer' %}"><button class="update-button upgrade-button">Стани Програмист</button></a>
+                {% endif %}
+            {% endif %}
         </div>
     </div>
-
-
-
 
     {% if user|has_group:"Programmers" %}
         <br>
         <h2>Услуги, предлагани от мен:</h2>
-    <div class="services-page__list">
+        <div class="services-page__list">
+            {% for service in services %}
+                <div class="services-page__item">
+                    {% include 'services/service_short_details.html' %}
+                </div>
+            {% empty %}
+                <p class="services-page__empty">
+                    Няма намерени услуги.
+                </p>
+            {% endfor %}
+        </div>
 
-        {% for service in user.services.all %}
+        <!-- Навигация за пагинация -->
+        {% if services.has_other_pages %}
+            <div class="pagination">
+                {% if services.has_previous %}
+                    <a href="?page=1">&laquo; Първа</a>
+                    <a href="?page={{ services.previous_page_number }}">Предишна</a>
+                {% endif %}
 
-            <div class="services-page__item">
-                {% include 'services/service_short_details.html' %}
+                <span>Страница от услуги {{ services.number }} от {{ services.paginator.num_pages }}</span>
+
+                {% if services.has_next %}
+                    <a href="?page={{ services.next_page_number }}">Следваща</a>
+                    <a href="?page={{ services.paginator.num_pages }}">Последна &raquo;</a>
+                {% endif %}
             </div>
-        {% empty %}
-            <p class="services-page__empty">
-                Няма намерени услуги.
-            </p>
-        {% endfor %}
         {% endif %}
-    </div>
-{% endblock %}
+    {% endif %}
 
+{% endblock %}

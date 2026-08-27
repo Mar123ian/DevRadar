@@ -32,10 +32,8 @@
 
             <div class="chat-item__message">
                 {% if not thread.message_set.last.is_deleted_due_to_violation and not thread.message_set.last.is_deleted_due_to_ban %}
-
-                {{ thread.message_set.last.text|default:"Няма съобщения" }}
+                    {{ thread.message_set.last.text|default:"Няма съобщения" }}
                 {% else %}
-
                     <p><i>Съобщението е изтрито, поради нарушение.</i></p>
                 {% endif %}
             </div>
@@ -45,14 +43,24 @@
             Няма намерени чатове.
         </p>
     {% endfor %}
-</div>
+    </div>
 
+    <!-- Навигация за пагинация -->
+    {% if is_paginated %}
+        <div class="pagination">
+            {% if page_obj.has_previous %}
+                <a href="?page=1">&laquo; Първа</a>
+                <a href="?page={{ page_obj.previous_page_number }}">Предишна</a>
+            {% endif %}
 
+            <span>Страница {{ page_obj.number }} от {{ page_obj.paginator.num_pages }}</span>
+
+            {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}">Следваща</a>
+                <a href="?page={{ page_obj.paginator.num_pages }}">Последна &raquo;</a>
+            {% endif %}
+        </div>
+    {% endif %}
 
 </section>
-
 {% endblock %}
-
-
-
-

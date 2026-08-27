@@ -8,253 +8,513 @@
 {% block main_content %}
 
 <div class="content-wrapper">
-
     <div class="chat-page">
-    {{ thread.users.all }}
-
-        <h3 class="hero-title" style="font-size:2rem; margin-bottom:20px;">
-            Chat
-        </h3>
+        <h3 class="hero-title" style="font-size:2rem; margin-bottom:20px;">Chat</h3>
 
         <!-- CHAT BOX -->
         <div id="chat-box" class="service-card chat-box">
 
-            {% for msg in messages %}
-
-
-
-            <div class="chat-row {% if msg.sender == request.user %}own{% else %}other{% endif %}">
-
-                <div class="chat-bubble" id="message-{{ msg.id }}">
-
-                    <div class="chat-meta">
-                        <b>{{ msg.sender.get_full_name }}</b>
-                    </div>
-                    {% if not msg.is_deleted_due_to_violation and not msg.is_deleted_due_to_ban %}
-                    {% if msg.text %}
-                        <div class="chat-text">
-                            {{ msg.text }}
-
-                        </div>
-                    {% endif %}
-
-                    {% if msg.sender != user %}
-                    <a href="{% url 'report_message' msg.id %}">Докладвай</a>
-                        {% elif msg.sender == user or user.is_superuser or user|has_group:"Editors" %}
-                            <a href="{% url 'delete_message' msg.id %}">Изтрий</a>
-                    <a href="{% url 'update_message' msg.id %}">Редактирай</a>
-
-                {% endif %}
-
-                    {% if msg.file %}
-                        <a class="chat-file" href="{{ msg.file }}" target="_blank">
-                            📎 File
-                        </a>
-                    {% endif %}
-
-                {% else %}
-                    <p><i>Съобщението е изтрито, поради нарушение.</i></p>
-                {% endif %}
-
-                </div>
-
+            <!-- Индикатор за зареждане на по-стари съобщения -->
+            <div id="loading-spinner" style="display: none; text-align: center; padding: 10px; color: var(--text-muted);">
+                Зареждане на по-стари съобщения...
             </div>
 
+            {% for msg in messages %}
+            <div class="chat-row {% if msg.sender.id == request.user.id %}own{% else %}other{% endif %}" data-msg-id="{{ msg.id }}">
+                <div class="chat-bubble" id="message-{{ msg.id }}">
+                    <div class="chat-meta">
+                        <b>{{ msg.sender.get_full_name|default:msg.sender.username }}</b>
+                        <span class="chat-timestamp">{{ msg.timestamp|date:"Y-m-d H:i:s" }}</span>
+                    </div>
 
+                    {% if not msg.is_deleted_due_to_violation and not msg.is_deleted_due_to_ban %}
+                        {% if msg.text %}
+                            <div class="chat-text">{{ msg.text }}</div>
+                        {% endif %}
+
+                        <div class="chat-actions">
+                            {% if msg.sender.id != request.user.id %}
+                                <a href="javascript:void(0)" onclick="openReportModal('{{ msg.id }}')">Докладвай</a>
+                            {% elif msg.sender.id == request.user.id or request.user.is_superuser or request.user|has_group:"Editors" %}
+                                <a href="javascript:void(0)" onclick="openDeleteModal('{{ msg.id }}')">Изтрий</a>
+                                <a href="javascript:void(0)" onclick="openEditModal('{{ msg.id }}')">Редактирай</a>
+                            {% endif %}
+                        </div>
+
+                        {% if msg.file %}
+                            <a class="chat-file" href="{{ msg.file.url }}" target="_blank">📎 File</a>
+                        {% endif %}
+                    {% else %}
+                        <p><i>Съобщението е изтрито, поради нарушение.</i></p>
+                    {% endif %}
+                </div>
+            </div>
             {% endfor %}
 
         </div>
-
     </div>
-
 </div>
-
 
 <!-- STICKY INPUT BAR -->
 <div class="chat-input-bar">
-
-    <input id="message-input"
-           type="text"
-           placeholder="Write message...">
-
+    <input id="message-input" type="text" placeholder="Write message...">
     <input id="file-input" type="file">
-
-    <button onclick="sendMessage()" class="btn btn--primary">
-        Send
-    </button>
-
+    <button onclick="sendMessage()" class="btn btn--primary">Send</button>
 </div>
 
-    <script>
-    const CURRENT_USER_NAME = "{{ request.user.username|escapejs }}";
-    const IS_SUPERUSER = {{ request.user.is_superuser|yesno:"true,false" }};
-    const IS_EDITOR = {{ request.user|has_group:"Editors"|yesno:"true,false" }};
-</script>
+<!-- MODAL FOR DELETE -->
+<div id="delete-modal" class="modal-overlay" style="display:none;">
+    <div class="modal-content service-card">
+        <h4>Изтриване на съобщение</h4>
+        <p>Сигурни ли сте, че искате да изтриете това съобщение?</p>
+        <div class="modal-actions">
+            <button onclick="confirmDelete()" class="btn btn--danger">Да, изтрий</button>
+            <button onclick="closeModals()" class="btn btn--secondary">Отказ</button>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL FOR EDIT -->
+<div id="edit-modal" class="modal-overlay" style="display:none;">
+    <div class="modal-content service-card">
+        <h4>Редактиране на съобщение</h4>
+        <textarea id="edit-message-text" rows="3" style="width:100%; margin:10px 0;"></textarea>
+
+        <div style="margin-bottom: 15px;">
+            <label for="edit-file-input" style="display:block; margin-bottom:5px; font-size:0.9rem; color:var(--text-muted);">
+                Смяна/Прикачване на нов файл:
+            </label>
+            <input id="edit-file-input" type="file" style="width:100%;">
+        </div>
+
+        <div class="modal-actions">
+            <button onclick="confirmEdit()" class="btn btn--primary">Запази</button>
+            <button onclick="closeModals()" class="btn btn--secondary">Отказ</button>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL FOR REPORT -->
+<div id="report-modal" class="modal-overlay" style="display:none;">
+    <div class="modal-content service-card">
+        <h4>Докладване на съобщение</h4>
+
+        <label for="report-reason-select" style="display:block; margin-top:10px; font-size:0.9rem;">Причина:</label>
+        <select id="report-reason-select" style="width:100%; margin:5px 0 10px 0; padding:8px;">
+            <option value="spam">Спам</option>
+            <option value="harassment">Тормоз</option>
+            <option value="hate_speech">Реч на омразата</option>
+            <option value="violence">Насилие или заплахи</option>
+            <option value="sexual_content">Сексуално съдържание</option>
+            <option value="scam">Измама</option>
+            <option value="misinformation">Дезинформация</option>
+            <option value="copyright">Нарушение на авторски права</option>
+            <option value="other" selected>Друго</option>
+        </select>
+
+        <label for="report-reason-text" style="display:block; font-size:0.9rem;">Допълнително описание (по желание):</label>
+        <textarea id="report-reason-text" rows="3" style="width:100%; margin:5px 0 10px 0;"></textarea>
+
+        <div class="modal-actions">
+            <button onclick="confirmReport()" class="btn btn--warning">Изпрати доклад</button>
+            <button onclick="closeModals()" class="btn btn--secondary">Отказ</button>
+        </div>
+    </div>
+</div>
+
+<style>
+    .modal-overlay {
+        position: fixed;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: rgba(0, 0, 0, 0.6);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+    }
+    .modal-content {
+        width: 100%;
+        max-width: 450px;
+        padding: 20px;
+        border-radius: 8px;
+    }
+    .modal-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+        margin-top: 15px;
+    }
+</style>
 
 <script>
-const threadId = "{{ thread.id }}";
+    const CURRENT_USER_NAME = "{{ request.user.username|escapejs }}";
+    const CURRENT_USER_FULL_NAME = "{{ request.user.get_full_name|escapejs }}";
+    const CURRENT_USER_ID = parseInt("{{ request.user.id }}", 10);
+    const IS_SUPERUSER = {{ request.user.is_superuser|yesno:"true,false" }};
+    const IS_EDITOR = {{ request.user|has_group:"Editors"|yesno:"true,false" }};
+    const threadId = "{{ thread.id }}";
 
-// ✅ fix ws/wss auto-detect
-const protocol = window.location.protocol === "https:" ? "wss" : "ws";
+    let hasMoreMessages = {{ has_more|yesno:"true,false" }};
+    let isLoading = false;
+    let activeTargetMsgId = null;
 
-const socket = new WebSocket(
-    protocol + "://" + window.location.host + "/ws/chat/" + threadId + "/"
-);
-
-// ----------------------
-// DEBUG EVENTS
-// ----------------------
-socket.onopen = function () {
-    console.log("✅ WebSocket OPENED");
-};
-
-socket.onerror = function (e) {
-    console.log("❌ WebSocket ERROR", e);
-};
-
-socket.onclose = function () {
-    console.log("🔴 WebSocket CLOSED");
-};
-
-// ----------------------
-// RECEIVE MESSAGE
-// ----------------------
-socket.onmessage = function(e) {
-    const data = JSON.parse(e.data);
     const chatBox = document.getElementById("chat-box");
-
-    // ROW
-    const row = document.createElement("div");
-    row.classList.add("chat-row");
-
-    // ако е моето съобщение
-    const isOwn = data.username === "{{ request.user.get_full_name }}";
-    row.classList.add(isOwn ? "own" : "other");
-
-    // BUBBLE
-    const bubble = document.createElement("div");
-    bubble.classList.add("chat-bubble");
-
-    // META
-    const meta = document.createElement("div");
-    meta.classList.add("chat-meta");
-    meta.textContent = data.username;
-
-    bubble.appendChild(meta);
-
-    // TEXT
-    if (data.message) {
-        const text = document.createElement("div");
-        text.classList.add("chat-text");
-        text.textContent = data.message;
-        bubble.appendChild(text);
-    }
-
-    // FILE
-    if (data.file) {
-        const link = document.createElement("a");
-        link.classList.add("chat-file");
-        link.href = data.file;
-        link.target = "_blank";
-        link.textContent = "📎 File";
-        bubble.appendChild(link);
-    }
-
-    // ACTIONS (Докладвай / Изтрий / Редактирай)
-
-        const actions = document.createElement("div");
-        actions.classList.add("chat-actions");
-
-        if (!isOwn) {
-            // Докладвай
-            const reportLink = document.createElement("a");
-            reportLink.href = `/chat/report_message/${data.id}/`; // Заменете с реалния си URL адрес
-            reportLink.textContent = "Докладвай";
-            actions.appendChild(reportLink);
-        } else if (isOwn || IS_SUPERUSER || IS_EDITOR) {
-            // Изтрий
-            const deleteLink = document.createElement("a");
-            deleteLink.href = `/chat/delete/${data.id}/`; // Заменете с реалния си URL адрес
-            deleteLink.textContent = "Изтрий";
-            actions.appendChild(deleteLink);
-
-            actions.appendChild(document.createTextNode(" "));
-
-            // Редактирай
-            const updateLink = document.createElement("a");
-            updateLink.href = `/chat/update/${data.id}/`; // Заменете с реалния си URL адрес
-            updateLink.textContent = "Редактирай";
-            actions.appendChild(updateLink);
-
-
-        bubble.appendChild(actions);
-    }
-
-    row.appendChild(bubble);
-    chatBox.appendChild(row);
-
     chatBox.scrollTop = chatBox.scrollHeight;
-};
 
-// ----------------------
-// SEND MESSAGE (SAFE)
-// ----------------------
-function getCookie(name) {
-    let cookieValue = null;
+    // ------------------------------------
+    // INFINITE SCROLL UP
+    // ------------------------------------
+    chatBox.addEventListener("scroll", async function() {
+        if (chatBox.scrollTop === 0 && hasMoreMessages && !isLoading) {
+            await loadOlderMessages();
+        }
+    });
 
-    if (document.cookie && document.cookie !== '') {
-        const cookies = document.cookie.split(';');
+    async function loadOlderMessages() {
+        isLoading = true;
+        document.getElementById("loading-spinner").style.display = "block";
 
-        for (let cookie of cookies) {
-            cookie = cookie.trim();
+        const firstMessageRow = chatBox.querySelector(".chat-row[data-msg-id]");
+        if (!firstMessageRow) return;
 
-            if (cookie.startsWith(name + '=')) {
-                cookieValue = decodeURIComponent(
-                    cookie.substring(name.length + 1)
-                );
-                break;
-            }
+        const oldestId = firstMessageRow.getAttribute("data-msg-id");
+        const oldScrollHeight = chatBox.scrollHeight;
+
+        try {
+            const res = await fetch(`/chat/${threadId}/load_older/?before_id=${oldestId}`);
+            const data = await res.json();
+
+            hasMoreMessages = data.has_more;
+
+            data.messages.forEach(msg => {
+                const row = createMessageRow(msg);
+                chatBox.insertBefore(row, document.getElementById("loading-spinner").nextSibling);
+            });
+
+            chatBox.scrollTop = chatBox.scrollHeight - oldScrollHeight;
+
+        } catch (err) {
+            console.error("Грешка при зареждане на стари съобщения:", err);
+        } finally {
+            isLoading = false;
+            document.getElementById("loading-spinner").style.display = "none";
         }
     }
 
-    return cookieValue;
-}
+    // ------------------------------------
+    // СЪЗДАВАНЕ НА HTML РЕД ЗА СЪОБЩЕНИЕ
+    // ------------------------------------
+    function createMessageRow(data) {
+        const row = document.createElement("div");
+        row.classList.add("chat-row");
+        if (data.id) {
+            row.setAttribute("data-msg-id", data.id);
+        }
 
-const csrftoken = getCookie('csrftoken');
+        const senderDisplayName = data.username || data.sender_name || "";
+        const senderId = data.sender_id ? parseInt(data.sender_id, 10) : null;
 
-async function sendMessage() {
-    const msg = document.getElementById("message-input").value;
-    const fileInput = document.getElementById("file-input");
-    const file = fileInput.files[0];
+        const isOwn = (senderId && senderId === CURRENT_USER_ID) ||
+                      (senderDisplayName === CURRENT_USER_FULL_NAME && CURRENT_USER_FULL_NAME !== "") ||
+                      (senderDisplayName === CURRENT_USER_NAME);
 
-    let fileUrl = null;
+        row.classList.add(isOwn ? "own" : "other");
 
-    // 1. upload file first
-    if (file) {
-        const formData = new FormData();
-        formData.append("file", file);
-        formData.append("thread", threadId);
+        const bubble = document.createElement("div");
+        bubble.classList.add("chat-bubble");
+        if (data.id) bubble.id = `message-${data.id}`;
 
-        const res = await fetch("/chat/upload/", {
-    method: "POST",
-    headers: {
-        "X-CSRFToken": csrftoken
-    },
-    body: formData
-});
+        const meta = document.createElement("div");
+        meta.classList.add("chat-meta");
 
-        const data = await res.json();
-        fileUrl = data.url;
+        let timestampStr = data.timestamp ? data.timestamp : new Date().toLocaleString();
+
+        meta.innerHTML = `<b>${senderDisplayName}</b> <span class="chat-timestamp">${timestampStr}</span>`;
+        bubble.appendChild(meta);
+
+        if (data.is_deleted) {
+            bubble.innerHTML += `<p><i>Съобщението е изтрито, поради нарушение.</i></p>`;
+        } else {
+            const msgContent = data.text || data.message;
+            if (msgContent) {
+                const text = document.createElement("div");
+                text.classList.add("chat-text");
+                text.textContent = msgContent;
+                bubble.appendChild(text);
+            }
+
+            if (data.id) {
+                const actions = document.createElement("div");
+                actions.classList.add("chat-actions");
+
+                if (!isOwn) {
+                    const reportLink = document.createElement("a");
+                    reportLink.href = "javascript:void(0)";
+                    reportLink.onclick = () => openReportModal(data.id);
+                    reportLink.textContent = "Докладвай";
+                    actions.appendChild(reportLink);
+                } else if (isOwn || IS_SUPERUSER || IS_EDITOR) {
+                    const deleteLink = document.createElement("a");
+                    deleteLink.href = "javascript:void(0)";
+                    deleteLink.onclick = () => openDeleteModal(data.id);
+                    deleteLink.textContent = "Изтрий";
+                    actions.appendChild(deleteLink);
+
+                    actions.appendChild(document.createTextNode(" "));
+
+                    const updateLink = document.createElement("a");
+                    updateLink.href = "javascript:void(0)";
+                    updateLink.onclick = () => openEditModal(data.id);
+                    updateLink.textContent = "Редактирай";
+                    actions.appendChild(updateLink);
+                }
+                bubble.appendChild(actions);
+            }
+
+            if (data.file) {
+                const link = document.createElement("a");
+                link.classList.add("chat-file");
+                link.href = data.file;
+                link.target = "_blank";
+                link.textContent = "📎 File";
+                bubble.appendChild(link);
+            }
+        }
+
+        row.appendChild(bubble);
+        return row;
     }
 
-    // 2. send via websocket
-    socket.send(JSON.stringify({
-        message: msg,
-        file: fileUrl
-    }));
+    // ------------------------------------
+    // MODAL HANDLERS & AJAX ACTIONS
+    // ------------------------------------
+    function closeModals() {
+        document.getElementById("delete-modal").style.display = "none";
+        document.getElementById("edit-modal").style.display = "none";
+        document.getElementById("report-modal").style.display = "none";
+        document.getElementById("edit-file-input").value = "";
+        activeTargetMsgId = null;
+    }
 
-    document.getElementById("message-input").value = "";
-    fileInput.value = "";
+    function openDeleteModal(msgId) {
+        activeTargetMsgId = msgId;
+        document.getElementById("delete-modal").style.display = "flex";
+    }
+
+    async function confirmDelete() {
+        if (!activeTargetMsgId) return;
+
+        try {
+            const res = await fetch(`/chat/delete/${activeTargetMsgId}/`, {
+                method: "POST",
+                headers: {
+                    "X-CSRFToken": csrftoken,
+                    "X-Requested-With": "XMLHttpRequest"
+                }
+            });
+
+            if (res.ok) {
+                const msgRow = document.querySelector(`.chat-row[data-msg-id="${activeTargetMsgId}"]`);
+                if (msgRow) {
+                    msgRow.querySelector(".chat-bubble").remove();
+                }
+            }
+        } catch (err) {
+            console.error("Грешка при изтриване:", err);
+        } finally {
+            closeModals();
+        }
+    }
+
+    function openEditModal(msgId) {
+        activeTargetMsgId = msgId;
+        const msgRow = document.querySelector(`.chat-row[data-msg-id="${msgId}"]`);
+        const textElement = msgRow ? msgRow.querySelector(".chat-text") : null;
+
+        document.getElementById("edit-message-text").value = textElement ? textElement.textContent : "";
+        document.getElementById("edit-file-input").value = "";
+        document.getElementById("edit-modal").style.display = "flex";
+    }
+
+    async function confirmEdit() {
+    if (!activeTargetMsgId) return;
+
+    const newText = document.getElementById("edit-message-text").value;
+    const fileInput = document.getElementById("edit-file-input");
+    const file = fileInput.files[0];
+
+    try {
+        const formData = new FormData();
+        formData.append("text", newText);
+        if (file) {
+            formData.append("file", file);
+        }
+
+        const res = await fetch(`/chat/update/${activeTargetMsgId}/`, {
+            method: "POST",
+            headers: {
+                "X-CSRFToken": csrftoken,
+                "X-Requested-With": "XMLHttpRequest"
+            },
+            body: formData
+        });
+
+        if (!res.ok) {
+            console.error("Сървърът върна грешка със статус:", res.status);
+            alert("Възникна грешка при запазване на редакцията.");
+            return;
+        }
+
+        const data = await res.json();
+
+        // Търсим контейнера на съобщението
+        const msgRow = document.querySelector(`.chat-row[data-msg-id="${activeTargetMsgId}"]`);
+        if (msgRow) {
+            const bubble = msgRow.querySelector(".chat-bubble");
+            const actions = msgRow.querySelector(".chat-actions");
+
+            // 1. Обновяване / Добавяне / Премахване на ТЕКСТА
+            let textElement = msgRow.querySelector(".chat-text");
+            const updatedText = data.text !== undefined ? data.text : newText;
+
+            if (updatedText.trim() !== "") {
+                if (!textElement) {
+                    textElement = document.createElement("div");
+                    textElement.classList.add("chat-text");
+                    if (actions) {
+                        bubble.insertBefore(textElement, actions);
+                    } else {
+                        bubble.appendChild(textElement);
+                    }
+                }
+                textElement.textContent = updatedText;
+            } else if (textElement) {
+                textElement.remove();
+            }
+
+            // 2. Обновяване / Добавяне на ФАЙЛА
+            const fileUrl = data.file_url || data.file;
+            if (fileUrl) {
+                let fileLink = msgRow.querySelector(".chat-file");
+                if (!fileLink) {
+                    fileLink = document.createElement("a");
+                    fileLink.classList.add("chat-file");
+                    fileLink.target = "_blank";
+                    fileLink.textContent = "📎 File";
+                    bubble.appendChild(fileLink);
+                }
+                fileLink.href = fileUrl;
+            }
+        }
+    } catch (err) {
+        console.error("Грешка при редактиране в JavaScript:", err);
+    } finally {
+        closeModals();
+    }
 }
+
+    function openReportModal(msgId) {
+        activeTargetMsgId = msgId;
+        document.getElementById("report-reason-text").value = "";
+        document.getElementById("report-modal").style.display = "flex";
+    }
+
+    async function confirmReport() {
+    if (!activeTargetMsgId) return;
+
+    const reasonSelect = document.getElementById("report-reason-select");
+    const descriptionText = document.getElementById("report-reason-text");
+
+    try {
+        const formData = new FormData();
+        formData.append("reason", reasonSelect.value);
+        formData.append("description", descriptionText.value);
+
+        const res = await fetch(`/chat/report_message/${activeTargetMsgId}/`, {
+            method: "POST",
+            headers: {
+                "X-CSRFToken": csrftoken,
+                "X-Requested-With": "XMLHttpRequest"
+            },
+            body: formData
+        });
+
+        if (res.ok) {
+            alert("Съобщението е докладвано успешно.");
+            closeModals();
+        } else {
+            const data = await res.json().catch(() => ({}));
+            alert("Грешка при докладването: " + JSON.stringify(data.errors || "Сървърна грешка"));
+        }
+    } catch (err) {
+        console.error("Грешка при докладване:", err);
+        alert("Възникна мрежова грешка.");
+    }
+}
+
+    // ----------------------
+    // WEBSOCKET LOGIC
+    // ----------------------
+    const protocol = window.location.protocol === "https:" ? "wss" : "ws";
+    const socket = new WebSocket(protocol + "://" + window.location.host + "/ws/chat/" + threadId + "/");
+
+    socket.onmessage = function(e) {
+        const data = JSON.parse(e.data);
+        const row = createMessageRow(data);
+        chatBox.appendChild(row);
+
+        chatBox.scrollTop = chatBox.scrollHeight;
+    };
+
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let cookie of cookies) {
+                cookie = cookie.trim();
+                if (cookie.startsWith(name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    const csrftoken = getCookie('csrftoken');
+
+    async function sendMessage() {
+        const msgInput = document.getElementById("message-input");
+        const msg = msgInput.value;
+        const fileInput = document.getElementById("file-input");
+        const file = fileInput.files[0];
+
+        if (!msg.trim() && !file) return;
+
+        let fileUrl = null;
+
+        if (file) {
+            const formData = new FormData();
+            formData.append("file", file);
+            formData.append("thread", threadId);
+
+            const res = await fetch("/chat/upload/", {
+                method: "POST",
+                headers: { "X-CSRFToken": csrftoken },
+                body: formData
+            });
+
+            const data = await res.json();
+            fileUrl = data.url;
+        }
+
+        socket.send(JSON.stringify({
+            message: msg,
+            file: fileUrl
+        }));
+
+        msgInput.value = "";
+        fileInput.value = "";
+    }
 </script>
 {% endblock %}

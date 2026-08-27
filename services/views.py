@@ -1,6 +1,7 @@
 from sqlite3 import IntegrityError
 
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
+from django.core.paginator import Paginator
 from django.http import HttpResponseForbidden, HttpResponseNotFound
 from django.shortcuts import render, redirect
 from django.urls import reverse
@@ -152,6 +153,24 @@ class ServiceDetails(LoginRequiredMixin, FormMixin, DetailView):
     slug_url_kwarg = 'service_slug'
     form_class = CreateCommentForm
 
+    #TODO Важна опционална препоръка за DB Optimization Ако service.active_comments е property във вашия модел Service (например return self.comments.filter(...)), е добре да се уверите, че връща QuerySet (без да извиква .all() вътре в имота), за да може Django Paginator да направи оптимизирана заявка COUNT(*) вместо да зарежда целия списък в паметта.
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        # 1. Взимаме коментарите от услугата
+        comments_list = self.object.active_comments()
+
+        # 2. Пагинатор - задайте броя коментари на страница (напр. 5)
+        paginator = Paginator(comments_list, 20)
+
+        # 3. Взимаме текущата страница от URL-а (?page=1)
+        page_number = self.request.GET.get('page')
+        comments = paginator.get_page(page_number)
+
+        context['comments'] = comments
+        return context
+
     def get_queryset(self):
 
         if self.request.user.groups.filter(name='Editors').exists() or self.request.user.is_superuser:
@@ -198,7 +217,7 @@ class ServiceDetails(LoginRequiredMixin, FormMixin, DetailView):
     def form_valid(self, form):
 
         if self.request.user.is_comments_banned():
-            return HttpResponseForbidden()
+            return render(self.request, 'moderation/banned_comments.html', status=403)
 
         comment = form.save(commit=False)
         comment.service = self.object
@@ -248,6 +267,7 @@ class ServiceReportListView(EditorOrSuperuserRequiredMixin, ListView):
     template_name = 'services/service_report_list.html'
     context_object_name = 'reports'
     ordering = ['-timestamp']
+    paginate_by = 20
 
 class DeleteServiceDueToViolation(DeleteContentDueToViolationBase):
     model = Service

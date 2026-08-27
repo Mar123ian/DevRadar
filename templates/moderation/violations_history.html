@@ -1,4 +1,5 @@
 {% extends 'core/base.html' %}
+{% load filters %}
 
 {% block main_content %}
 <div class="content-wrapper">
@@ -14,24 +15,24 @@
 
     <!-- Табове за навигация -->
     <div class="violations-tabs" style="display: flex; gap: 12px; margin-bottom: 24px; border-bottom: 2px solid var(--gray-200); padding-bottom: 12px; overflow-x: auto;">
-        <button class="v-tab-btn active" onclick="switchTab(event, 'bans-tab')">
-            Банове ({{ user_bans.count }})
+        <button class="v-tab-btn {% if active_tab == 'bans-tab' %}active{% endif %}" onclick="switchTab(event, 'bans-tab')">
+            Банове ({{ user_bans.paginator.count }})
         </button>
-        <button class="v-tab-btn" onclick="switchTab(event, 'comments-tab')">
-            Коментари ({{ deleted_comments.count }})
+        <button class="v-tab-btn {% if active_tab == 'comments-tab' %}active{% endif %}" onclick="switchTab(event, 'comments-tab')">
+            Коментари ({{ deleted_comments.paginator.count }})
         </button>
-        <button class="v-tab-btn" onclick="switchTab(event, 'messages-tab')">
-            Съобщения ({{ deleted_messages.count }})
+        <button class="v-tab-btn {% if active_tab == 'messages-tab' %}active{% endif %}" onclick="switchTab(event, 'messages-tab')">
+            Съобщения ({{ deleted_messages.paginator.count }})
         </button>
-        {% if user.is_programmer %}
-        <button class="v-tab-btn" onclick="switchTab(event, 'services-tab')">
-            Услуги ({{ deleted_services.count }})
+        {% if target_user.is_programmer %}
+        <button class="v-tab-btn {% if active_tab == 'services-tab' %}active{% endif %}" onclick="switchTab(event, 'services-tab')">
+            Услуги ({{ deleted_services.paginator.count }})
         </button>
         {% endif %}
     </div>
 
     <!-- ТАБ 1: БАНОВЕ -->
-    <div id="bans-tab" class="v-tab-content">
+    <div id="bans-tab" class="v-tab-content" style="{% if active_tab != 'bans-tab' %}display: none;{% endif %}">
         {% if user_bans %}
             <div class="v-list" style="display: flex; flex-direction: column; gap: 16px;">
                 {% for ban in user_bans %}
@@ -64,32 +65,43 @@
                             {% else %}
                                 <span style="color: var(--text-muted);">Изтекъл / Вдигнат</span>
                             {% endif %}
-
-
                         </div>
 
-                    {% if ban.is_active %}
-                    {% if not ban.violation_appeal %}
-                    <a href="{% url 'appeal_ban' ban.pk %}">Обжалвай</a>
-                    {% else %}
-                        <p>Обжалвали сте наказанието. Ако жалбата Ви е приета, наказанието ще бъде премахнато и съдържанието ви ще бъде възстановено веднага.</p>
-                    {% endif %}
-                    {% endif %}
+                        {% if ban.is_active and target_user == user %}
+                            {% if not ban.violation_appeal %}
+                                <a href="{% url 'appeal_ban' ban.pk %}">Обжалвай</a>
+                            {% else %}
+                                <p>Обжалвали сте наказанието. Ако жалбата Ви е приета, наказанието ще бъде премахнато и съдържанието ви ще бъде възстановено веднага.</p>
+                            {% endif %}
+                        {% endif %}
                     </div>
                 </div>
                 {% endfor %}
             </div>
+
+            {% if user_bans.has_other_pages %}
+            <div class="pagination" style="margin-top: 20px;">
+                {% if user_bans.has_previous %}
+                    <a href="?bans_page=1&tab=bans-tab">&laquo; Първа</a>
+                    <a href="?bans_page={{ user_bans.previous_page_number }}&tab=bans-tab">Предишна</a>
+                {% endif %}
+                <span>Страница {{ user_bans.number }} от {{ user_bans.paginator.num_pages }}</span>
+                {% if user_bans.has_next %}
+                    <a href="?bans_page={{ user_bans.next_page_number }}&tab=bans-tab">Следваща</a>
+                    <a href="?bans_page={{ user_bans.paginator.num_pages }}&tab=bans-tab">Последна &raquo;</a>
+                {% endif %}
+            </div>
+            {% endif %}
         {% else %}
             <div class="empty-state">Нямате наложени банове.</div>
         {% endif %}
     </div>
 
     <!-- ТАБ 2: КОМЕНТАРИ -->
-    <div id="comments-tab" class="v-tab-content" style="display: none;">
+    <div id="comments-tab" class="v-tab-content" style="{% if active_tab != 'comments-tab' %}display: none;{% endif %}">
         {% if deleted_comments %}
             <div class="v-list" style="display: flex; flex-direction: column; gap: 16px;">
                 {% for comment in deleted_comments %}
-
                 <div class="report-card">
                     <div class="report-card__header">
                         <span style="font-weight: 700; color: var(--dark);">
@@ -107,26 +119,39 @@
                             {{ comment.last_violation_info.reason|default:"Съдържанието нарушава правилата на платформата." }}
                         </div>
                         {% endif %}
-                    {% if not comment.violation_appeal %}
-                    <a href="{% url 'appeal_comment_violation' comment.pk %}">Обжалвай</a>
-                    {% else %}
-                        <p>Обжалвали сте наказанието. Ако жалбата Ви е приета, съдържанието ви ще бъде възстановено веднага.</p>
-                    {% endif %}
+                        {% if not comment.violation_appeal and target_user == user %}
+                            <a href="{% url 'appeal_comment_violation' comment.pk %}">Обжалвай</a>
+                        {% else %}
+                            <p>Обжалвали сте наказанието. Ако жалбата Ви е приета, съдържанието ви ще бъде възстановено веднага.</p>
+                        {% endif %}
                     </div>
                 </div>
                 {% endfor %}
             </div>
+
+            {% if deleted_comments.has_other_pages %}
+            <div class="pagination" style="margin-top: 20px;">
+                {% if deleted_comments.has_previous %}
+                    <a href="?comments_page=1&tab=comments-tab">&laquo; Първа</a>
+                    <a href="?comments_page={{ deleted_comments.previous_page_number }}&tab=comments-tab">Предишна</a>
+                {% endif %}
+                <span>Страница {{ deleted_comments.number }} от {{ deleted_comments.paginator.num_pages }}</span>
+                {% if deleted_comments.has_next %}
+                    <a href="?comments_page={{ deleted_comments.next_page_number }}&tab=comments-tab">Следваща</a>
+                    <a href="?comments_page={{ deleted_comments.paginator.num_pages }}&tab=comments-tab">Последна &raquo;</a>
+                {% endif %}
+            </div>
+            {% endif %}
         {% else %}
             <div class="empty-state">Нямате премахнати коментари.</div>
         {% endif %}
     </div>
 
     <!-- ТАБ 3: СЪОБЩЕНИЯ -->
-    <div id="messages-tab" class="v-tab-content" style="display: none;">
+    <div id="messages-tab" class="v-tab-content" style="{% if active_tab != 'messages-tab' %}display: none;{% endif %}">
         {% if deleted_messages %}
             <div class="v-list" style="display: flex; flex-direction: column; gap: 16px;">
                 {% for msg in deleted_messages %}
-
                 <div class="report-card">
                     <div class="report-card__header">
                         <span class="v-badge v-badge--warning">Чат съобщение</span>
@@ -142,30 +167,41 @@
                             {{ msg.last_violation_info.reason|default:"Съдържанието нарушава правилата за комуникация." }}
                         </div>
                         {% endif %}
-
-                    {% if not msg.violation_appeal %}
-                    <a href="{% url 'appeal_message_violation' msg.pk %}">Обжалвай</a>
-                    {% else %}
-                        <p>Обжалвали сте наказанието. Ако жалбата Ви е приета, съдържанието ви ще бъде възстановено веднага.</p>
-                    {% endif %}
+                        {% if not msg.violation_appeal and target_user == user %}
+                            <a href="{% url 'appeal_message_violation' msg.pk %}">Обжалвай</a>
+                        {% else %}
+                            <p>Обжалвали сте наказанието. Ако жалбата Ви е приета, съдържанието ви ще бъде възстановено веднага.</p>
+                        {% endif %}
                     </div>
                 </div>
                 {% endfor %}
             </div>
+
+            {% if deleted_messages.has_other_pages %}
+            <div class="pagination" style="margin-top: 20px;">
+                {% if deleted_messages.has_previous %}
+                    <a href="?messages_page=1&tab=messages-tab">&laquo; Първа</a>
+                    <a href="?messages_page={{ deleted_messages.previous_page_number }}&tab=messages-tab">Предишна</a>
+                {% endif %}
+                <span>Страница {{ deleted_messages.number }} от {{ deleted_messages.paginator.num_pages }}</span>
+                {% if deleted_messages.has_next %}
+                    <a href="?messages_page={{ deleted_messages.next_page_number }}&tab=messages-tab">Следваща</a>
+                    <a href="?messages_page={{ deleted_messages.paginator.num_pages }}&tab=messages-tab">Последна &raquo;</a>
+                {% endif %}
+            </div>
+            {% endif %}
         {% else %}
             <div class="empty-state">Нямате премахнати съобщения от чата.</div>
         {% endif %}
     </div>
 
-    <!-- ТАБ 4: УСЛУГИ (Програмисти) -->
-    {% if user.is_programmer %}
-    <div id="services-tab" class="v-tab-content" style="display: none;">
+    <!-- ТАБ 4: УСЛУГИ -->
+    {% if target_user.is_programmer %}
+    <div id="services-tab" class="v-tab-content" style="{% if active_tab != 'services-tab' %}display: none;{% endif %}">
         {% if deleted_services %}
             <div class="services-page__list">
                 {% for service in deleted_services %}
-
                 <div class="service-card" style="flex: 1 1 300px; max-width: 400px; border-color: var(--danger);">
-
                     <div class="service-card__title" style="color: var(--danger);">{{ service.name }}</div>
                     <div class="service-card__description">
                         <p style="margin-bottom: 12px;">{{ service.description|truncatewords:15 }}</p>
@@ -175,17 +211,31 @@
                             {{ service.last_violation_info.reason|default:"Услугата не съответства на правилата." }}
                         </div>
                         {% endif %}
-                    {% if not service.violation_appeal %}
-                        <br>
-                    <a href="{% url 'appeal_service_violation' service.pk %}">Обжалвай</a>
-                    {% else %}
-                        <br>
-                        <p>Обжалвали сте наказанието. Ако жалбата Ви е приета, съдържанието ви ще бъде възстановено веднага.</p>
-                    {% endif %}
+                        {% if not service.violation_appeal and target_user == user %}
+                            <br>
+                            <a href="{% url 'appeal_service_violation' service.pk %}">Обжалвай</a>
+                        {% else %}
+                            <br>
+                            <p>Обжалвали сте наказанието. Ако жалбата Ви е приета, съдържанието ви ще бъде възстановено веднага.</p>
+                        {% endif %}
                     </div>
                 </div>
                 {% endfor %}
             </div>
+
+            {% if deleted_services.has_other_pages %}
+            <div class="pagination" style="margin-top: 20px;">
+                {% if deleted_services.has_previous %}
+                    <a href="?services_page=1&tab=services-tab">&laquo; Първа</a>
+                    <a href="?services_page={{ deleted_services.previous_page_number }}&tab=services-tab">Предишна</a>
+                {% endif %}
+                <span>Страница {{ deleted_services.number }} от {{ deleted_services.paginator.num_pages }}</span>
+                {% if deleted_services.has_next %}
+                    <a href="?services_page={{ deleted_services.next_page_number }}&tab=services-tab">Следваща</a>
+                    <a href="?services_page={{ deleted_services.paginator.num_pages }}&tab=services-tab">Последна &raquo;</a>
+                {% endif %}
+            </div>
+            {% endif %}
         {% else %}
             <div class="empty-state">Нямате премахнати услуги.</div>
         {% endif %}
@@ -193,7 +243,6 @@
     {% endif %}
 </div>
 
-<!-- Стилизиране за табовете и значките (Добавете в CSS файла си или оставете тук) -->
 <style>
     .v-tab-btn {
         padding: 10px 20px;
@@ -236,20 +285,16 @@
     }
 </style>
 
-<!-- Скрипт за смяна на табовете -->
 <script>
     function switchTab(event, tabId) {
-        // Скриваме всички табове
         document.querySelectorAll('.v-tab-content').forEach(tab => {
             tab.style.display = 'none';
         });
 
-        // Премахваме активния клас от всички бутони
         document.querySelectorAll('.v-tab-btn').forEach(btn => {
             btn.classList.remove('active');
         });
 
-        // Показваме избрания таб и активираме бутона
         document.getElementById(tabId).style.display = 'block';
         event.currentTarget.classList.add('active');
     }

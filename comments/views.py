@@ -81,6 +81,7 @@ class CommentReportListView(EditorOrSuperuserRequiredMixin, ListView):
     template_name = 'comments/comment_report_list.html'
     context_object_name = 'reports'
     ordering = ['-timestamp']
+    paginate_by = 20
 
 
 class DeleteCommentDueToViolation(DeleteContentDueToViolationBase):

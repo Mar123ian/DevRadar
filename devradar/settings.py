@@ -79,6 +79,7 @@ INSTALLED_APPS = [
     'chat.apps.ChatConfig',
     'channels',
     'moderation.apps.ModerationConfig',
+    'djcelery_email',
 # Allauth
     'allauth',
     'allauth.account',
@@ -256,8 +257,20 @@ if PRODUCTION:
 
     DEFAULT_FROM_EMAIL = 'devradar.no.reply@gmail.com'
 else:
-    EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+    # EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
     DEFAULT_FROM_EMAIL = 'devradar.no.reply@gmail.com'
+
+    # Задайте celery-email като основен email backend:
+    EMAIL_BACKEND = 'djcelery_email.backends.CeleryEmailBackend'
+
+    # Конфигурирайте реалния backend, който Celery ще използва зад кулисите:
+    CELERY_EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'  # или SendGrid, Mailgun и т.н.
+
+    # По избор: брой опити при грешка или изчакване
+    CELERY_EMAIL_TASK_CONFIG = {
+        'max_retries': 5,
+        'default_retry_delay': 60,
+    }
 
 
 if PRODUCTION:

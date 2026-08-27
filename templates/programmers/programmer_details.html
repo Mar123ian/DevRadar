@@ -51,7 +51,7 @@
         <h2 class="programmer-details__services-title">Услуги, предлагани от {{ programmer.get_full_name }}:</h2>
 
         <div class="programmer-details__services-list">
-            {% for service in programmer.services.all %}
+            {% for service in services %}
                 <div class="programmer-details__service-item">
                     {% include 'services/service_short_details.html' %}
                 </div>
@@ -61,6 +61,23 @@
                 </p>
             {% endfor %}
         </div>
+
+        <!-- Навигация за пагинация на услугите -->
+        {% if services.has_other_pages %}
+            <div class="pagination">
+                {% if services.has_previous %}
+                    <a href="?page=1">&laquo; Първа</a>
+                    <a href="?page={{ services.previous_page_number }}">Предишна</a>
+                {% endif %}
+
+                <span>Страница от услуги {{ services.number }} от {{ services.paginator.num_pages }}</span>
+
+                {% if services.has_next %}
+                    <a href="?page={{ services.next_page_number }}">Следваща</a>
+                    <a href="?page={{ services.paginator.num_pages }}">Последна &raquo;</a>
+                {% endif %}
+            </div>
+        {% endif %}
     </section>
 
 </article>

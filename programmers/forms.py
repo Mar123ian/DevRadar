@@ -1,4 +1,5 @@
 from django import forms
+from django.core.exceptions import ValidationError
 
 from accounts.models import ProgrammerUser
 from core.mixins import DisableFieldsMixin
@@ -47,6 +48,12 @@ class ProgrammerForm(forms.ModelForm):
             'image': 'Снимка на програмиста'
 
         }
+
+    def clean_username(self):
+        username = self.cleaned_data.get('username')
+        if '@' in username:
+            raise ValidationError('Потребителското име не може да съдържа символа @.')
+        return username
 
 
 

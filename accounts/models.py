@@ -85,9 +85,9 @@ class DevRadarUser(PolymorphicModel,AbstractUser):
 class ProgrammerUser(DevRadarUser):
     image = models.ImageField(upload_to='programmers/')
 
-    phone_number = models.CharField(unique=True, max_length=15,
-                                    error_messages={'max_length': 'Максималната дължина е 15 символа!',
-                                                    'unique': 'Програмист с този тел. номер вече съществува!'})
+    phone_number = models.CharField(max_length=15,
+                                    error_messages={'max_length': 'Максималната дължина е 15 символа!',})
+                                                    # 'unique': 'Програмист с този тел. номер вече съществува!'
     slug = models.SlugField(unique=True, blank=True)
 
     def save(self, *args, **kwargs):
@@ -107,6 +107,9 @@ class ProgrammerUser(DevRadarUser):
 
     def new_deleted_services(self):
         return self.deleted_services().filter(is_user_informed_about_violation=False)
+
+    def active_services(self):
+        return self.services.filter(is_deleted_due_to_violation=False, is_deleted_due_to_ban=False)
 
 
 

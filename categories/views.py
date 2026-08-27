@@ -1,5 +1,6 @@
 from django.contrib.auth.middleware import LoginRequiredMiddleware
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
+from django.core.paginator import Paginator
 from django.http import HttpResponseForbidden
 from django.shortcuts import render
 from django.urls import reverse
@@ -72,4 +73,23 @@ class TypeDetails(LoginRequiredMixin, DetailView):
 
     def get_queryset(self):
         return super().get_queryset().prefetch_related('services')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        # 1. Взимаме активните услуги (ако active_services е метод, извикайте го с active_services())
+        if callable(getattr(self.object, 'active_services', None)):
+            services_list = self.object.active_services()
+        else:
+            services_list = self.object.active_services
+
+        # 2. Инициализираме Paginator (напр. по 6 услуги на страница)
+        paginator = Paginator(services_list, 20)
+
+        # 3. Взимаме текущата страница от URL-а (?page=1)
+        page_number = self.request.GET.get('page')
+        services = paginator.get_page(page_number)
+
+        context['services'] = services
+        return context
 

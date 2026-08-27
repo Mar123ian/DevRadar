@@ -39,8 +39,7 @@ class Service(ViolationSoftDeleteMixin, CreatedAndUpdatedAtMixin, models.Model):
     def active_comments(self):
         return self.comments.filter(is_deleted_due_to_violation=False, is_deleted_due_to_ban=False)
 
-    def active_services(self):
-        return self.objects.filter(is_deleted_due_to_violation=False)
+
 
 
 class ServiceReport(BaseReport):

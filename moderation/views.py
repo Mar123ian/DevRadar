@@ -1,6 +1,7 @@
 from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.core.exceptions import ValidationError
+from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.forms import modelform_factory
 from django.http import HttpResponseForbidden, HttpResponseRedirect, HttpResponseNotFound
 from django.shortcuts import get_object_or_404, redirect
@@ -138,9 +139,11 @@ class DeleteBan(LoginRequiredMixin, DeleteView):
 class AllUsers(LoginRequiredMixin, TemplateView):
     template_name = 'moderation/all_users.html'
 
-    # TODO permissions not dispatch
     def dispatch(self, request, *args, **kwargs):
-        if request.user.groups.filter(name='Editors').exists() or request.user.is_superuser:
+        if (
+            request.user.groups.filter(name='Editors').exists()
+            or request.user.is_superuser
+        ):
             return super().dispatch(request, *args, **kwargs)
 
         return HttpResponseForbidden()
@@ -149,9 +152,17 @@ class AllUsers(LoginRequiredMixin, TemplateView):
         context = super().get_context_data(**kwargs)
 
         UserModel = get_user_model()
-        users = UserModel.objects.all().order_by('id')
+        # 1. Използваме prefetch_related, за да заредим бановете наведнъж
+        users_qs = (
+            UserModel.objects.all().prefetch_related('bans').order_by('id')
+        )
 
-        def _is_active(ban: Ban) -> bool:
+        # 2. Инициализираме Paginator (напр. по 10 потребителя на страница)
+        paginator = Paginator(users_qs, 10)
+        page_number = self.request.GET.get('page')
+        page_obj = paginator.get_page(page_number)
+
+        def _is_active(ban) -> bool:
             if not ban:
                 return False
             if ban.active and ban.permanent:
@@ -160,7 +171,8 @@ class AllUsers(LoginRequiredMixin, TemplateView):
                 return ban.start_date + ban.duration > timezone.now()
             return False
 
-        for u in users:
+        # 3. Обхождаме САМО потребителите за текущата страница
+        for u in page_obj:
             active_bans = []
             unactive_bans = []
             for ban in u.bans.all().order_by('-start_date'):
@@ -169,7 +181,6 @@ class AllUsers(LoginRequiredMixin, TemplateView):
                 else:
                     unactive_bans.append(ban)
 
-            # Attach computed fields used by the template
             u.active_bans = active_bans
             u.unactive_bans = unactive_bans
 
@@ -183,7 +194,7 @@ class AllUsers(LoginRequiredMixin, TemplateView):
 
             u.programmer_slug = getattr(u, 'slug', None)
 
-        context['users'] = users
+        context['users'] = page_obj
         return context
 
 
@@ -321,30 +332,68 @@ from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 
 
-@login_required
-def user_violations_and_bans_view(request):
-    user = request.user
+class UserViolationsAndBansView(LoginRequiredMixin, TemplateView):
+    template_name = "moderation/violations_history.html"
 
-    # 1. Вземаме активните и изтеклите банове
-    user_bans = user.bans.all().order_by('-start_date')
+    def dispatch(self, request, *args, **kwargs):
+        target_user_id = self.kwargs.get("user_id")
+        if (
+            request.user.id == target_user_id
+            or request.user.is_superuser
+            or request.user.groups.filter(name="Editors").exists()
+        ):
+            return super().dispatch(request, *args, **kwargs)
+        return HttpResponseForbidden()
 
-    # 2. Вземаме съдържанието, премахнато заради нарушения
-    deleted_comments = user.deleted_comments()
-    deleted_messages = user.deleted_messages()
+    def get_paginate_page(self, queryset, param_name, per_page=5):
+        paginator = Paginator(queryset, per_page)
+        page_number = self.request.GET.get(param_name)
+        try:
+            return paginator.page(page_number)
+        except PageNotAnInteger:
+            return paginator.page(1)
+        except EmptyPage:
+            return paginator.page(paginator.num_pages)
 
-    deleted_services = []
-    if user.is_programmer:
-        # ProgrammerUser наследява и има метод deleted_services
-        deleted_services = user.deleted_services()
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        User = get_user_model()
 
-    context = {
-        'user_bans': user_bans,
-        'deleted_comments': deleted_comments,
-        'deleted_messages': deleted_messages,
-        'deleted_services': deleted_services,
-    }
-    return render(request, 'moderation/violations_history.html', context)
+        user_id = self.kwargs.get("user_id")
+        target_user = get_object_or_404(User, id=user_id)
 
+        user_bans_qs = target_user.bans.all().order_by("-start_date")
+        deleted_comments_qs = target_user.deleted_comments()
+        deleted_messages_qs = target_user.deleted_messages()
+
+        user_bans = self.get_paginate_page(user_bans_qs, "bans_page")
+        deleted_comments = self.get_paginate_page(
+            deleted_comments_qs, "comments_page"
+        )
+        deleted_messages = self.get_paginate_page(
+            deleted_messages_qs, "messages_page"
+        )
+
+        deleted_services = None
+        if getattr(target_user, "is_programmer", False):
+            deleted_services_qs = target_user.deleted_services()
+            deleted_services = self.get_paginate_page(
+                deleted_services_qs, "services_page"
+            )
+
+        context.update(
+            {
+                "target_user": target_user,
+                "user_bans": user_bans,
+                "deleted_comments": deleted_comments,
+                "deleted_messages": deleted_messages,
+                "deleted_services": deleted_services,
+                # Запазваме активния таб при смяна на страницата
+                "active_tab": self.request.GET.get("tab", "bans-tab"),
+            }
+        )
+
+        return context
 
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import HttpResponseForbidden
@@ -360,24 +409,41 @@ class AppealsView(LoginRequiredMixin, TemplateView):
     template_name = 'moderation/appeals.html'
 
     def dispatch(self, request, *args, **kwargs):
-        # Достъп само за Editors или суперпотребители
-        if request.user.groups.filter(name='Editors').exists() or request.user.is_superuser:
+        if (
+            request.user.groups.filter(name='Editors').exists()
+            or request.user.is_superuser
+        ):
             return super().dispatch(request, *args, **kwargs)
         return HttpResponseForbidden()
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
-        ban_appeals = list(BanAppeal.objects.filter(accepted=False).select_related('ban'))
-        comment_appeals = list(CommentAppeal.objects.filter(accepted=False).select_related('comment'))
-        service_appeals = list(ServiceAppeal.objects.filter(accepted=False).select_related('service'))
-        message_appeals = list(MessageAppeal.objects.filter(accepted=False).select_related('message'))
+        ban_appeals = list(
+            BanAppeal.objects.filter(accepted=False).select_related(
+                'ban', 'ban__user'
+            )
+        )
+        comment_appeals = list(
+            CommentAppeal.objects.filter(accepted=False).select_related(
+                'comment'
+            )
+        )
+        service_appeals = list(
+            ServiceAppeal.objects.filter(accepted=False).select_related(
+                'service'
+            )
+        )
+        message_appeals = list(
+            MessageAppeal.objects.filter(accepted=False).select_related(
+                'message'
+            )
+        )
 
         items = []
 
         for a in ban_appeals:
             content = getattr(a, 'ban', None)
-
             if a.ban.is_active():
                 items.append({
                     'id': a.id,
@@ -385,8 +451,7 @@ class AppealsView(LoginRequiredMixin, TemplateView):
                     'type': a.ban.ban_type.lower(),
                     'created_at': getattr(a, 'timestamp', None),
                     'content': str(content) if content is not None else '',
-                    # TODO single user page
-                    'url': reverse('all_users')+'#user-'+str(a.ban.user.id),
+                    'url': reverse('all_users') + '#user-' + str(a.ban.user.id),
                     'description': a.description,
                 })
 
@@ -397,7 +462,9 @@ class AppealsView(LoginRequiredMixin, TemplateView):
                 'type': 'comment',
                 'created_at': getattr(a, 'timestamp', None),
                 'content': str(content) if content is not None else '',
-                'url': content.get_absolute_url() if content and hasattr(content, 'get_absolute_url') else None,
+                'url': content.get_absolute_url()
+                if content and hasattr(content, 'get_absolute_url')
+                else None,
                 'description': a.description,
             })
 
@@ -408,31 +475,49 @@ class AppealsView(LoginRequiredMixin, TemplateView):
                 'type': 'service',
                 'created_at': getattr(a, 'timestamp', None),
                 'content': str(content) if content is not None else '',
-                'url': reverse('service_details', kwargs={'service_slug': a.service.slug}),
+                'url': reverse(
+                    'service_details', kwargs={'service_slug': a.service.slug}
+                ),
                 'description': a.description,
-
             })
 
         for a in message_appeals:
-            content = getattr(a, 'message', None).text
+            content_obj = getattr(a, 'message', None)
+            content_text = content_obj.text if content_obj else ''
             items.append({
                 'id': a.id,
                 'type': 'message',
                 'created_at': getattr(a, 'timestamp', None),
-                'content': str(content) if content is not None else '',
-                'url': content.get_absolute_url() if content and hasattr(content, 'get_absolute_url') else None,
+                'content': str(content_text),
+                'url': content_obj.get_absolute_url()
+                if content_obj and hasattr(content_obj, 'get_absolute_url')
+                else None,
                 'description': a.description,
-
             })
 
         # Сортираме по дата (най-новите първи)
-        items.sort(key=lambda x: (x['created_at'] is not None, x['created_at']), reverse=True)
+        items.sort(
+            key=lambda x: (x['created_at'] is not None, x['created_at']),
+            reverse=True,
+        )
 
-        context['appeals'] = items
+        # Ръчна пагинация за комбинирания списък
+        paginator = Paginator(items, 20)  # По 10 жалби на страница
+        page = self.request.GET.get('page')
+
+        try:
+            appeals_page = paginator.page(page)
+        except PageNotAnInteger:
+            appeals_page = paginator.page(1)
+        except EmptyPage:
+            appeals_page = paginator.page(paginator.num_pages)
+
+        context['appeals'] = appeals_page
+        context['page_obj'] = appeals_page
+        context['is_paginated'] = appeals_page.has_other_pages()
         return context
 
     def post(self, request, *args, **kwargs):
-        # Приемане на жалба и възстановяване на съдържанието
         appeal_type = request.POST.get('type')
         appeal_id = request.POST.get('appeal_id')
 
@@ -447,22 +532,25 @@ class AppealsView(LoginRequiredMixin, TemplateView):
         if Model and appeal_id:
             try:
                 appeal = Model.objects.get(pk=appeal_id, accepted=False)
-                # Маркираме жалбата като приета
                 appeal.accepted = True
                 appeal.save(update_fields=['accepted'])
 
                 if not isinstance(appeal, BanAppeal):
-                    # Възстановяваме съдържанието (махаме флага за нарушение)
                     target = None
                     for attr in ('comment', 'service', 'message'):
                         if hasattr(appeal, attr):
                             target = getattr(appeal, attr)
                             break
 
-                    if target is not None and hasattr(target, 'is_deleted_due_to_violation'):
+                    if target is not None and hasattr(
+                        target, 'is_deleted_due_to_violation'
+                    ):
                         target.is_deleted_due_to_violation = False
-                        target.violation_appeal.delete()
-                        target.save(update_fields=['is_deleted_due_to_violation'])
+                        if hasattr(target, 'violation_appeal'):
+                            target.violation_appeal.delete()
+                        target.save(
+                            update_fields=['is_deleted_due_to_violation']
+                        )
             except Model.DoesNotExist:
                 pass
 

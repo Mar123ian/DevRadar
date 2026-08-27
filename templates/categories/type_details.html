@@ -8,15 +8,12 @@
 {% block main_content %}
 <article class="categories-type">
 
-
     {% if user.is_superuser  or user|has_group:"Editors" %}
-
         <a href="{% url 'update_type' type.id%}"><button class="update-button">Редактирай</button></a>
         <a href="{% url 'delete_type' type.id%}"><button class="delete-button">Изтрий</button></a>
-        {% endif %}
+    {% endif %}
 
     <div class="categories-type__header">
-
         <h1 class="categories-type__name">
             {{ type.name|upper }}
         </h1>
@@ -29,7 +26,7 @@
         <h2 class="categories-type__services-title">Услуги</h2>
 
         <div class="categories-type__services-list">
-            {% for service in type.services.all %}
+            {% for service in services %}
                 <div class="categories-type__service-item">
                     {% include 'services/service_short_details.html' %}
                 </div>
@@ -39,6 +36,23 @@
                 </p>
             {% endfor %}
         </div>
+
+        <!-- Навигация за пагинация -->
+        {% if services.has_other_pages %}
+            <div class="pagination">
+                {% if services.has_previous %}
+                    <a href="?page=1">&laquo; Първа</a>
+                    <a href="?page={{ services.previous_page_number }}">Предишна</a>
+                {% endif %}
+
+                <span>Страница от услуги {{ services.number }} от {{ services.paginator.num_pages }}</span>
+
+                {% if services.has_next %}
+                    <a href="?page={{ services.next_page_number }}">Следваща</a>
+                    <a href="?page={{ services.paginator.num_pages }}">Последна &raquo;</a>
+                {% endif %}
+            </div>
+        {% endif %}
     </section>
 
 </article>

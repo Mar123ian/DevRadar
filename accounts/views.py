@@ -8,6 +8,7 @@ from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.mixins import PermissionRequiredMixin, LoginRequiredMixin
 from django.contrib.auth.models import Group
 from django.contrib.contenttypes.models import ContentType
+from django.core.paginator import Paginator
 from django.db import connection, transaction
 from django.http import HttpResponseForbidden, HttpRequest
 from django.shortcuts import render, get_object_or_404, redirect
@@ -122,6 +123,23 @@ class DeleteDevRadarUser(LoginRequiredMixin, DeleteView):
 
 class ProfileView(LoginRequiredMixin, TemplateView):
     template_name = 'accounts/profile.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        user = self.request.user
+
+        # Проверяваме дали потребителят е програмист и има услуги
+        if user.groups.filter(name="Programmers").exists():
+            # Извикваме метода/property-то за активните услуги
+            services_list = user.active_services()
+
+
+            # Пагинатор с по 6 услуги на страница
+            paginator = Paginator(services_list, 20)
+            page_number = self.request.GET.get("page")
+            context["services"] = paginator.get_page(page_number)
+
+        return context
 
 
 from django.contrib import messages

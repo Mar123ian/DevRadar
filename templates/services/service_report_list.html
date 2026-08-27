@@ -30,8 +30,6 @@
                     <strong>Име на услугата:</strong> {{ report.service.name }}
                 </p>
 
-
-
                 <p class="report-card__sender">
                     <strong>Reported by:</strong> {{ report.sender.username }}
                 </p>
@@ -50,12 +48,12 @@
 
                 {% if not report.service.is_deleted_due_to_violation %}
                     <a href="{% url 'delete_service_due_to_violation' report.service.id %}" class="btn">
-                    Изтрий услугата
-                </a>
-            {% else %}
-                <a href="{% url 'restore_service_from_violation' report.service.id %}" class="btn">
-                    Възстанови услугата
-                </a>
+                        Изтрий услугата
+                    </a>
+                {% else %}
+                    <a href="{% url 'restore_service_from_violation' report.service.id %}" class="btn">
+                        Възстанови услугата
+                    </a>
                 {% endif %}
                 <a href="{% url 'delete_service' report.service.id %}"><button class="delete-button">Изтрий услугата от сървъра</button></a>
 
@@ -67,5 +65,22 @@
         {% endfor %}
 
     </div>
+
+    <!-- Навигация за пагинация -->
+    {% if is_paginated %}
+        <div class="pagination">
+            {% if page_obj.has_previous %}
+                <a href="?page=1">&laquo; Първа</a>
+                <a href="?page={{ page_obj.previous_page_number }}">Предишна</a>
+            {% endif %}
+
+            <span>Страница {{ page_obj.number }} от {{ page_obj.paginator.num_pages }}</span>
+
+            {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}">Следваща</a>
+                <a href="?page={{ page_obj.paginator.num_pages }}">Последна &raquo;</a>
+            {% endif %}
+        </div>
+    {% endif %}
 </div>
 {% endblock %}

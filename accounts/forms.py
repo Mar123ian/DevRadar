@@ -53,6 +53,17 @@ class ProgrammerBaseForm(UserCreationForm):
 
         }
 
+    def clean_username(self):
+        username = self.cleaned_data.get('username')
+        if '@' in username:
+            raise ValidationError('Потребителското име не може да съдържа символа @.')
+        return username
+
+    def clean_phone_number(self):
+        phone_number = self.cleaned_data.get('phone_number')
+        if not phone_number.isnumeric():
+            raise ValidationError('Телефонният номер трябва да съдържа само цифри.')
+        return phone_number
 
 
 class ProgrammerCreationForm(ProgrammerBaseForm):
@@ -91,6 +102,12 @@ class DevRadarUserBaseForm(forms.ModelForm):
             'last_name': 'Въведете фамилно име',
             'email': 'Въведете имейл', #TODO потр. име да е на български
         }
+
+    def clean_username(self):
+        username = self.cleaned_data.get('username')
+        if '@' in username:
+            raise ValidationError('Потребителското име не може да съдържа символа @.')
+        return username
 
 
 # Променяме наследяването, за да се свърже правилно с allauth
@@ -195,6 +212,13 @@ class UpgradeToProgrammerForm(forms.ModelForm):
             'phone_number': 'Телефонен номер',
             'image': 'Профилна снимка',
         }
+
+    def clean_phone_number(self):
+        phone_number = self.cleaned_data.get('phone_number')
+        if not phone_number.isnumeric():
+            raise ValidationError('Телефонният номер трябва да съдържа само цифри.')
+        return phone_number
+
 
 class ResendConfirmationForm(forms.Form):
     email = forms.EmailField()

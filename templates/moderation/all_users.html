@@ -30,7 +30,6 @@
                             {% if u.is_programmer %}
                                 <br>
                                 <a href="{% url 'programmer_details' u.programmer_slug %}"><button class="update-button" type="button">Подробности за програмиста</button></a>
-
                             {% endif %}
                         </div>
 
@@ -60,7 +59,7 @@
                                 <div style="font-weight: 700; color: var(--primary);">Няма активен бан</div>
                             {% endif %}
 
-                        {% if u.unactive_bans %}
+                            {% if u.unactive_bans %}
                                 <div style="font-weight: 700; color: gray;">Неактивни банове:</div>
                                 <ul class="helptext" style="margin-top:6px;">
                                     {% for ban in u.unactive_bans %}
@@ -77,18 +76,15 @@
                                             {% if ban.reason %}
                                                 <div class="helptext">Причина: {{ ban.reason }}</div>
                                             {% endif %}
-
                                         </li>
                                     {% endfor %}
                                 </ul>
-
                             {% endif %}
                         </div>
                     </div>
 
                     <div class="programmer-details__buttons" style="display:flex; flex-direction: row; gap: 12px; flex-wrap: wrap;">
-
-                            <a href="{% url 'ban_user' u.id %}"><button class="delete-button" type="button">Бан</button></a>
+                        <a href="{% url 'ban_user' u.id %}"><button class="delete-button" type="button">Бан</button></a>
 
                         {% if u.programmer_slug %}
                             <a href="{% url 'update_programmer' u.programmer_slug %}"><button class="update-button" type="button">Редактирай</button></a>
@@ -97,6 +93,7 @@
                             <a href="{% url 'update_user' u.id %}"><button class="update-button" type="button">Редактирай</button></a>
                             <a href="{% url 'delete_user' u.id %}"><button class="delete-button" type="button">Изтрий</button></a>
                         {% endif %}
+                        <a href="{% url 'violations' u.id %}"><button class="update-button" type="button">Нарушения</button></a>
                     </div>
                 </div>
             </div>
@@ -104,4 +101,21 @@
             <p class="services-page__empty">Няма намерени потребители.</p>
         {% endfor %}
     </div>
+
+    <!-- Навигация за пагинация -->
+    {% if users.has_other_pages %}
+        <div class="pagination">
+            {% if users.has_previous %}
+                <a href="?page=1">&laquo; Първа</a>
+                <a href="?page={{ users.previous_page_number }}">Предишна</a>
+            {% endif %}
+
+            <span>Страница {{ users.number }} от {{ users.paginator.num_pages }}</span>
+
+            {% if users.has_next %}
+                <a href="?page={{ users.next_page_number }}">Следваща</a>
+                <a href="?page={{ users.paginator.num_pages }}">Последна &raquo;</a>
+            {% endif %}
+        </div>
+    {% endif %}
 {% endblock %}

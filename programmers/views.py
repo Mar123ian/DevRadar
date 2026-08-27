@@ -2,6 +2,7 @@ from allauth.account.models import EmailAddress
 from allauth.socialaccount.models import SocialAccount
 from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
+from django.core.paginator import Paginator
 from django.http import HttpResponseForbidden, HttpResponseNotFound
 from django.shortcuts import render
 from django.urls import reverse
@@ -111,9 +112,12 @@ class AllProgrammers(ListView):
     model = ProgrammerUser
     template_name = 'programmers/all_programmers.html'
     context_object_name = 'programmers'
+    paginate_by = 20  # Брой програмисти на страница
 
-
-
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        # Извикваме метода is_full_banned() с () за всеки обект
+        return [p for p in queryset if (not p.is_full_banned() and not p.is_offer_service_banned())]
 
 class ProgrammerDetails(LoginRequiredMixin, DetailView):
     model = ProgrammerUser
@@ -130,6 +134,23 @@ class ProgrammerDetails(LoginRequiredMixin, DetailView):
             return HttpResponseNotFound()
 
         return super().dispatch(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        # 1. Взимаме услугите (ако active_services е метод, извикайте го с active_services())
+        services_list = self.object.active_services()
+
+
+        # 2. Настройваме Paginator (напр. по 6 услуги на страница)
+        paginator = Paginator(services_list, 20)
+
+        # 3. Взимаме номера на страницата от URL параметъра (?page=1)
+        page_number = self.request.GET.get("page")
+        services = paginator.get_page(page_number)
+
+        context["services"] = services
+        return context
 
 
 class CreateProgrammerReport(BaseCreateReportView):
@@ -148,3 +169,4 @@ class ProgrammerReportListView(EditorOrSuperuserRequiredMixin, ListView):
     template_name = 'programmers/programmer_report_list.html'
     context_object_name = 'reports'
     ordering = ['-timestamp']
+    paginate_by = 20
