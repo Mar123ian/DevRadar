@@ -11,6 +11,10 @@ from django import forms
 from accounts.models import DevRadarUser, ProgrammerUser
 from core.mixins import DisableFieldsMixin
 
+import io
+from PIL import Image
+from django.core.files.uploadedfile import InMemoryUploadedFile
+
 
 class ProgrammerBaseForm(UserCreationForm):
     class Meta:
@@ -65,6 +69,35 @@ class ProgrammerBaseForm(UserCreationForm):
             raise ValidationError('Телефонният номер трябва да съдържа само цифри.')
         return phone_number
 
+    def clean_image(self):  # Замени 'profile_image' с твоето име на поле
+        image = self.cleaned_data.get('image')
+
+        # Ако няма нова качена снимка или файлът е под 10 MB, не прави нищо
+        if not image or not hasattr(image, 'size') or image.size <= 10 * 1024 * 1024:
+            return image
+
+        # Отваряме изображението
+        img = Image.open(image)
+        if img.mode != 'RGB':
+            img = img.convert('RGB')
+
+        # Намаляваме резолюцията (напр. максимум 1920x1920 px)
+        img.thumbnail((1920, 1920))
+
+        # Компресираме го в паметта
+        output = io.BytesIO()
+        img.save(output, format='JPEG', quality=80)
+        output.seek(0)
+
+        # Заменяме големия файл с новия компресиран файл
+        return InMemoryUploadedFile(
+            output,
+            'ImageField',
+            f"{image.name.split('.')[0]}.jpg",
+            'image/jpeg',
+            output.getbuffer().nbytes,
+            None
+        )
 
 class ProgrammerCreationForm(ProgrammerBaseForm):
     pass
