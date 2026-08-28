@@ -59,35 +59,17 @@ class ProgrammerForm(forms.ModelForm):
             raise ValidationError('Потребителското име не може да съдържа символа @.')
         return username
 
-    def clean_image(self):  # Замени 'profile_image' с твоето име на поле
-        image = self.cleaned_data.get('image')
+    def clean_image(self):
+        image = self.cleaned_data.get('image')  # Замени 'image' с името на твоето поле
 
-        # Ако няма нова качена снимка или файлът е под 10 MB, не прави нищо
-        if not image or not hasattr(image, 'size') or image.size <= 10 * 1024 * 1024:
-            return image
+        if image and hasattr(image, 'size'):
+            # 10 MB в байтове (лимитът на Cloudinary)
+            max_size = 10 * 1024 * 1024
 
-        # Отваряме изображението
-        img = Image.open(image)
-        if img.mode != 'RGB':
-            img = img.convert('RGB')
+            if image.size > max_size:
+                raise ValidationError("Файлът е прекалено голям. Максималният позволен размер е 10 MB.")
 
-        # Намаляваме резолюцията (напр. максимум 1920x1920 px)
-        img.thumbnail((1920, 1920))
-
-        # Компресираме го в паметта
-        output = io.BytesIO()
-        img.save(output, format='JPEG', quality=80)
-        output.seek(0)
-
-        # Заменяме големия файл с новия компресиран файл
-        return InMemoryUploadedFile(
-            output,
-            'ImageField',
-            f"{image.name.split('.')[0]}.jpg",
-            'image/jpeg',
-            output.getbuffer().nbytes,
-            None
-        )
+        return image
 
 
 
