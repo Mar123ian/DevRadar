@@ -81,7 +81,9 @@ class CustomAccountAdapter(DefaultAccountAdapter):
         return reverse('profile')
 
     def pre_login(self, request, user, **kwargs):
+        print('In pre_login')
         if user and user.email:
+            print("user.email")
             # 1. Записваме имейла
             request.session['pending_verification_email'] = user.email
 
