@@ -49,8 +49,8 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
-    'cloudinary_storage',
     'django.contrib.staticfiles',
+    'cloudinary_storage',
     'cloudinary',
     'storages',
     'rest_framework',
@@ -151,8 +151,10 @@ STORAGES = {
     },
 }
 
-# Добави и този ред за съвместимост с cloudinary_storage
 STATICFILES_STORAGE = "whitenoise.storage.CompressedStaticFilesStorage"
+
+# Спира грешките от типа "MissingFileError" за служебните CSS файлове на Django Admin
+WHITENOISE_MANIFEST_STRICT = False
 
 # --- CLOUDINARY CONFIGURATION ---
 CLOUDINARY_STORAGE = {
