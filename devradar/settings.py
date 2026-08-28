@@ -147,12 +147,12 @@ STORAGES = {
         "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage",
     },
     "staticfiles": {
-        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+        "BACKEND": "whitenoise.storage.CompressedStaticFilesStorage",
     },
 }
 
-STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
-WHITENOISE_MANIFEST_STRICT = False
+# Добави и този ред за съвместимост с cloudinary_storage
+STATICFILES_STORAGE = "whitenoise.storage.CompressedStaticFilesStorage"
 
 # --- CLOUDINARY CONFIGURATION ---
 CLOUDINARY_STORAGE = {
