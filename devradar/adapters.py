@@ -80,6 +80,16 @@ class CustomAccountAdapter(DefaultAccountAdapter):
         #TODO да казва че е успешно, анимация докато зарежда
         return reverse('profile')
 
+    def pre_login(self, request, user, **kwargs):
+        if user and user.email:
+            # 1. Записваме имейла
+            request.session['pending_verification_email'] = user.email
+
+            # 2. ЗАДЪЛЖИТЕЛНО: Казваме на Django да запази сесията за AnonymousUser
+            request.session.modified = True
+
+        return super().pre_login(request, user, **kwargs)
+
 
     def clean_email(self, email):
         email = super().clean_email(email)

@@ -21,10 +21,3 @@ def email_confirmed_sync(sender, request, email_address, **kwargs):
     user.email = email_address.email
     user.save()
 
-@receiver(user_logged_in)
-def set_email_in_session(sender, request, user, **kwargs):
-    print('User logged in!')
-    # Записваме имейла на влезелия потребител в сесията
-    if user and user.email:
-        print('Email in session:', user.email)
-        request.session['pending_verification_email'] = user.email
