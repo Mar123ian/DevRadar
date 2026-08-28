@@ -57,9 +57,13 @@
 
 <!-- STICKY INPUT BAR -->
 <div class="chat-input-bar">
-    <input id="message-input" type="text" placeholder="Write message...">
-    <input id="file-input" type="file">
-    <button onclick="sendMessage()" class="btn btn--primary">Send</button>
+    <input id="message-input" type="text" placeholder="Напишете съобщение...">
+
+   {% comment %}
+ <input id="file-input" type="file">
+ {% endcomment %}
+
+    <button onclick="sendMessage()" class="btn btn--primary">ПРАТИ</button>
 </div>
 
 <!-- MODAL FOR DELETE -->
@@ -79,13 +83,14 @@
     <div class="modal-content service-card">
         <h4>Редактиране на съобщение</h4>
         <textarea id="edit-message-text" rows="3" style="width:100%; margin:10px 0;"></textarea>
-
+{% comment %}
         <div style="margin-bottom: 15px;">
             <label for="edit-file-input" style="display:block; margin-bottom:5px; font-size:0.9rem; color:var(--text-muted);">
                 Смяна/Прикачване на нов файл:
             </label>
             <input id="edit-file-input" type="file" style="width:100%;">
         </div>
+{% endcomment %}
 
         <div class="modal-actions">
             <button onclick="confirmEdit()" class="btn btn--primary">Запази</button>
