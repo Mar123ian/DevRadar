@@ -66,3 +66,51 @@ class ForceDefaultLanguageMiddleware:
             translation.activate('bg')
             request.LANGUAGE_CODE = 'bg'
         return self.get_response(request)
+
+# middleware.py
+from django.http import HttpResponse
+from django.utils.deprecation import MiddlewareMixin
+from django_ratelimit.core import is_ratelimited
+
+from django.http import HttpResponse  # или HttpResponse
+from django.utils.deprecation import MiddlewareMixin
+from django_ratelimit.core import is_ratelimited
+
+
+def get_real_client_ip(group, request):
+    if request.user.is_authenticated:
+        return f"user:{request.user.pk}"
+
+    x_forwarded = request.META.get("HTTP_X_FORWARDED_FOR")
+    if x_forwarded:
+        ip = x_forwarded.split(",")[0].strip()
+    else:
+        ip = request.META.get("REMOTE_ADDR")
+
+    return f"ip:{ip}"
+
+
+class GlobalRatelimitMiddleware(MiddlewareMixin):
+
+    def process_request(self, request):
+        # Игнорираме статични файлове и админ панел (по избор)
+        if request.path.startswith(
+            ("/static/", "/media/", "/admin/")
+        ):
+            return None
+
+        was_limited = is_ratelimited(
+            request=request,
+            group="global_app_limit",
+            key=get_real_client_ip,  # Нашата функция за реално IP
+            rate="100/m",
+            increment=True,
+        )
+
+        if was_limited:
+            return HttpResponse(
+                {
+                    "error": "Твърде много заявки. Моля, изчакайте една минута."
+                },
+                status=429,
+            )

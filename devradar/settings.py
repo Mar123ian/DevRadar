@@ -30,6 +30,16 @@ if PRODUCTION:
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
     CSRF_COOKIE_SECURE = True
     SESSION_COOKIE_SECURE = True
+    USE_X_FORWARDED_HOST = True
+
+    # Cloudflare Turnstile ключове
+    TURNSTILE_SITEKEY = os.environ.get("TURNSTILE_SITEKEY")
+    TURNSTILE_SECRETKEY = os.environ.get("TURNSTILE_SECRETKEY")
+
+    # (По избор) Изглед на виджета: 'auto', 'light', или 'dark'
+    TURNSTILE_DEFAULT_CONFIG = {
+        "theme": "auto",
+    }
 
 # --- ИНТЕРНАЦИОНАЛИЗАЦИЯ ---
 LANGUAGE_CODE = 'bg'
@@ -72,22 +82,46 @@ INSTALLED_APPS = [
     'allauth.account',
     'allauth.socialaccount',
     'allauth.socialaccount.providers.google',
+    "turnstile",
 ]
+
+# MIDDLEWARE = [
+#     'django.middleware.security.SecurityMiddleware',
+#     'whitenoise.middleware.WhiteNoiseMiddleware',
+#     'django.contrib.sessions.middleware.SessionMiddleware',
+#     'django.middleware.common.CommonMiddleware',
+#     'django.middleware.csrf.CsrfViewMiddleware',
+#     'django.contrib.auth.middleware.AuthenticationMiddleware',
+#     'middlewares.IsBannedMiddleware',
+#     'django.middleware.locale.LocaleMiddleware',
+#     'middlewares.ForceDefaultLanguageMiddleware',
+#     'django.contrib.messages.middleware.MessageMiddleware',
+#     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+#     'allauth.account.middleware.AccountMiddleware',
+#     'middlewares.BlockUnverifiedEmailMiddleware',
+#     'middlewares.GlobalRatelimitMiddleware'
+# ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.locale.LocaleMiddleware',  # 👈 Зареждаме езика ВЕДНАГА след сесията
+    'middlewares.ForceDefaultLanguageMiddleware',  # 👈 Настройва езика по подразбиране
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+
+    # Кастъм проверки за потребителя (вече имат достъп до request.user И зареден език)
     'middlewares.IsBannedMiddleware',
-    'django.middleware.locale.LocaleMiddleware',
-    'middlewares.ForceDefaultLanguageMiddleware',
+    'middlewares.BlockUnverifiedEmailMiddleware',
+
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'allauth.account.middleware.AccountMiddleware',
-    'middlewares.BlockUnverifiedEmailMiddleware'
+
+    # Ratelimit (ако разчита на request.user за user_or_ip)
+    'middlewares.GlobalRatelimitMiddleware',
 ]
 
 ROOT_URLCONF = 'devradar.urls'
@@ -102,7 +136,6 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
-                'moderation.context_processors.user_violations',
             ],
         },
     },
@@ -142,26 +175,27 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
-STORAGES = {
-    "default": {
-        "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage",
-    },
-    "staticfiles": {
-        "BACKEND": "whitenoise.storage.CompressedStaticFilesStorage",
-    },
-}
+if PRODUCTION:
+    STORAGES = {
+        "default": {
+            "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage",
+        },
+        "staticfiles": {
+            "BACKEND": "whitenoise.storage.CompressedStaticFilesStorage",
+        },
+    }
 
-STATICFILES_STORAGE = "whitenoise.storage.CompressedStaticFilesStorage"
+    STATICFILES_STORAGE = "whitenoise.storage.CompressedStaticFilesStorage"
 
-# Спира грешките от типа "MissingFileError" за служебните CSS файлове на Django Admin
-WHITENOISE_MANIFEST_STRICT = False
+    # Спира грешките от типа "MissingFileError" за служебните CSS файлове на Django Admin
+    WHITENOISE_MANIFEST_STRICT = False
 
-# --- CLOUDINARY CONFIGURATION ---
-CLOUDINARY_STORAGE = {
-    'CLOUD_NAME': os.environ.get('CLOUDINARY_CLOUD_NAME', ''),
-    'API_KEY': os.environ.get('CLOUDINARY_API_KEY', ''),
-    'API_SECRET': os.environ.get('CLOUDINARY_API_SECRET', ''),
-}
+    # --- CLOUDINARY CONFIGURATION ---
+    CLOUDINARY_STORAGE = {
+        'CLOUD_NAME': os.environ.get('CLOUDINARY_CLOUD_NAME', ''),
+        'API_KEY': os.environ.get('CLOUDINARY_API_KEY', ''),
+        'API_SECRET': os.environ.get('CLOUDINARY_API_SECRET', ''),
+    }
 
 # --- REDIS И CELERY ---
 REDIS_URL = os.environ.get("REDIS_URL", "redis://localhost:6379/0")
@@ -218,7 +252,7 @@ ACCOUNT_LOGIN_METHODS = {'email', 'username'}
 ACCOUNT_SIGNUP_FIELDS = ['email*', 'username*', 'password1*', 'password2*']
 ACCOUNT_EMAIL_VERIFICATION = 'mandatory'
 ACCOUNT_UNIQUE_EMAIL = True
-SOCIALACCOUNT_AUTO_SIGNUP = True
+SOCIALACCOUNT_AUTO_SIGNUP = False
 ACCOUNT_EMAIL_REQUIRED = True
 SOCIALACCOUNT_ADAPTER = 'devradar.adapters.CustomSocialAccountAdapter'
 SOCIALACCOUNT_EMAIL_AUTHENTICATION_AUTO_CONNECT = True
@@ -232,9 +266,17 @@ SOCIALACCOUNT_PROVIDERS = {
 ACCOUNT_ADAPTER = 'devradar.adapters.CustomAccountAdapter'
 ACCOUNT_ALLOW_EMAIL_CHANGE = True
 ACCOUNT_USERNAME_GENERATOR = "accounts.utils.generate_username_from_email"
-ACCOUNT_RATE_LIMITS = {}
-ACCOUNT_EMAIL_CONFIRMATION_COOLDOWN = 0
+# ACCOUNT_RATE_LIMITS = {"send_mail": "1/2m",}
+# ACCOUNT_EMAIL_CONFIRMATION_COOLDOWN = 60
+ACCOUNT_RATE_LIMITS = {
+    "confirm_email": "10/d/ip, 10/d/key",
+    "reset_password": "10/d/ip, 10/d/key",
+}
+ACCOUNT_EMAIL_CONFIRMATION_HMAC = False
 ACCOUNT_FORMS = {'signup': 'accounts.forms.DevRadarUserCreationForm'}
+SOCIALACCOUNT_FORMS = {
+    'signup': 'accounts.forms.CustomSocialSignupForm',
+}
 
 # --- ЛОГОВЕ ---
 LOGGING = {

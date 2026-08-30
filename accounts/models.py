@@ -22,6 +22,7 @@ class DevRadarUser(PolymorphicModel,AbstractUser):
     last_name = models.CharField(_("last name"), max_length=150, blank=True)
     favourites = models.ManyToManyField('services.Service', related_name='users', blank=True)
     email = models.EmailField(_("email address"), unique=True, error_messages={'unique': 'Потребител с този имейл вече съществува!'})
+    terms_accepted_at = models.DateTimeField(null=True, blank=True)
 
     objects = DevRadarUserManager()
 

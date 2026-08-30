@@ -1,3 +1,4 @@
+from datetime import timedelta
 from http.client import responses
 
 from allauth.socialaccount.models import SocialAccount
@@ -13,6 +14,7 @@ from django.db import connection, transaction
 from django.http import HttpResponseForbidden, HttpRequest
 from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse_lazy, reverse
+from django.utils import timezone
 from django.views import View
 from django.views.generic import CreateView, ListView, DetailView, DeleteView, UpdateView, TemplateView, FormView
 
@@ -275,6 +277,37 @@ class ResendEmailView(View):
                 "No pending email verification found."
             )
             return redirect("account_signup")
+
+        last_confirmation = email_address.emailconfirmation_set.last()
+
+        if last_confirmation:
+            now = timezone.now()
+
+            # 1. ПРОВЕРКА: Дневен лимит (10 имейла за 24 ч)
+            one_day_ago = now - timedelta(days=1)
+            sent_in_last_24h = email_address.emailconfirmation_set.filter(
+                sent__gte=one_day_ago
+            ).count()
+
+            if sent_in_last_24h >= 10:
+                # Чистим таймера от сесията, за да не се показва спадащият брояч в JS
+                request.session.pop("resend_cooldown_seconds", None)
+                messages.error(
+                    request,
+                    "Достигнахте дневния лимит от 10 изпратени имейла. Моля, опитайте отново утре."
+                )
+                return redirect('account_email_verification_sent')
+
+            # 2. ПРОВЕРКА: Кратък cooldown (2 минути)
+            cooldown = last_confirmation.sent + timedelta(minutes=2)
+            if now < cooldown:
+                remaining_sec = int((cooldown - now).total_seconds())
+                messages.error(
+                    request,
+                    f"Вече изпратихме имейл. Изчакайте още секунди."  # Текстът се управлява динамично в шаблона
+                )
+                request.session["resend_cooldown_seconds"] = remaining_sec
+                return redirect('account_email_verification_sent')
 
         # изпращане на confirmation email
         email_address.send_confirmation(request)

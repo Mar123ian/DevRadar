@@ -7,6 +7,9 @@ from django.core.exceptions import ValidationError
 from django.forms import models
 
 from django import forms
+from django.utils import timezone
+from django.utils.safestring import mark_safe
+from turnstile.fields import TurnstileField
 
 from accounts.models import DevRadarUser, ProgrammerUser
 from core.mixins import DisableFieldsMixin
@@ -115,8 +118,22 @@ class DevRadarUserBaseForm(forms.ModelForm):
         return username
 
 
+TERMS_LABEL = mark_safe(
+    'Прочетох и съм съгласен с <a href="/terms/" target="_blank">Общите условия</a> '
+    'и <a href="/privacy/" target="_blank">Политиката за поверителност</a>.'
+)
+
+
 # Променяме наследяването, за да се свърже правилно с allauth
 class DevRadarUserCreationForm(SignupForm, DevRadarUserBaseForm):
+
+    terms_accepted = forms.BooleanField(
+        required=True,
+        label=TERMS_LABEL,  # <-- Подаването на маркирания текст тук
+        error_messages={'required': 'Трябва да се съгласите с правилата.'}
+    )
+
+    turnstile = TurnstileField()
 
     def __init__(self, *args, **kwargs):
         # 1. Извикваме инициализацията на Allauth SignupForm, която добавя паролите и имейла по нейния си начин
@@ -146,9 +163,22 @@ class DevRadarUserCreationForm(SignupForm, DevRadarUserBaseForm):
         self.fields['email'].error_messages.update(self.Meta.error_messages['email'])
         self.fields['email'].required = True
 
+        # --- 4. ПРЕХМАХВАНЕ НА ЕТИКЕТА (LABEL) НА TURNSTILE ---
+        self.fields["turnstile"].label = ""
+
+        # --- 5. ПРЕНАРЕЖДАНЕ НА ПОЛЕТАТА (ПО ДАДЕНИЯ РЕД) ---
+        # Изваждаме полетата за правилата и Turnstile от речника
+        terms = self.fields.pop("terms_accepted")
+        captcha = self.fields.pop("turnstile")
+
+        # Добавяме ги отново в самия край на self.fields
+        self.fields["terms_accepted"] = terms
+        self.fields["turnstile"] = captcha
+
     def save(self, request):
         # Извикваме вградения save на allauth, който създава потребителя и паролата
         user = super().save(request)
+        user.terms_accepted_at = timezone.now()
 
         request.session["pending_verification_email"] = user.email
         print("cookie set with", request.COOKIES)
@@ -159,6 +189,53 @@ class DevRadarUserCreationForm(SignupForm, DevRadarUserBaseForm):
         user.last_name = self.cleaned_data['last_name']
         user.save()
 
+        return user
+
+    def clean_username(self):
+        # 1. Извикваме clean_username от SignupForm / DevRadarUserBaseForm
+        username = super().clean_username()
+
+        # 2. Добавяме вашата персонализирана проверка
+        if '@' in username:
+            raise ValidationError('Потребителското име не може да съдържа символа @.')
+
+        return username
+
+from allauth.socialaccount.forms import SignupForm as SocialSignupForm
+
+class CustomSocialSignupForm(SocialSignupForm):
+
+    turnstile = TurnstileField()
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.fields['email'].widget = forms.HiddenInput()
+
+        # --- 4. ПРЕХМАХВАНЕ НА ЕТИКЕТА (LABEL) НА TURNSTILE ---
+        self.fields["turnstile"].label = ""
+
+        # --- 5. ПРЕНАРЕЖДАНЕ НА ПОЛЕТАТА (ПО ДАДЕНИЯ РЕД) ---
+        # Изваждаме полетата за правилата и Turnstile от речника
+        terms = self.fields.pop("terms_accepted")
+        captcha = self.fields.pop("turnstile")
+
+        # Добавяме ги отново в самия край на self.fields
+        self.fields["terms_accepted"] = terms
+        self.fields["turnstile"] = captcha
+
+    terms_accepted = forms.BooleanField(
+        required=True,
+        label=TERMS_LABEL,
+        error_messages={'required': 'Трябва да се съгласите с правилата, за да продължите.'}
+    )
+
+
+
+    def save(self, request):
+        user = super().save(request)
+        user.terms_accepted_at = timezone.now()
+        user.save()
         return user
 
 class DevRadarUserUpdateForm(DevRadarUserBaseForm):

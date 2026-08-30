@@ -14,20 +14,66 @@
 <form method="post" action="{% url 'resend_email' %}">
     <p>Не получи имейла?</p>
     <br>
+    {% for message in messages %}
+    {% if message.tags == 'error' %}
+        {% if request.session.resend_cooldown_seconds %}
+            <!-- Съобщение с JS Таймер за 2-минутния cooldown -->
+            <p id="error-message" style="color: red;">
+                Вече изпратихме имейл. Изчакайте още
+                <span id="countdown">{{ request.session.resend_cooldown_seconds }}</span>
+                секунди.
+            </p>
+        {% else %}
+            <!-- Стандартно съобщение (за 24h лимита или други грешки) -->
+            <p style="color: red;">
+                {{ message }}
+            </p>
+        {% endif %}
+    {% endif %}
+{% endfor %}
+
+
     {% csrf_token %}
     <button type="submit" class="update-button">
         Изпрати линка отново
     </button>
+    
 </form>
 
     {% if user.is_authenticated %}
     <form method="post" action="{% url 'restore_old_email' %}">
     <p>Ако сте сгрешили новия си имейл, можете да го смените:</p>
     <br>
-    {% csrf_token %}
+        {% if form.errors %}
+            <p style="color: red;">{{ form.errors|striptags }}</p>
+        {% endif %}
+        {% csrf_token %}
     <button type="submit" class="update-button">
         Смени имейл
     </button>
 </form>
     {% endif %}
+    <script>
+    let countdown = document.getElementById("countdown");
+    let errorMessage = document.getElementById("error-message");
+
+    if (countdown) {
+        let seconds = parseInt(countdown.textContent);
+
+        if (!isNaN(seconds) && seconds > 0) {
+            const timer = setInterval(() => {
+                seconds--;
+
+                if (seconds <= 0) {
+                    clearInterval(timer);
+                    if (errorMessage) {
+                        errorMessage.remove();
+                    }
+                } else {
+                    countdown.textContent = seconds;
+                }
+            }, 1000);
+        }
+    }
+</script>
 {% endblock %}
