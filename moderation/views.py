@@ -1,9 +1,9 @@
 from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
-from django.core.exceptions import ValidationError
+from django.core.exceptions import ValidationError, PermissionDenied
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.forms import modelform_factory
-from django.http import HttpResponseForbidden, HttpResponseRedirect, HttpResponseNotFound
+from django.http import HttpResponseForbidden, HttpResponseRedirect, HttpResponseNotFound, Http404
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
 from django.utils import timezone
@@ -30,7 +30,7 @@ class BanUser(FormView):
         if request.user.groups.filter(name='Editors').exists() or request.user.is_superuser:
             return super().dispatch(request, *args, **kwargs)
 
-        return HttpResponseForbidden()
+        raise PermissionDenied
 
     #TODO optimize
     def form_valid(self, form):
@@ -98,7 +98,7 @@ class DeleteBan(LoginRequiredMixin, DeleteView):
         if request.user.groups.filter(name='Editors').exists() or request.user.is_superuser:
             return super().dispatch(request, *args, **kwargs)
 
-        return HttpResponseForbidden()
+        raise PermissionDenied
 
     def get_success_url(self):
         return reverse('home')
@@ -146,7 +146,7 @@ class AllUsers(LoginRequiredMixin, TemplateView):
         ):
             return super().dispatch(request, *args, **kwargs)
 
-        return HttpResponseForbidden()
+        raise PermissionDenied
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -212,10 +212,10 @@ class BaseCreateReportView(FormView):
 
         if not isinstance(self.target_object, ProgrammerUser):
             if self.target_object.is_deleted_due_to_violation or self.target_object.is_deleted_due_to_ban:
-                return HttpResponseNotFound()
+                raise Http404("")
         else:
             if self.target_object.is_full_banned():
-                return HttpResponseForbidden()
+                raise PermissionDenied
 
         return super().dispatch(request, *args, **kwargs)
 
@@ -273,7 +273,7 @@ class DeleteContentDueToViolationBase(LoginRequiredMixin, DeleteView):
         if request.user.groups.filter(name='Editors').exists() or request.user.is_superuser:
             return super().dispatch(request, *args, **kwargs)
 
-        return HttpResponseForbidden()
+        raise PermissionDenied
 
     def form_valid(self, form):
         # Вземаме съобщението от базата
@@ -302,7 +302,7 @@ class RestoreContentFromViolationBase(LoginRequiredMixin, UpdateView):
         if request.user.groups.filter(name='Editors').exists() or request.user.is_superuser:
             return super().dispatch(request, *args, **kwargs)
 
-        return HttpResponseForbidden()
+        raise PermissionDenied
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
@@ -343,7 +343,7 @@ class UserViolationsAndBansView(LoginRequiredMixin, TemplateView):
             or request.user.groups.filter(name="Editors").exists()
         ):
             return super().dispatch(request, *args, **kwargs)
-        return HttpResponseForbidden()
+        raise PermissionDenied
 
     def get_paginate_page(self, queryset, param_name, per_page=5):
         paginator = Paginator(queryset, per_page)
@@ -414,7 +414,7 @@ class AppealsView(LoginRequiredMixin, TemplateView):
             or request.user.is_superuser
         ):
             return super().dispatch(request, *args, **kwargs)
-        return HttpResponseForbidden()
+        raise PermissionDenied
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

@@ -84,12 +84,12 @@ class DevRadarUser(PolymorphicModel,AbstractUser):
         return self.deleted_messages().filter(is_user_informed_about_violation=False)
 
 class ProgrammerUser(DevRadarUser):
-    image = models.ImageField(upload_to='programmers/')
+    image = models.ImageField(upload_to='programmers/', blank=True, null=True)
 
     phone_number = models.CharField(max_length=15,
-                                    error_messages={'max_length': 'Максималната дължина е 15 символа!',})
+                                    error_messages={'max_length': 'Максималната дължина е 15 символа!',}, blank=True, null=True)
                                                     # 'unique': 'Програмист с този тел. номер вече съществува!'
-    slug = models.SlugField(unique=True, blank=True)
+    slug = models.SlugField(unique=True, blank=True, null=True)
 
     def save(self, *args, **kwargs):
         if not self.slug:

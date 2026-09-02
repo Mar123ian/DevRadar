@@ -13,6 +13,14 @@
 >
     {% csrf_token %}
 
+    {% if user.is_offer_service_banned or user.is_comments_banned or user.is_chat_banned or user.is_full_banned %}
+        <p style="font-style: italic; color: red; line-height: 1.8; font-size: 16px; margin: 20px 0;">
+            Акаунтът ви съдържа активни ограничения за нарушения на правилата. При потвърждение за изтриване, профилът
+            ви ще бъде премахнат, но вашият имейл адрес ще бъде перманентно включен в списъка с блокирани субекти, за да
+            се предотврати заобикаляне на ограниченията. Няма да можете да създадете нов профил с този имейл.
+        </p>
+    {% endif %}
+
     <div class="programmer-delete-form__fields">
         {{ form }}
     </div>

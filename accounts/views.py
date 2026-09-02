@@ -1,3 +1,4 @@
+import uuid
 from datetime import timedelta
 from http.client import responses
 
@@ -9,6 +10,7 @@ from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.mixins import PermissionRequiredMixin, LoginRequiredMixin
 from django.contrib.auth.models import Group
 from django.contrib.contenttypes.models import ContentType
+from django.core.exceptions import PermissionDenied
 from django.core.paginator import Paginator
 from django.db import connection, transaction
 from django.http import HttpResponseForbidden, HttpRequest
@@ -59,7 +61,7 @@ class UpdateDevRadarUser(LoginRequiredMixin, UpdateView):
                 name='Editors').exists() or request.user.is_superuser or request.user == self.get_object():
             return super().dispatch(request, *args, **kwargs)
 
-        return HttpResponseForbidden()
+        raise PermissionDenied
 
     def get_form_kwargs(self):
         # Вземаме стандартните kwargs (които съдържат instance, data и files)
@@ -108,6 +110,36 @@ class DeleteDevRadarUser(LoginRequiredMixin, DeleteView):
     model = get_user_model()
     template_name = 'accounts/forms/delete_user_form.html'
 
+    def anonymize_banned_user_data(self, user):
+        # Check if the user has active bans
+        if user.is_comments_banned() or user.is_chat_banned() or user.is_full_banned():
+            user.bans.create(
+                reason='Избягване на предишен бан.',
+                permanent=True,
+                duration=timedelta(days=0),
+            )
+
+            # Anonymize personal data except for the email
+            user.first_name = 'Anonymous'
+            user.last_name = 'Anonymous'
+            while True:
+                new_username = f"deleted_user_{uuid.uuid4().hex[:6]}"
+
+                if not DevRadarUser.objects.filter(username=new_username).exists():
+                    user.username = new_username
+                    break
+
+            # Make the user unable to log in
+            user.is_active = False
+            user.save()
+
+    def form_valid(self, form):
+        user = self.get_object()
+        if user.is_comments_banned() or user.is_chat_banned() or user.is_full_banned():
+            self.anonymize_banned_user_data(user)
+            return redirect('login')
+        return super().form_valid(form)
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['form'] = DevRadarUserDeleteForm(instance=self.get_object())
@@ -115,13 +147,15 @@ class DeleteDevRadarUser(LoginRequiredMixin, DeleteView):
 
     def dispatch(self, request, *args, **kwargs):
         if request.user.groups.filter(
-                name='Editors').exists() or request.user.is_superuser or request.user == self.get_object():
+                name='Editors').exists() or request.user.is_superuser or (request.user == self.get_object() and not request.user.is_programmer):
             return super().dispatch(request, *args, **kwargs)
 
-        return HttpResponseForbidden()
+        raise PermissionDenied
 
     def get_success_url(self):
         return reverse('login')
+    
+    
 
 class ProfileView(LoginRequiredMixin, TemplateView):
     template_name = 'accounts/profile.html'
@@ -344,7 +378,7 @@ class RestoreOldEmail(View):
     def dispatch(self, request: HttpRequest, *args, **kwargs):
         primary_emails = EmailAddress.objects.filter(user=request.user, primary=True)
         if not (request.user.is_authenticated and not primary_emails):
-            return HttpResponseForbidden()
+            raise PermissionDenied
 
         else:
             return super().dispatch(request, *args, **kwargs)

@@ -18,7 +18,13 @@
             <p class="helptext">Ако смятате, че това е грешка, можете да подадете жалба от страницата с нарушения.</p>
             <div style="display:flex; gap: 12px; flex-wrap: wrap; margin-top: 12px;">
                 <a href="{% url 'violations' user.id %}" class="update-button" style="text-decoration:none;">Виж нарушения и обжалвай</a>
-                <a href="/" class="delete-button" style="text-decoration:none; background: var(--gray-200); color: var(--dark); border: none;">Към началото</a>
+                {% if user.is_programmer %}
+                                    <a href="{% url 'delete_programmer' user.slug %}" class="delete-button" style="text-decoration:none; background: var(--gray-200); color: var(--dark); border: none;">Изтрий профила</a>
+
+                {% else %}
+                                    <a href="{% url 'delete_user' user.pk %}" class="delete-button" style="text-decoration:none; background: var(--gray-200); color: var(--dark); border: none;">Изтрий профила</a>
+
+                {% endif %}
             </div>
         </div>
     </div>

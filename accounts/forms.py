@@ -79,7 +79,7 @@ class ProgrammerCreationForm(ProgrammerBaseForm):
 
 
 from django import forms
-from allauth.account.forms import SignupForm
+from allauth.account.forms import SignupForm, LoginForm, ResetPasswordForm
 
 
 class DevRadarUserBaseForm(forms.ModelForm):
@@ -304,3 +304,14 @@ class UpgradeToProgrammerForm(forms.ModelForm):
 
 class ResendConfirmationForm(forms.Form):
     email = forms.EmailField()
+
+class CustomLoginForm(LoginForm):
+    turnstile = TurnstileField(label="")
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+
+
+class CustomResetPasswordForm(ResetPasswordForm):
+    turnstile = TurnstileField(label="")

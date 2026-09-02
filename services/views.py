@@ -7,6 +7,7 @@ from django.shortcuts import render, redirect
 from django.urls import reverse
 from django.views.generic import CreateView, DeleteView, ListView, DetailView
 from django.views.generic.edit import FormMixin, UpdateView
+from rest_framework.exceptions import PermissionDenied
 
 from accounts.models import ProgrammerUser
 from chat.models import MessageReport
@@ -41,7 +42,7 @@ class CreateService(LoginRequiredMixin, CreateView):
 
     def dispatch(self, request, *args, **kwargs):
         if not request.user.groups.filter(name='Programmers').exists():
-            return HttpResponseForbidden()
+            raise PermissionDenied
         return super().dispatch(request, *args, **kwargs)
 
 class UpdateService(LoginRequiredMixin, UpdateView):
@@ -62,7 +63,7 @@ class UpdateService(LoginRequiredMixin, UpdateView):
                         self.object.is_deleted_due_to_violation or self.object.is_deleted_due_to_ban))):
             return super().dispatch(request, *args, **kwargs)
 
-        return HttpResponseForbidden()
+        raise PermissionDenied
 
 class DeleteService(LoginRequiredMixin, DeleteView):
     model = Service
@@ -85,7 +86,7 @@ class DeleteService(LoginRequiredMixin, DeleteView):
                 (request.user == self.get_object().programmer and not (self.object.is_deleted_due_to_violation or self.object.is_deleted_due_to_ban))):
             return super().dispatch(request, *args, **kwargs)
 
-        return HttpResponseForbidden()
+        raise PermissionDenied
     
 class AllServices(ListView):
     model = Service

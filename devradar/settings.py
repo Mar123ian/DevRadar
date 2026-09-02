@@ -30,7 +30,7 @@ if PRODUCTION:
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
     CSRF_COOKIE_SECURE = True
     SESSION_COOKIE_SECURE = True
-    USE_X_FORWARDED_HOST = True
+    #USE_X_FORWARDED_HOST = True
 
     # Cloudflare Turnstile ключове
     TURNSTILE_SITEKEY = os.environ.get("TURNSTILE_SITEKEY")
@@ -215,6 +215,13 @@ CHANNEL_LAYERS = {
     },
 }
 
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.redis.RedisCache",
+        "LOCATION": REDIS_URL,
+    }
+}
+
 # --- ИМЕЙЛ НАСТРОЙКИ ---
 if PRODUCTION:
     EMAIL_BACKEND = 'djcelery_email.backends.CeleryEmailBackend'
@@ -273,10 +280,19 @@ ACCOUNT_RATE_LIMITS = {
     "reset_password": "10/d/ip, 10/d/key",
 }
 ACCOUNT_EMAIL_CONFIRMATION_HMAC = False
-ACCOUNT_FORMS = {'signup': 'accounts.forms.DevRadarUserCreationForm'}
+ACCOUNT_FORMS = {'signup': 'accounts.forms.DevRadarUserCreationForm',
+                 'reset_password': 'accounts.forms.CustomResetPasswordForm',
+                 'login': 'accounts.forms.CustomLoginForm',}
 SOCIALACCOUNT_FORMS = {
     'signup': 'accounts.forms.CustomSocialSignupForm',
 }
+
+# Настройка за django-ipware
+IPWARE_META_PRECEDENCE_ORDER = (
+    'HTTP_CF_CONNECTING_IP', # Взема с предимство Cloudflare IP
+    'HTTP_X_FORWARDED_FOR',
+    'REMOTE_ADDR',
+)
 
 # --- ЛОГОВЕ ---
 LOGGING = {

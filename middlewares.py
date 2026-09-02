@@ -13,7 +13,7 @@ class IsBannedMiddleware:
         user = request.user
 
         if request.user.is_authenticated and hasattr(request.user, 'bans'):
-            if user.is_full_banned() and not request.path.startswith('/moderation/violations/') and not request.path.startswith('/moderation/appeal'):
+            if user.is_full_banned() and not request.path.startswith('/moderation/violations/') and not request.path.startswith('/moderation/appeal') and not request.path.startswith('/programmers/delete') and not request.path.startswith('/accounts/delete'):
                 return render(request, 'moderation/banned_full.html', status=403)
             elif user.is_chat_banned() and request.path.startswith('/chat/') and not request.path.startswith('/chat/appeal_message_violation'):
                 return render(request, 'moderation/banned_chat.html', status=403)
@@ -78,15 +78,22 @@ from django_ratelimit.core import is_ratelimited
 
 
 def get_real_client_ip(group, request):
-    if request.user.is_authenticated:
-        return f"user:{request.user.pk}"
 
+
+    # 1. Cloudflare хедър
+    cf_ip = request.META.get("HTTP_CF_CONNECTING_IP")
+    if cf_ip:
+        return f"ip:{cf_ip.strip()}"
+
+    # 2. X-Forwarded-For (вземаме най-лявото IP - оригиналния клиент)
     x_forwarded = request.META.get("HTTP_X_FORWARDED_FOR")
     if x_forwarded:
+        # Изчистваме празните пространства и вземаме първото IP
         ip = x_forwarded.split(",")[0].strip()
-    else:
-        ip = request.META.get("REMOTE_ADDR")
+        return f"ip:{ip}"
 
+    # 3. Директна връзка без прокси
+    ip = request.META.get("REMOTE_ADDR")
     return f"ip:{ip}"
 
 
@@ -108,9 +115,4 @@ class GlobalRatelimitMiddleware(MiddlewareMixin):
         )
 
         if was_limited:
-            return HttpResponse(
-                {
-                    "error": "Твърде много заявки. Моля, изчакайте една минута."
-                },
-                status=429,
-            )
+            return redirect("/429/")

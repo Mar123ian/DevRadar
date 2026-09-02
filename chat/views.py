@@ -2,6 +2,7 @@ from celery.bin.celery import report
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.core.exceptions import PermissionDenied
 from django.core.files.storage import default_storage
 from django.db import transaction
 from django.db.models.aggregates import Max
@@ -263,7 +264,7 @@ class UpdateMessage(LoginRequiredMixin, UpdateView):
                         self.object.is_deleted_due_to_violation or self.object.is_deleted_due_to_ban))):
             return super().dispatch(request, *args, **kwargs)
 
-        return HttpResponseForbidden()
+        raise PermissionDenied
 
     # 🟢 ДОБАВЕТЕ ТОЗИ МЕТОД:
     def form_valid(self, form):
@@ -305,7 +306,7 @@ class DeleteMessage(LoginRequiredMixin, DeleteView):
                 (request.user == self.get_object().sender and not (self.object.is_deleted_due_to_violation or self.object.is_deleted_due_to_ban))):
             return super().dispatch(request, *args, **kwargs)
 
-        return HttpResponseForbidden()
+        raise PermissionDenied
 
 class DeleteMessageDueToViolation(DeleteContentDueToViolationBase):
     model = Message
@@ -333,4 +334,6 @@ class UsersChats(LoginRequiredMixin, ListView):
             users=self.request.user
         ).annotate(
             latest_message_time=Max('message__timestamp')
+        ).filter(
+            message__isnull=False
         ).order_by('-latest_message_time')

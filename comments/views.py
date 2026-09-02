@@ -1,4 +1,5 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.core.exceptions import PermissionDenied
 from django.http import HttpResponseForbidden
 from django.urls import reverse
 from django.views.generic import UpdateView, DeleteView
@@ -26,7 +27,7 @@ class UpdateComment(LoginRequiredMixin, UpdateView):
                 (request.user == self.get_object().author and not (self.object.is_deleted_due_to_violation or self.object.is_deleted_due_to_ban))):
             return super().dispatch(request, *args, **kwargs)
 
-        return HttpResponseForbidden()
+        raise PermissionDenied
 
 class DeleteComment(LoginRequiredMixin, DeleteView):
     model = Comment
@@ -48,7 +49,7 @@ class DeleteComment(LoginRequiredMixin, DeleteView):
                 (request.user == self.get_object().author and not (self.object.is_deleted_due_to_violation or self.object.is_deleted_due_to_ban))):
             return super().dispatch(request, *args, **kwargs)
 
-        return HttpResponseForbidden()
+        raise PermissionDenied
 
 from django.urls import reverse
 from django.shortcuts import get_object_or_404

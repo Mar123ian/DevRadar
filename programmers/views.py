@@ -1,10 +1,14 @@
+import uuid
+from datetime import timedelta
+
 from allauth.account.models import EmailAddress
 from allauth.socialaccount.models import SocialAccount
 from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
+from django.core.exceptions import PermissionDenied
 from django.core.paginator import Paginator
 from django.http import HttpResponseForbidden, HttpResponseNotFound
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.urls import reverse
 from django.views.generic import CreateView, DeleteView, ListView, DetailView, UpdateView
 
@@ -46,7 +50,7 @@ class UpdateProgrammer(LoginRequiredMixin, UpdateView):
         if request.user.groups.filter(name='Editors').exists() or request.user.is_superuser or request.user == self.get_object():
             return super().dispatch(request, *args, **kwargs)
 
-        return HttpResponseForbidden()
+        raise PermissionDenied
 
     def form_valid(self, form):
         user = self.get_object()
@@ -91,6 +95,39 @@ class DeleteProgrammer(LoginRequiredMixin, DeleteView):
     slug_field = 'slug'
     slug_url_kwarg = 'programmer_slug'
 
+    def anonymize_banned_user_data(self, user):
+        # Check if the user has active bans
+        if user.is_offer_service_banned() or user.is_comments_banned() or user.is_chat_banned() or user.is_full_banned():
+
+            user.bans.create(
+                reason='Избягване на предишен бан.',
+                permanent=True,
+                duration=timedelta(days=0),
+            )
+            # Anonymize personal data except for the email
+            user.first_name = 'Anonymous'
+            user.last_name = 'Anonymous'
+            user.image = None
+            user.phone_number = None
+            user.slug = None
+            while True:
+                new_username = f"deleted_user_{uuid.uuid4().hex[:6]}"
+
+                if not ProgrammerUser.objects.filter(username=new_username).exists():
+                    user.username = new_username
+                    break
+
+            # Make the user unable to log in
+            user.is_active = False
+            user.save()
+
+    def form_valid(self, form):
+        user = self.get_object()
+        if user.is_offer_service_banned() or user.is_comments_banned() or user.is_chat_banned() or user.is_full_banned():
+            self.anonymize_banned_user_data(user)
+            return redirect('login')
+        return super().form_valid(form)
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['form'] = DeleteProgrammerForm(instance=self.get_object())
@@ -101,7 +138,7 @@ class DeleteProgrammer(LoginRequiredMixin, DeleteView):
                 name='Editors').exists() or request.user.is_superuser or request.user == self.get_object():
             return super().dispatch(request, *args, **kwargs)
 
-        return HttpResponseForbidden()
+        raise PermissionDenied
 
 
     def get_success_url(self):
@@ -131,7 +168,7 @@ class ProgrammerDetails(LoginRequiredMixin, DetailView):
 
     def dispatch(self, request, *args, **kwargs):
         if self.get_object().is_full_banned():
-            return HttpResponseNotFound()
+            raise PermissionDenied
 
         return super().dispatch(request, *args, **kwargs)
 

@@ -492,7 +492,9 @@
         const msgInput = document.getElementById("message-input");
         const msg = msgInput.value;
         const fileInput = document.getElementById("file-input");
-        const file = fileInput.files[0];
+        const file = fileInput?.files?.[0] || null;
+
+
 
         if (!msg.trim() && !file) return;
 

@@ -36,6 +36,7 @@ django-appconf==1.2.0
 django-celery-email==3.0.0
 django-cloudinary-storage==0.3.0
 django-extensions==4.1
+django-ipware==7.0.1
 django-model-utils==5.0.0
 django-polymorphic==4.11.2
 django-private-chat2==1.0.2
@@ -96,6 +97,7 @@ pypandoc==1.16.2
 pyperclip==1.11.0
 python-dateutil==2.9.0.post0
 python-dotenv==1.2.1
+python-ipware==3.0.0
 PyYAML==6.0.3
 redis==7.4.0
 regex==2026.1.15
