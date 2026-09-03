@@ -116,3 +116,18 @@ class GlobalRatelimitMiddleware(MiddlewareMixin):
 
         if was_limited:
             return redirect("/429/")
+
+
+class RealIPMiddleware:
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        # Използваме вашата функция и премахваме "ip:" префикса за REMOTE_ADDR
+        full_ip = get_real_client_ip(None, request)
+        clean_ip = full_ip.replace("ip:", "")
+
+        # Записваме истинското IP там, където Turnstile го търси
+        request.META['REMOTE_ADDR'] = clean_ip
+
+        return self.get_response(request)

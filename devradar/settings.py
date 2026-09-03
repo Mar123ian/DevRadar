@@ -103,6 +103,7 @@ INSTALLED_APPS = [
 # ]
 
 MIDDLEWARE = [
+'middlewares.RealIPMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
