@@ -35,6 +35,13 @@ if PRODUCTION:
     # Cloudflare Turnstile ключове
     TURNSTILE_SITEKEY = os.environ.get("TURNSTILE_SITEKEY")
     TURNSTILE_SECRETKEY = os.environ.get("TURNSTILE_SECRETKEY")
+    
+
+    # Трите различни начина, по които библиотеките го кръщават:
+    TURNSTILE_SECRET = os.environ.get("TURNSTILE_SECRETKEY")     # За django-turnstile (ТОВА Е ПРАВИЛНОТО!)
+    
+    TURNSTILE_SECRET_KEY = os.environ.get("TURNSTILE_SECRETKEY") # Алтернативен
+
 
     # (По избор) Изглед на виджета: 'auto', 'light', или 'dark'
     TURNSTILE_DEFAULT_CONFIG = {
