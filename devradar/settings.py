@@ -30,11 +30,11 @@ if PRODUCTION:
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
     CSRF_COOKIE_SECURE = True
     SESSION_COOKIE_SECURE = True
-    #USE_X_FORWARDED_HOST = True
+    # USE_X_FORWARDED_HOST = True
 
     # Cloudflare Turnstile ключове
     TURNSTILE_SITEKEY = os.environ.get("TURNSTILE_SITEKEY")
-    TURNSTILE_SECRETKEY = os.environ.get("TURNSTILE_SECRETKEY")
+    TURNSTILE_SECRET = os.environ.get("TURNSTILE_SECRETKEY")
 
     # (По избор) Изглед на виджета: 'auto', 'light', или 'dark'
     TURNSTILE_DEFAULT_CONFIG = {
