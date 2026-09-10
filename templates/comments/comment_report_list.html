@@ -1,7 +1,7 @@
 {% extends 'core/base.html' %}
 
 {% block title %}
-    <title>DevRadar | Всички докладвани коментари</title>
+    <title>DevRadar | Всички докладвани отзиви</title>
 {% endblock %}
 
 {% block main_content %}
@@ -15,7 +15,7 @@
         {% for report in reports %}
         <div class="report-card">
         {% if report.comment.is_deleted_due_to_violation %}
-                    <p><i>Коментарът е изтрит.</i></p>
+                    <p><i>Отзивът е изтрит.</i></p>
                     {% endif %}
             <div class="report-card__header">
                 <span class="report-card__reason">
@@ -55,15 +55,15 @@
 
                 {% if not report.comment.is_deleted_due_to_violation %}
                     <a href="{% url 'delete_comment_due_to_violation' report.comment.id %}" class="btn">
-                        Изтрий коментара
+                        Изтрий отзива
                     </a>
                 {% else %}
                     <a href="{% url 'restore_comment_from_violation' report.comment.id %}" class="btn">
-                        Възстанови коментара
+                        Възстанови отзива
                     </a>
                 {% endif %}
 
-                <a href="{% url 'delete_comment' report.comment.id %}"><button class="delete-button">Изтрий коментара от сървъра</button></a>
+                <a href="{% url 'delete_comment' report.comment.id %}"><button class="delete-button">Изтрий отзива от сървъра</button></a>
 
 
             </div>

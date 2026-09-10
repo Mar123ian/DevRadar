@@ -3,15 +3,16 @@
 
 {% block main_content %}
 <div class="container mt-5">
-    <h2>Стани програмист в DevRadar</h2>
-    <p>Добави телефон и профилна снимка, за да започнеш да предлагаш услугите си.</p>
-
+    <h2>Предложи първите си услуги в DevRadar!</h2>
+    <p>Добави малко НЕЗАДЪЛЖИТЕЛНА информация, която ще се показва в публичния ти профил, за да започнеш да предлагаш услугите си. Имейлът не е публично видим. Потребителите могат да се свързват с Вас и чрез вградения в сайта чат.</p>
+<br>
     <form method="POST" enctype="multipart/form-data">
         {% csrf_token %}
 
         {{ form.as_p }}
 
-        <button type="submit" class="btn btn-primary">Надгради профила</button>
+        <br><p><i>Ако си готов: </i></p><br>
+        <button type="submit" class="btn btn-primary" style="background-color: #00b15e">ПРЕДЛОЖИ ПЪРВАТА СИ УСЛУГА</button>
     </form>
 </div>
 {% endblock %}

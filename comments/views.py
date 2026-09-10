@@ -72,7 +72,7 @@ class CreateCommentAppeal(BaseCreateAppealView):
 
     #TODO url
     def get_success_url(self):
-        return reverse('home')
+        return reverse('appeal_success')
 
 from django.views.generic import ListView
 from .models import CommentReport

@@ -8,6 +8,7 @@ from moderation.models import BaseReport, BaseAppeal
 # Create your models here.
 class Comment(ViolationSoftDeleteMixin, models.Model):
     author = models.ForeignKey('accounts.DevRadarUser', on_delete=models.CASCADE, related_name='comments')
+    rating = models.IntegerField(default=0)
     content = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
     service = models.ForeignKey('services.Service', on_delete=models.CASCADE, related_name='comments')

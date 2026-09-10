@@ -47,7 +47,7 @@ LANGUAGES = [
     ('bg', _('Bulgarian')),
     ('en', _('English')),
 ]
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Europe/Sofia'
 USE_I18N = True
 USE_TZ = True
 
@@ -76,6 +76,7 @@ INSTALLED_APPS = [
     'channels',
     'moderation.apps.ModerationConfig',
     'djcelery_email',
+    'django.contrib.humanize',
 
     # Allauth
     'allauth',
@@ -251,7 +252,7 @@ AUTHENTICATION_BACKENDS = [
 
 SITE_ID = 1
 LOGOUT_REDIRECT_URL = '/accounts/login/'
-LOGIN_REDIRECT_URL = '/'
+LOGIN_REDIRECT_URL = '/profile/'
 LOGIN_URL = '/accounts/login/'
 ACCOUNT_SET_PASSWORD_REDIRECT_URL = '/accounts/profile/'
 ACCOUNT_CHANGE_PASSWORD_REDIRECT_URL = '/accounts/profile/'

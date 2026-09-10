@@ -1,15 +1,71 @@
-<div class="service-card">
+<div class="service-card" style=" border-color: #00b15e;">
     <a href="{% url 'service_details' service.slug %}" class="service-card__link">
+        {% comment %}
         <img
             src="{{ service.image.url }}"
             alt="{{ service.name }}"
             class="service-card__image"
         >
-        <h2 class="service-card__title">
+        {% endcomment %}
+        <h2 class="service-card__title" style="color: #00b15e;">
             {{ service.name|upper }}
         </h2>
+
+        <h4 class="service-card__description">
+            {{ service.programmer }}
+        </h4>
+
+        <!-- БЛОК ЗА ЗВЕЗДИЧКИТЕ В КАРТАТА -->
+        <div class="service-card__rating">
+            <div class="star-rating-display">
+                {% for _ in "x"|rjust:"10" %}
+                    <span class="star {% if service.average_rating and forloop.counter <= service.average_rating_rounded %}active{% endif %}">&#9733;</span>
+                {% endfor %}
+            </div>
+            <span class="rating-text">
+                {% if service.average_rating %}
+                    {{ service.average_rating|floatformat:1 }}
+                {% else %}
+                    Все още няма отзиви
+                {% endif %}
+            </span>
+        </div>
+
         <p class="service-card__description">
             {{ service.description|truncatechars:100 }}
         </p>
     </a>
 </div>
+<style>
+.service-card__rating {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 6px 0 10px 0;
+}
+
+.star-rating-display {
+    display: inline-flex;
+    align-items: center;
+    line-height: 1;
+    /* Избутва първата звезда с 2px надясно, за да се изравни с нормалния текст */
+    padding-left: 20px;
+}
+
+.star-rating-display .star {
+    font-size: 1.1rem;
+    line-height: 1;
+    color: #e0e0e0;
+}
+
+.star-rating-display .star.active {
+    color: #ffc107;
+}
+
+.service-card__rating .rating-text {
+    font-size: 0.95rem;
+    line-height: 1;
+    font-weight: 600;
+    color: #4a5568;
+}
+</style>

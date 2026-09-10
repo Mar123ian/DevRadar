@@ -1,7 +1,7 @@
 {% extends 'core/base.html' %}
 
 {% block title %}
-    <title>DevRadar | Всички докладвани програмисти</title>
+    <title>DevRadar | Всички докладвани програмисти/фирми</title>
 {% endblock %}
 
 {% block main_content %}
@@ -27,7 +27,7 @@
 
             <div class="report-card__body">
                 <p class="report-card__message">
-                    <strong>Потребителско име на програмиста:</strong> {{ report.programmer.username }}
+                    <strong>Потребителско име на програмиста/фирмата:</strong> {{ report.programmer.username }}
                 </p>
 
                 <p class="report-card__sender">
@@ -43,7 +43,7 @@
 
             <div class="report-card__footer">
                 <a href="{% url 'programmer_details' report.programmer.slug %}" class="btn">
-                    Виж програмиста
+                    Виж програмиста/фирмата
                 </a>
             </div>
 

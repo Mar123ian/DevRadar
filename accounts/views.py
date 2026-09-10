@@ -1,3 +1,4 @@
+import os
 import uuid
 from datetime import timedelta
 from http.client import responses
@@ -11,10 +12,12 @@ from django.contrib.auth.mixins import PermissionRequiredMixin, LoginRequiredMix
 from django.contrib.auth.models import Group
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import PermissionDenied
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.core.paginator import Paginator
 from django.db import connection, transaction
 from django.http import HttpResponseForbidden, HttpRequest
 from django.shortcuts import render, get_object_or_404, redirect
+from django.templatetags.static import static
 from django.urls import reverse_lazy, reverse
 from django.utils import timezone
 from django.views import View
@@ -24,6 +27,9 @@ from accounts.forms import ProgrammerCreationForm, DevRadarUserCreationForm, Dev
     DevRadarUserDeleteForm, UpgradeToProgrammerForm
 from accounts.models import ProgrammerUser, DevRadarUser
 from django.contrib.auth import login
+
+from devradar import settings
+
 
 # Create your views here.
 class RegisterProgrammerUserView(CreateView):
@@ -46,6 +52,11 @@ class RegisterDevRadarUserView(CreateView):
     form_class = DevRadarUserCreationForm
     template_name = 'accounts/register_user.html'
     success_url = reverse_lazy('login')
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        login(self.request, self.object)  # self.object е създаденият потребител
+        return response
 
 
 class UpdateDevRadarUser(LoginRequiredMixin, UpdateView):
@@ -195,7 +206,7 @@ def upgrade_to_programmer(request):
 
     # 1. Проверяваме дали вече не е програмист
     if user.is_programmer:
-        messages.info(request, "Вие вече сте регистриран като програмист!")
+        messages.info(request, "Вие вече сте регистриран като програмист/фирма!")
         return redirect('home')
 
     if request.method == 'POST':
@@ -204,12 +215,32 @@ def upgrade_to_programmer(request):
         if form.is_valid():
             phone_number = form.cleaned_data['phone_number']
             uploaded_image = form.cleaned_data.get('image')
+            if not uploaded_image:
+                file_path = os.path.join(settings.BASE_DIR, 'static', 'anonymous_profile.png')
+
+                with open(file_path, 'rb') as f:
+                    uploaded_image = SimpleUploadedFile(
+                        name='anonymous_profile.png',
+                        content=f.read(),
+                        content_type='image/svg+xml'
+                    )
+
+            site = form.cleaned_data.get('site')
+            bio = form.cleaned_data.get('bio')
 
             # 2. Генерираме slug за програмиста
             full_name = user.get_full_name() or user.username
+            count = 0
             base_slug = slugify(unidecode(full_name))
-            count = ProgrammerUser.objects.filter(slug=base_slug).count()
-            slug = f"{base_slug}{count + 1}" if count > 0 else base_slug
+
+            while True:
+                slug = f"{base_slug}{count + 1}" if count > 0 else base_slug
+
+                if ProgrammerUser.objects.filter(slug=slug).exists():
+
+                    count += 1
+                else:
+                    break
 
             with transaction.atomic():
                 # А) Записваме изображението през Storage API на Django (ако има такова)
@@ -218,6 +249,8 @@ def upgrade_to_programmer(request):
                     temp_programmer = ProgrammerUser(image=uploaded_image)
                     temp_programmer.image.save(uploaded_image.name, uploaded_image, save=False)
                     image_path = temp_programmer.image.name
+
+
 
                 # Б) Обновяваме polymorphic_ctype в родителската таблица без да променяме другите полета
                 programmer_ct = ContentType.objects.get_for_model(ProgrammerUser)
@@ -228,10 +261,10 @@ def upgrade_to_programmer(request):
                 with connection.cursor() as cursor:
                     cursor.execute(
                         f"""
-                        INSERT INTO {child_table} (devradaruser_ptr_id, phone_number, image, slug)
-                        VALUES (%s, %s, %s, %s)
+                        INSERT INTO {child_table} (devradaruser_ptr_id, phone_number, image, slug, site, bio)
+                        VALUES (%s, %s, %s, %s, %s, %s)
                         """,
-                        [user.pk, phone_number, image_path, slug]
+                        [user.pk, phone_number, image_path, slug, site, bio]
                     )
 
                 # Г) Добавяме към групата "Programmers"

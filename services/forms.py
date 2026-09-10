@@ -102,7 +102,39 @@ class SearchSortAndFilterServicesForm(forms.Form):
     search_query = forms.CharField(label='Търси по заглавие', required=False, max_length=255, error_messages={'max_length': 'Максималната дължина е 255 символа!'})
     type = forms.ModelChoiceField(label='Тип услуга', queryset=Type.objects.all(), required=False)
     technologies = forms.ModelMultipleChoiceField(label='Използвани технологии', queryset=Technology.objects.all(), required=False, widget=forms.CheckboxSelectMultiple())
+
+    sort_order = forms.ChoiceField(
+        label='Подреждане',
+        choices=[
+            ('asc_created_at', 'Първо най-новите'),
+            ('desc_price', 'Подреди низходящо по цена'),
+            ('asc_price', 'Подреди възходящо по цена'),
+            ('desc_rating', 'Подреди низходящо по рейтинг'),
+            ('asc_rating', 'Подреди възходящо по рейтинг'),
+            ('desc_created_at', 'Първо най-старите'),
+
+        ],
+        initial='asc_created_at',
+
+        required=False
+    )
+
     min_price = forms.DecimalField(label='Минимална цена', min_value=0, required=False, decimal_places=2, max_digits=10, error_messages={'max_digits': 'Максималната дължина е 10 цифри!', 'decimal_places': 'Максималната дължина след десетичната запетая е 2 цифри!', 'min_value': 'Минималната цена е 0€!'})
     max_price = forms.DecimalField(label='Макимална цена', min_value=0, required=False, decimal_places=2, max_digits=10, error_messages={'max_digits': 'Максималната дължина е 10 цифри!', 'decimal_places': 'Максималната дължина след десетичната запетая е 2 цифри!', 'min_value': 'Минималната цена е 0€!'})
-    desc_price = forms.BooleanField(label='Подреди низходящо по цена', required=False, initial=False)
+
+
+
+
+    min_rating = forms.DecimalField(label='Минимален рейтинг', min_value=0.1, max_value=10.0, required=False,
+                                    decimal_places=2, max_digits=10,
+                                    error_messages={'max_digits': 'Максималната дължина е 10 цифри!',
+                                                    'decimal_places': 'Максималната дължина след десетичната запетая е 2 цифри!',
+                                                    'min_value': 'Минималнният рейтинг е 0.1!',
+                                                    'max_value': 'Максималният рейтинг е 10.0!'})
+    max_rating = forms.DecimalField(label='Макимален рейтинг', min_value=0.1, max_value=10.0, required=False,
+                                    decimal_places=2, max_digits=10,
+                                    error_messages={'max_digits': 'Максималната дължина е 10 цифри!',
+                                                    'decimal_places': 'Максималната дължина след десетичната запетая е 2 цифри!',
+                                                    'min_value': 'Минималният рейтинг е 0.1!',
+                                                    'max_value': 'Максималният рейтинг е 10.0!'})
     per_page = forms.ChoiceField(choices=PerPageChoices.choices, label='Брой резултати на страница', required=False, initial=PerPageChoices.FIVE)

@@ -2,21 +2,168 @@
 
 {% block main_content %}
 <section class="hero-section">
-    <div class="hero-badge">Най-бързо растящата мрежа в България</div>
-    <h1 class="hero-title">Мащабирайте идеите си с <span>Топ 1%</span> от софтуерните инженери</h1>
-    <p class="hero-lead">DevRadar свързва визионери с доказани специалисти. Превърнете идеята си в капитал.</p>
 
+    <h1 class="hero-title">Осъществете идеите си с <span>топ</span> софтуерните инженери и фирми</h1>
+    <p class="hero-lead">Тук опитни програмисти и ИТ фирми публикуват своите улсуги, а Вие имате възможността да разгледате и сравните множество предложения на едно място, вместо да обикаляте по групи и да търсите хаотично в Интернет</p>
+
+    {% comment %}
     <div class="hero-search-bar">
         <form action="{% url 'all_services' %}" method="get">
             <input type="text" placeholder="Каква услуга търсите? (напр. Изработка на сайт, приложение...)" name="search">
             <button type="submit" class="btn btn--primary">Търси</button>
         </form>
     </div>
+    {% endcomment %}
+
+<h1 style="color: #00b15e">КАКВА УСЛУГА ТЪРСИТЕ?</h1>
+    <a href="{% url 'login' %}"
+       style="display: block; margin-top: 0.1rem; text-align: center; font-size: 0.9rem; color: #0f172a; text-decoration: none;">
+        Вие сте програмист или ИТ фирма? Предложете услугите си безплатно сега >>>
+    </a>
+
+
+    <div class="service-types-container">
+        {% for service_type in service_types %}
+            <a href="{% url 'all_services' %}?type={{ service_type.id }}" class="service-type-card">
+                <img src="{{ service_type.image.url }}" alt="{{ service_type.name }}" class="service-type-image">
+                <h3 class="service-type-title">{{ service_type.name }}</h3>
+            </a>
+        {% endfor %}
+    </div>
+
+
+{% comment %}
+  <div class="hero-badge">DevRadar свързва визионери с доказани специалисти. Превърнете идеята си в капитал.</div>
 
     <div class="hero-stats">
         <div class="stat-item"><strong>500+</strong> Проекта</div>
         <div class="stat-item"><strong>120+</strong> Експерти</div>
         <div class="stat-item"><strong>4.9/5</strong> Оценка</div>
     </div>
+    {% endcomment %}
+
+<br>
+    <section class="about-us-section">
+        <h2 class="about-us-title">Малко повече за нас</h2>
+        <p class="about-us-description">Срещате ли трудности в намирането на квалифицирани софтуерни специалисти и
+            фирми, способни да реализират вашите идеи? DevRadar е тук, за да реши този проблем. Нашата мисия е да
+            улесняваме процеса по свързване между визионери и таланти, като предлагаме удобен и централен портал за
+            услуги, съчетаващ прозрачност и качество.</p>
+        <p class="about-us-description">С платформата ни Вие лесно можете да разгледате категории, технологии и фирми, и
+            да откриете точния експерт за Вашия проект. Запазвате време, елиминирате хаоса при търсенето в интернет, и
+            получавате професионални решения с DevRadar.</p>
+        <p class="about-us-highlight">Станете част от общността, където идеи срещат експертиза и проектите се превръщат
+            в реалност!</p>
+        <div class="about-us-cta">
+            <a href="{% url 'login' %}" class="btn btn--primary">Регистрирай се сега</a>
+        </div>
+    </section>
+
+    <style>
+        .about-us-section {
+            padding: 2rem;
+            background-color: #f9f9f9;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .about-us-title {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #333;
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+
+        .about-us-description {
+            font-size: 1rem;
+            color: #555;
+            line-height: 1.6;
+            margin-bottom: 1rem;
+        }
+
+        .about-us-highlight {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #00b15e;
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .about-us-cta {
+            text-align: center;
+        }
+
+        .about-us-cta .btn {
+            text-decoration: none;
+            display: inline-block;
+            padding: 0.75rem 1.5rem;
+            color: #fff;
+            background-color: #00b15e;
+            border: none;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+
+        .about-us-cta .btn:hover {
+            background-color: #008846;
+        }
+    </style>
 </section>
+
+    <style>
+        .service-types-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            padding: 1rem;
+            justify-content: center;
+        }
+
+        .service-type-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            background-color: #00b15e;
+            padding: 1rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            text-decoration: none;
+            color: white;
+            width: 150px;
+        }
+
+        .service-type-card:hover {
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .service-type-image {
+            max-width: 100%;
+            height: auto;
+            border-radius: 4px;
+            margin-bottom: 0.5rem;
+        }
+
+        .service-type-title {
+            font-size: 1rem;
+            font-weight: bold;
+        }
+
+        @media (max-width: 768px) {
+            .service-types-container {
+                display: grid;
+                grid-template-columns: repeat(2, 1fr);
+                gap: 0.5rem;
+            }
+
+            .service-type-card {
+                width: 100px;
+                padding: 0.5rem;
+            }
+
+            .service-type-title {
+                font-size: 0.85rem;
+            }
+        }
+    </style>
 {% endblock %}

@@ -19,7 +19,7 @@
             Банове ({{ user_bans.paginator.count }})
         </button>
         <button class="v-tab-btn {% if active_tab == 'comments-tab' %}active{% endif %}" onclick="switchTab(event, 'comments-tab')">
-            Коментари ({{ deleted_comments.paginator.count }})
+            Отзиви ({{ deleted_comments.paginator.count }})
         </button>
         <button class="v-tab-btn {% if active_tab == 'messages-tab' %}active{% endif %}" onclick="switchTab(event, 'messages-tab')">
             Съобщения ({{ deleted_messages.paginator.count }})
@@ -143,7 +143,7 @@
             </div>
             {% endif %}
         {% else %}
-            <div class="empty-state">Нямате премахнати коментари.</div>
+            <div class="empty-state">Нямате премахнати отзиви.</div>
         {% endif %}
     </div>
 

@@ -2,6 +2,7 @@ from sqlite3 import IntegrityError
 
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from django.core.paginator import Paginator
+from django.db.models import Avg
 from django.http import HttpResponseForbidden, HttpResponseNotFound
 from django.shortcuts import render, redirect
 from django.urls import reverse
@@ -25,7 +26,7 @@ class CreateService(LoginRequiredMixin, CreateView):
 
 
     def get_success_url(self):
-        return reverse('all_services')
+        return reverse('profile')
 
     def form_valid(self, form):
         service = form.cleaned_data.get('name')
@@ -33,7 +34,7 @@ class CreateService(LoginRequiredMixin, CreateView):
 
         if programmer.services.all() and programmer.services.filter(name=service).exists():
 
-            form.add_error('name',"Този програмист вече е предложил същата услуга!")
+            form.add_error('name',"Този програмист/фирма вече е предложил/а същата услуга!")
             return super().form_invalid(form)
 
 
@@ -77,7 +78,7 @@ class DeleteService(LoginRequiredMixin, DeleteView):
         return context
 
     def get_success_url(self):
-        return reverse('all_services')
+        return reverse('profile')
 
     def dispatch(self, request, *args, **kwargs):
         self.object = self.get_object()
@@ -110,7 +111,9 @@ class AllServices(ListView):
             technologies = self.form.cleaned_data['technologies']
             min_price = self.form.cleaned_data['min_price']
             max_price = self.form.cleaned_data['max_price']
-            desc_price = self.form.cleaned_data['desc_price']
+            sort_order = self.form.cleaned_data['sort_order']
+            min_rating = self.form.cleaned_data['min_rating']
+            max_rating = self.form.cleaned_data['max_rating']
 
 
             if query:
@@ -128,10 +131,29 @@ class AllServices(ListView):
             if max_price is not None:
                 queryset = queryset.filter(max_price__lte=max_price)
 
-            if desc_price:
-                return queryset.distinct().order_by('-min_price')
+            if min_rating is not None:
+                queryset = queryset.filter(min_rating__gte=min_rating)
 
-        return queryset.distinct().order_by('min_price')
+            if max_rating is not None:
+                queryset = queryset.filter(max_rating__lte=max_rating)
+
+            if sort_order == 'asc_price':
+                return queryset.distinct().order_by('-min_price')
+            if sort_order == 'desc_price':
+                return queryset.distinct().order_by('min_price')
+
+            if sort_order == 'asc_created_at':
+                return queryset.distinct().order_by('-created_at')
+            if sort_order == 'desc_created_at':
+                return queryset.distinct().order_by('created_at')
+
+            if sort_order == 'asc_rating':
+                return queryset.annotate(avg_rating=Avg('comments__rating')).distinct().order_by('-avg_rating')
+            if sort_order == 'desc_rating':
+                return queryset.annotate(avg_rating=Avg('comments__rating')).distinct().order_by('avg_rating')
+
+
+        return queryset.distinct().order_by('-created_at')
 
 
 
@@ -159,13 +181,21 @@ class ServiceDetails(LoginRequiredMixin, FormMixin, DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
-        # 1. Взимаме коментарите от услугата
+        # 1. Взимаме коментарите
         comments_list = self.object.active_comments()
 
-        # 2. Пагинатор - задайте броя коментари на страница (напр. 5)
-        paginator = Paginator(comments_list, 20)
+        # 2. Изчисляваме средната оценка от активните коментари
+        avg_rating_data = comments_list.aggregate(Avg('rating'))['rating__avg']
 
-        # 3. Взимаме текущата страница от URL-а (?page=1)
+        if avg_rating_data is not None:
+            context['avg_rating'] = avg_rating_data
+            context['avg_rating_rounded'] = round(avg_rating_data) # За оцветяване на пълния брой звезди
+        else:
+            context['avg_rating'] = None
+            context['avg_rating_rounded'] = 0
+
+        # 3. Пагинатор
+        paginator = Paginator(comments_list, 20)
         page_number = self.request.GET.get('page')
         comments = paginator.get_page(page_number)
 
@@ -258,7 +288,7 @@ class CreateServiceAppeal(BaseCreateAppealView):
     appeal_model = ServiceAppeal
 
     def get_success_url(self):
-        return reverse('home')
+        return reverse('appeal_success')
 
 from django.views.generic import ListView
 from .models import ServiceReport

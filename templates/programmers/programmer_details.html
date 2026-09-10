@@ -2,29 +2,26 @@
 {% load filters %}
 
 {% block title %}
-    <title>DevRadar | Подробности за програмист</title>
+    <title>DevRadar | Подробности за програмист/фирма</title>
 {% endblock %}
 
 {% block main_content %}
 <article class="programmer-details">
 
-
-
-            <a href="{% url 'report_programmer' programmer.id %}">Докладвай</a>
+    <a href="{% url 'report_programmer' programmer.id %}">Докладвай</a>
 
     {% if user.is_superuser or user == programmer or user|has_group:"Editors" %}
-        <h1 class="programmer-details__name">
-           id: {{ programmer.id }}
-        </h1>
-    <a href="{% url 'update_programmer' programmer.slug%}"><button class="update-button">Edit</button></a>
-    <a href="{% url 'delete_programmer' programmer.slug%}"><button class="delete-button">Delete</button></a>
 
+        <a href="{% url 'update_programmer' programmer.slug%}"><button class="update-button">Edit</button></a>
+        <a href="{% url 'delete_programmer' programmer.slug%}"><button class="delete-button">Delete</button></a>
+    {% endif %}
+
+    {% if user.is_superuser or user|has_group:"Editors" %}
         {% if not programmer.is_banned %}
-    <a href="{% url 'ban_user' programmer.id %}"><button class="delete-button">Ban</button></a>
-            {% else %}
-                <a href=""><button class="delete-button">Unban</button></a>
-            {% endif %}
-
+            <a href="{% url 'ban_user' programmer.id %}"><button class="delete-button">Ban</button></a>
+        {% else %}
+            <a href=""><button class="delete-button">Unban</button></a>
+        {% endif %}
     {% endif %}
 
     <div class="programmer-details__header">
@@ -36,23 +33,63 @@
         <h1 class="programmer-details__name">
             {{ programmer.get_full_name }}
         </h1>
-        <p class="programmer-details__email">
-            {{ programmer.email }}
-        </p>
-        <p class="programmer-details__phone">
-            {{ programmer.phone_number }}
-        </p>
 
-                    <a href="{% url 'start_chat' programmer.id %}"><button class="update-button">ЗАПОЧНИ ЧАТ</button></a>
+        <!-- БЛОК ЗА СРЕДНА ОЦЕНКА НА ПРОГРАМИСТА -->
+        <div class="programmer-details__rating">
+            <div class="star-rating-display">
+                {% for _ in "x"|rjust:"10" %}
+                    <span class="star {% if avg_rating and forloop.counter <= avg_rating_rounded %}active{% endif %}">&#9733;</span>
+                {% endfor %}
+            </div>
+            <span class="rating-text">
+                {% if avg_rating %}
+                    {{ avg_rating|floatformat:1 }} / 10
+                {% else %}
+                    Все още няма оценки
+                {% endif %}
+            </span>
+        </div>
+
+{% if user != programmer %}
+        <a href="{% url 'start_chat' programmer.id %}"><button class="pulse-btn">ЗАПОЧНИ ЧАТ</button></a>
+    {% endif %}
+
+<br>
+
+    {% if programmer.phone_number %}
+        <p class="programmer-details__phone">
+            <strong>Тел. номер:</strong> {{ programmer.phone_number }}
+        </p>
+{% endif %}
+
+
+
+        {% if programmer.site %}
+            <a href="{{ programmer.site }}" class="programmer-details__site" ><strong>Повече информация:</strong> <span style="color: #00bfa5; font-weight: bold; text-decoration: underline">{{ programmer.site }}</span></a>
+            <br>
+    {% endif %}
+
+
+    {% if programmer.bio %}
+        <p class="programmer-details__bio" style="text-align: center">
+        {{ programmer.bio }}
+        </p>
+    {% endif %}
+
+
+
+
+
 
     </div>
+<br>
 
-    <section class="programmer-details__services">
+    <section class="services-page">
         <h2 class="programmer-details__services-title">Услуги, предлагани от {{ programmer.get_full_name }}:</h2>
 
-        <div class="programmer-details__services-list">
+        <div class="services-page__list">
             {% for service in services %}
-                <div class="programmer-details__service-item">
+                <div class="services-page__item">
                     {% include 'services/service_short_details.html' %}
                 </div>
             {% empty %}
@@ -81,4 +118,82 @@
     </section>
 
 </article>
+    <style>
+    .programmer-details__rating {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 8px 0 12px 0;
+}
+
+.programmer-details__rating .star-rating-display {
+    display: inline-flex;
+    align-items: center;
+    line-height: 1;
+    padding-left: 2px; /* Изравнява първата звезда с текста */
+}
+
+.programmer-details__rating .star {
+    font-size: 1.2rem;
+    line-height: 1;
+    color: #e0e0e0;
+}
+
+.programmer-details__rating .star.active {
+    color: #ffc107;
+}
+
+.programmer-details__rating .rating-text {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #4a5568;
+}
+    </style>
+    <style>
+    .pulse-btn {
+  position: relative;
+  display: inline-block;
+  background-color: #1e293b;
+  color: #ffffff;
+  padding: 12px 24px;
+  font-size: 16px;
+  font-weight: bold;
+  text-decoration: none;
+  border-radius: 6px;
+  text-align: center;
+  cursor: pointer;
+  z-index: 1;
+}
+
+/* Настройване на пулсиращите вълни */
+.pulse-btn::before,
+.pulse-btn::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: inherit;
+  background-color: #1e293b;
+  z-index: -1;
+  animation: pulse-wave 2s infinite ease-out;
+}
+
+/* Разминаване на втората вълна за непрекъснат ефект */
+.pulse-btn::after {
+  animation-delay: 1s;
+}
+
+@keyframes pulse-wave {
+  0% {
+    transform: scale(1);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(1.3, 1.5);
+    opacity: 0;
+  }
+}
+</style>
 {% endblock %}

@@ -16,7 +16,7 @@ class ProgrammerForm(forms.ModelForm):
     class Meta:
         model = ProgrammerUser
 
-        fields = ['username', 'first_name', 'last_name', 'image', 'email', 'phone_number']
+        fields = ['username', 'first_name', 'last_name', 'image', 'email', 'phone_number', 'site', 'bio']
 
         labels = {
             'first_name': 'Собствено име',
@@ -24,6 +24,8 @@ class ProgrammerForm(forms.ModelForm):
             'image': 'Изображение',
             'email': 'Имейл',
             'phone_number': 'Телефонен номер',
+            'site': 'Сайт',
+            'bio': 'Малко повече информация за вас',
         }
 
         error_messages = {
@@ -36,21 +38,22 @@ class ProgrammerForm(forms.ModelForm):
             'email': {
                 'required': 'Полето е задължително!'
             },
-            'phone_number': {
-                'required': 'Полето е задължително!'
-            },
-            'image': {
-                'required': 'Полето е задължително!'
-            }
         }
 
         help_texts = {
-            'first_name': 'Въведете собствено име на програмиста',
-            'last_name': 'Въведете фамилно име на програмиста',
-            'email': 'Въведете имейл на програмиста',
-            'phone_number': 'Въведете телефонен номер на програмиста',
-            'image': 'Снимка на програмиста'
+            'first_name': 'Въведете собствено име или име на ИТ фирма',
+            'last_name': 'Въведете фамилно име (ако сте фирма, може да го оставите празно)',
+            'email': 'Въведете имейл',
+            'phone_number': 'Телефонният номер НЕ Е ЗАДЪЛЖИТЕЛЕН, но може да е полезен за хората, които искат да се свържат с Вас. Ако го въведете, ще е видим за всички!',
+            'image': 'Не е задължителна снимка. Ако сте фирма, можете да сложите вашето лого, ако сте човек, изображение на вас.',
+            'site': 'Не е задължителен сайт. Ако разполагате с личен сайт, GitHub, Linktree с адреси или др. , сложете пълния му URL адрес в това поле, за да имат клиентите повече информация за вас и работата ви.',
+            'bio': 'Също не е задължително. Свободен текст, например в коя сфера работите, образование, проекти и всичко полезно, за което се сетите :)',
 
+
+        }
+
+        widgets = {
+            'site': forms.URLInput(attrs={'placeholder': 'https://...'})
         }
 
     def clean_username(self):
@@ -71,6 +74,11 @@ class ProgrammerForm(forms.ModelForm):
 
         return image
 
+    def clean_phone_number(self):
+        phone_number = self.cleaned_data.get('phone_number')
+        if phone_number and not phone_number.isnumeric():
+            raise ValidationError('Телефонният номер трябва да съдържа само цифри.')
+        return phone_number
 
 
 class CreateProgrammerForm(ProgrammerForm):

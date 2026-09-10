@@ -1,10 +1,17 @@
 {% load filters %}
 <article class="comments-details">
 
-
     <h3 class="comments-details__author">
         {{ comment.author }}
     </h3>
+
+    <!-- Визуализация на рейтинговите звездички -->
+    <div class="comments-details__rating">
+        {% for _ in "x"|rjust:"10" %}
+            <span class="star {% if forloop.counter <= comment.rating %}active{% endif %}">&#9733;</span>
+        {% endfor %}
+        <span class="rating-text">({{ comment.rating }}/10)</span>
+    </div>
 
     <p class="comments-details__content">
         {{ comment.content }}
@@ -15,9 +22,8 @@
     </p>
 
     {% if user.is_superuser or user == comment.author or user|has_group:"Editors" %}
-
         <a href="{% url 'update_comment' comment.id %}"><button class="update-button">Редактирай</button></a>
         <a href="{% url 'delete_comment' comment.id %}"><button class="delete-button">Изтрий</button></a>
-        {% endif %}
+    {% endif %}
 
 </article>

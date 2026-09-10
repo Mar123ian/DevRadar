@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.db import models
+from django.db.models import Avg
 from django.utils.text import slugify
 from unidecode import unidecode
 
@@ -15,7 +16,7 @@ class Service(ViolationSoftDeleteMixin, CreatedAndUpdatedAtMixin, models.Model):
     programmer = models.ForeignKey('accounts.ProgrammerUser', on_delete=models.CASCADE, related_name='services')
     description = models.TextField()
     image = models.ImageField(upload_to='services/')
-    slug = models.SlugField(unique=True, blank=True)
+    slug = models.SlugField(max_length=255, unique=True, blank=True)
     type = models.ForeignKey('categories.Type', on_delete=models.CASCADE, related_name='services')
     technologies = models.ManyToManyField('categories.Technology', related_name='services')
     min_price = models.DecimalField(max_digits=10, decimal_places=2, error_messages={'max_digits': 'Максималната дължина е 10 цифри!', 'decimal_places': 'Максималната дължина след десетичната запетая е 2 цифри!'})
@@ -25,11 +26,24 @@ class Service(ViolationSoftDeleteMixin, CreatedAndUpdatedAtMixin, models.Model):
 
     class Meta:
         constraints = [
-            models.UniqueConstraint(fields=['name', 'programmer'], name='unique_service_for_programmer', violation_error_message='Този програмист вече е предложил същата услуга!'),
+            models.UniqueConstraint(fields=['name', 'programmer'], name='unique_service_for_programmer', violation_error_message='Този програмист/фирма вече е предложил/а същата услуга!'),
         ]
 
     def __str__(self):
         return self.name
+
+    @property
+    def average_rating(self):
+        """Връща средната оценка (дробно число) или None, ако няма коментари."""
+        val = self.active_comments().aggregate(Avg('rating'))['rating__avg']
+        return val
+
+    @property
+    def average_rating_rounded(self):
+        """Връща закръглената оценка за оцветяване на звездите."""
+        if self.average_rating is not None:
+            return round(self.average_rating)
+        return 0
 
     def save(self, *args, **kwargs):
         if not self.slug:

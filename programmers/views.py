@@ -7,12 +7,14 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from django.core.exceptions import PermissionDenied
 from django.core.paginator import Paginator
+from django.db.models import Avg
 from django.http import HttpResponseForbidden, HttpResponseNotFound
 from django.shortcuts import render, redirect
 from django.urls import reverse
 from django.views.generic import CreateView, DeleteView, ListView, DetailView, UpdateView
 
 from accounts.models import ProgrammerUser
+from comments.models import Comment
 from moderation.mixins import EditorOrSuperuserRequiredMixin
 from moderation.views import BaseCreateReportView
 from programmers.forms import CreateProgrammerForm, DeleteProgrammerForm, UpdateProgrammerForm
@@ -44,6 +46,8 @@ class UpdateProgrammer(LoginRequiredMixin, UpdateView):
         return kwargs
 
     def get_success_url(self):
+        if self.request.user == self.get_object():
+            return reverse('profile')
         return reverse('programmer_details', kwargs={'programmer_slug': self.object.slug})
 
     def dispatch(self, request, *args, **kwargs):
@@ -142,7 +146,7 @@ class DeleteProgrammer(LoginRequiredMixin, DeleteView):
 
 
     def get_success_url(self):
-        return reverse('profile')
+        return reverse('login')
 
 UserModel = get_user_model()
 class AllProgrammers(ListView):
@@ -175,14 +179,23 @@ class ProgrammerDetails(LoginRequiredMixin, DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
-        # 1. Взимаме услугите (ако active_services е метод, извикайте го с active_services())
+        # 1. Взимаме услугите на програмиста
         services_list = self.object.active_services()
 
+        # 2. Изчисляваме общата средна оценка от коментарите към всички негови активни услуги
+        avg_rating_data = Comment.objects.filter(
+            service__in=services_list
+        ).aggregate(Avg('rating'))['rating__avg']
 
-        # 2. Настройваме Paginator (напр. по 6 услуги на страница)
+        if avg_rating_data is not None:
+            context['avg_rating'] = avg_rating_data
+            context['avg_rating_rounded'] = round(avg_rating_data)
+        else:
+            context['avg_rating'] = None
+            context['avg_rating_rounded'] = 0
+
+        # 3. Настройваме Paginator
         paginator = Paginator(services_list, 20)
-
-        # 3. Взимаме номера на страницата от URL параметъра (?page=1)
         page_number = self.request.GET.get("page")
         services = paginator.get_page(page_number)
 

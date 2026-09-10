@@ -22,12 +22,12 @@
         </p>
     </div>
 
-    <section class="categories-type__services">
+    <section class="services-page">
         <h2 class="categories-type__services-title">Услуги</h2>
 
-        <div class="categories-type__services-list">
+        <div class="services-page__list">
             {% for service in services %}
-                <div class="categories-type__service-item">
+                <div class="services-page__item">
                     {% include 'services/service_short_details.html' %}
                 </div>
             {% empty %}

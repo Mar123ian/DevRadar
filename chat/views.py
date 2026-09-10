@@ -229,7 +229,7 @@ class CreateMessageAppeal(BaseCreateAppealView):
     appeal_model = MessageAppeal
 
     def get_success_url(self):
-        return reverse('home')
+        return reverse('appeal_success')
 
 from django.views.generic import ListView
 from .models import MessageReport

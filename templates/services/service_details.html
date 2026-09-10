@@ -1,4 +1,6 @@
 {% extends 'core/base.html' %}
+{% load humanize %}
+
 {% load filters %}
 
 {% block title %}
@@ -11,44 +13,116 @@
     <div class="service-details__header">
 
         {% if user.is_superuser or user == service.programmer or user|has_group:"Editors" %}
-
-        <a href="{% url 'update_service' service.slug%}"><button class="update-button">Редактирай</button></a>
-        <a href="{% url 'delete_service' service.slug%}"><button class="delete-button">Изтрий</button></a>
+            <a href="{% url 'update_service' service.slug%}"><button class="update-button">Редактирай</button></a>
+            <a href="{% url 'delete_service' service.slug%}"><button class="delete-button">Изтрий</button></a>
         {% endif %}
+
 
         <a href="{% url 'report_service' service.id %}">Докладвай</a>
 
 
-        {% include 'services/forms/add_to_favourites_form.html' %}
-
         <h1 class="service-details__title">
             {{ service.name|upper }}
         </h1>
+
+        <!-- БЛОК ЗА СРЕДНА ОЦЕНКА -->
+        <div class="service-details__rating">
+            <div class="star-rating-display">
+                {% for _ in "x"|rjust:"10" %}
+                    <span class="star {% if avg_rating and forloop.counter <= avg_rating_rounded %}active{% endif %}">&#9733;</span>
+                {% endfor %}
+            </div>
+            <span class="rating-text">
+                {% if avg_rating %}
+                    {{ avg_rating|floatformat:1 }} / 10
+                {% else %}
+                    Все още няма отзиви
+                {% endif %}
+            </span>
+        </div>
+
+    <br>
+<a href="{% url 'programmer_details' service.programmer.slug %}" class="pulse-btn">
+    СВЪРЖИ СЕ СЕГА
+</a>
+    <br><br>
+
+    <style>
+    .pulse-btn {
+  position: relative;
+  display: inline-block;
+  background-color: red;
+  color: #ffffff;
+  padding: 12px 24px;
+  font-size: 16px;
+  font-weight: bold;
+  text-decoration: none;
+  border-radius: 6px;
+  text-align: center;
+  cursor: pointer;
+  z-index: 1;
+}
+
+/* Настройване на пулсиращите вълни */
+.pulse-btn::before,
+.pulse-btn::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: inherit;
+  background-color: rgba(255, 0, 0, 0.7);
+  z-index: -1;
+  animation: pulse-wave 2s infinite ease-out;
+}
+
+/* Разминаване на втората вълна за непрекъснат ефект */
+.pulse-btn::after {
+  animation-delay: 1s;
+}
+
+@keyframes pulse-wave {
+  0% {
+    transform: scale(1);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(1.3, 1.5);
+    opacity: 0;
+  }
+}
+</style>
+
         <p class="service-details__type">
             Категория: <a href="{% url 'type_details' service.type.slug %}" class="service-details__type-link"><span>{{ service.type.name|upper }}</span></a>
         </p>
         <p>
         <span class="service-details__programmer">
-            Предлага се от: <a href="{% url 'programmer_details' service.programmer.slug %}" class="service-details__programmer-link"><span>{{ service.programmer.get_full_name|upper }}</span></a></span>
+            Предлага се от: <a href="{% url 'programmer_details' service.programmer.slug %}" class="service-details__programmer-link"><span>{{ service.programmer.get_full_name }}</span></a></span>
         </p>
     </div>
 
+
+    <!-- Останалата част от шаблона си остава непроменена -->
     <p class="service-details__price">
-          От  <span class="service-details__price-min">
-                {{ service.min_price }}€
+        От <span class="service-details__price-min">
+                {{ service.min_price|intcomma|replace_chars }}€
             </span>
-            до
-            <span class="service-details__price-max">
-                {{ service.max_price }}€
+        до
+        <span class="service-details__price-max">
+                {{ service.max_price|intcomma|replace_chars }}€
             </span>
-        </p>
+    </p>
+
+        {% include 'services/forms/add_to_favourites_form.html' %}
+
 
     <div class="service-details__content">
         <p class="service-details__description">
             {{ service.description }}
         </p>
-
-
     </div>
 
     <section class="service-details__technologies">
@@ -61,31 +135,30 @@
 
     <section class="service-details__comments">
         <h2 class="service-details__comments-title">
-            Коментари
+            Отзиви
         </h2>
 
+    {% if user != service.programmer %}
         <div class="service-details__comment-form">
             {% include 'comments/forms/create_comment_form.html' %}
         </div>
+    {% endif %}
 
         <div class="service-details__comment-list">
             {% for comment in comments %}
-
                 <div class="service-details__comment">
-
                     {% include 'comments/comment_details.html' %}
-                {% if comment.author != user %}
-                    <a href="{% url 'report_comment' comment.id %}">Докладвай</a>
-                {% endif %}
+                    {% if comment.author != user %}
+                        <a href="{% url 'report_comment' comment.id %}">Докладвай</a>
+                    {% endif %}
                 </div>
             {% empty %}
                 <p class="service-details__no-comments">
-                    Няма коментари.
+                    Няма отзиви.
                 </p>
             {% endfor %}
         </div>
 
-        <!-- Пагинация за коментарите -->
         {% if comments.has_other_pages %}
             <div class="pagination">
                 {% if comments.has_previous %}
@@ -93,7 +166,7 @@
                     <a href="?page={{ comments.previous_page_number }}">Предишна</a>
                 {% endif %}
 
-                <span>Страница от коментари {{ comments.number }} от {{ comments.paginator.num_pages }}</span>
+                <span>Страница от отзиви {{ comments.number }} от {{ comments.paginator.num_pages }}</span>
 
                 {% if comments.has_next %}
                     <a href="?page={{ comments.next_page_number }}">Следваща</a>
@@ -104,4 +177,33 @@
     </section>
 
 </article>
+
+    <style>
+.service-details__rating {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 10px 0;
+}
+
+.star-rating-display {
+    font-size: 1.4rem;
+    display: inline-flex;
+    gap: 2px;
+}
+
+.star-rating-display .star {
+    color: #e0e0e0; /* Неактивна сива звезда */
+}
+
+.star-rating-display .star.active {
+    color: #ffc107; /* Жълта звезда за активните */
+}
+
+.service-details__rating .rating-text {
+    font-weight: bold;
+    color: #555;
+    font-size: 1rem;
+}
+</style>
 {% endblock %}

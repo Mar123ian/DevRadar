@@ -1,0 +1,22 @@
+{% extends 'core/base.html' %}
+
+{% block title %}
+    <title>DevRadar | Регистрация </title>
+{% endblock %}
+
+{% block main_content %}
+    <section class="user-choice-section" style="text-align: center; padding: 2rem;">
+        <h2 style="font-size: 2rem; margin-bottom: 1.5rem; color: #333;">Вие програмист ли сте или търсите услуга?</h2>
+        <div style="display: flex; justify-content: center; gap: 1rem;">
+            <a href="{% url 'upgrade_to_programmer' %}" class="btn btn-primary"
+               style="padding: 10px 20px; font-size: 1.2rem; text-decoration: none; color: #fff; background-color: #007bff; border: none; border-radius: 5px;">
+                Програмист
+            </a>
+            <a href="{% if next %}{{ next }}{% else %}{% url 'all_services' %}{% endif %}"
+               class="btn btn-secondary"
+               style="padding: 10px 20px; font-size: 1.2rem; text-decoration: none; color: #fff; background-color: #6c757d; border: none; border-radius: 5px;">
+                Търся услуга
+            </a>
+        </div>
+    </section>
+{% endblock %}

@@ -72,7 +72,7 @@ class BanUser(FormView):
         return super().form_valid(form)
 
     def get_success_url(self):
-        return reverse('home')
+        return reverse('all_users')
 
 class UpdateBan(LoginRequiredMixin, UpdateView):
 
@@ -101,7 +101,7 @@ class DeleteBan(LoginRequiredMixin, DeleteView):
         raise PermissionDenied
 
     def get_success_url(self):
-        return reverse('home')
+        return reverse('all_users')
 
     def form_valid(self, form):
         target_user = self.get_object().user
@@ -565,4 +565,4 @@ class CreateBanAppeal(BaseCreateAppealView):
 
     #TODO url
     def get_success_url(self):
-        return reverse('home')
+        return reverse('appeal_success')

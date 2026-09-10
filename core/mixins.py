@@ -9,6 +9,9 @@ class DisableFieldsMixin:
             self.fields[field].widget.attrs['disabled'] = True
             self.fields[field].required = False
 
-class CreatedAndUpdatedAtMixin:
+class CreatedAndUpdatedAtMixin(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        abstract = True

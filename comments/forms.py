@@ -10,15 +10,23 @@ class CommentForm(forms.ModelForm):
     class Meta:
         model = Comment
 
-        fields = ['content']
+        fields = ['content', 'rating']
 
         labels = {
             'content': 'Съдържание',
+            'rating': 'Вашата оценка',
+        }
+
+        widgets = {
+            'rating': forms.HiddenInput(),  # Скрива подразбиращия се input
         }
 
         error_messages = {
 
             'content': {
+                'required': 'Полето е задължително!'
+            },
+            'rating': {
                 'required': 'Полето е задължително!'
             },
         }

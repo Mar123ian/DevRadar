@@ -6,13 +6,119 @@
     {% csrf_token %}
 
     <div class="comments-create-form__fields">
-        {{ form }}
+
+        <!-- Визуално поле за 10-те звездички -->
+        <div class="form-field">
+            <label>{{ form.rating.label }}</label>
+
+            <div class="star-rating" id="star-rating">
+                <span class="star" data-value="1">&#9733;</span>
+                <span class="star" data-value="2">&#9733;</span>
+                <span class="star" data-value="3">&#9733;</span>
+                <span class="star" data-value="4">&#9733;</span>
+                <span class="star" data-value="5">&#9733;</span>
+                <span class="star" data-value="6">&#9733;</span>
+                <span class="star" data-value="7">&#9733;</span>
+                <span class="star" data-value="8">&#9733;</span>
+                <span class="star" data-value="9">&#9733;</span>
+                <span class="star" data-value="10">&#9733;</span>
+            </div>
+
+            <!-- Скритият rating input от Django -->
+            {{ form.rating }}
+            {{ form.rating.errors }}
+        </div>
+
+        <!-- Поле за съдържание -->
+        <div class="form-field">
+            <label for="{{ form.content.id_for_label }}">{{ form.content.label }}</label>
+            {{ form.content }}
+            {{ form.content.errors }}
+        </div>
+
+
     </div>
 
     <button
         type="submit"
         class="comments-create-form__button comments-create-form__button--primary"
     >
-        Добави коментара
+        Добави отзива
     </button>
 </form>
+
+<!-- CSS Стилизиране -->
+<style>
+.star-rating {
+    font-size: 2rem;
+    cursor: pointer;
+    display: inline-flex;
+    gap: 4px;
+    user-select: none;
+    margin: 8px 0;
+}
+
+.star-rating .star {
+    color: #e0e0e0;
+    transition: color 0.15s ease-in-out;
+}
+
+.star-rating .star.active {
+    color: #ffc107;
+}
+</style>
+
+<!-- JS Логика -->
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const stars = document.querySelectorAll('.star-rating .star');
+    const ratingInput = document.getElementById('id_rating');
+    const container = document.getElementById('star-rating');
+    const form = container ? container.closest('form') : null;
+
+    if (!ratingInput || !container) return;
+
+    function updateStars(value) {
+        stars.forEach(star => {
+            const starValue = parseInt(star.getAttribute('data-value'));
+            if (starValue <= value) {
+                star.classList.add('active');
+            } else {
+                star.classList.remove('active');
+            }
+        });
+    }
+
+    stars.forEach(star => {
+        star.addEventListener('click', function () {
+            const value = parseInt(this.getAttribute('data-value'));
+            ratingInput.value = value;
+            updateStars(value);
+        });
+
+        star.addEventListener('mouseenter', function () {
+            const value = parseInt(this.getAttribute('data-value'));
+            updateStars(value);
+        });
+    });
+
+    container.addEventListener('mouseleave', function () {
+        const currentValue = parseInt(ratingInput.value) || 0;
+        updateStars(currentValue);
+    });
+
+    if (ratingInput.value) {
+        updateStars(parseInt(ratingInput.value));
+    }
+
+    // ВАЛИДАЦИЯ: Спира изпращането, ако няма избрана стойност
+    if (form) {
+        form.addEventListener('submit', function (e) {
+            if (!ratingInput.value || parseInt(ratingInput.value) === 0) {
+                e.preventDefault(); // Спира формата от изпращане
+                alert('Моля, изберете оценка от звездичките!');
+            }
+        });
+    }
+});
+</script>

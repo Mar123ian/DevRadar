@@ -19,7 +19,7 @@ class DevRadarUserManager(UserManager, PolymorphicManager):
 class DevRadarUser(PolymorphicModel,AbstractUser):
 
     first_name = models.CharField(_("first name"), max_length=150, error_messages={'max_length': 'Максималната дължина е 100 символа!'})
-    last_name = models.CharField(_("last name"), max_length=150, blank=True)
+    last_name = models.CharField(_("last name"), max_length=150, blank=True, null=True)
     favourites = models.ManyToManyField('services.Service', related_name='users', blank=True)
     email = models.EmailField(_("email address"), unique=True, error_messages={'unique': 'Потребител с този имейл вече съществува!'})
     terms_accepted_at = models.DateTimeField(null=True, blank=True)
@@ -90,16 +90,31 @@ class ProgrammerUser(DevRadarUser):
                                     error_messages={'max_length': 'Максималната дължина е 15 символа!',}, blank=True, null=True)
                                                     # 'unique': 'Програмист с този тел. номер вече съществува!'
     slug = models.SlugField(unique=True, blank=True, null=True)
+    site = models.URLField(blank=True, null=True)
+    bio = models.TextField(blank=True, null=True)
 
     def save(self, *args, **kwargs):
-        if not self.slug:
-            objects_with_that_name = self.__class__.objects.filter(slug=slugify(unidecode(self.get_full_name()))).count()
+        # if not self.slug:
+        #     objects_with_that_name = self.__class__.objects.filter(slug=slugify(unidecode(self.get_full_name()))).count()
+        #
+        #
+        #     if objects_with_that_name > 0:
+        #         self.slug = slugify(unidecode(self.get_full_name()) + f"{objects_with_that_name + 1}")
+        #     else:
+        #         self.slug = slugify(unidecode(self.get_full_name()))
 
+        count = 0
+        base_slug = slugify(unidecode(self.get_full_name()))
 
-            if objects_with_that_name > 0:
-                self.slug = slugify(unidecode(self.get_full_name()) + f"{objects_with_that_name + 1}")
+        while True:
+            slug = f"{base_slug}{count + 1}" if count > 0 else base_slug
+
+            if ProgrammerUser.objects.filter(slug=slug).exists():
+
+                count += 1
             else:
-                self.slug = slugify(unidecode(self.get_full_name()))
+                self.slug = slug
+                break
 
         super().save(*args, **kwargs)
 

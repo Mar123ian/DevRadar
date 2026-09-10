@@ -52,11 +52,11 @@ class ProgrammerBaseForm(UserCreationForm):
         }
 
         help_texts = {
-            'first_name': 'Въведете собствено име на програмиста',
-            'last_name': 'Въведете фамилно име на програмиста',
-            'email': 'Въведете имейл на програмиста',
-            'phone_number': 'Въведете телефонен номер на програмиста',
-            'image': 'Снимка на програмиста'
+            'first_name': 'Въведете собствено име или име на ИТ фирма',
+            'last_name': 'Въведете фамилно име (ако сте фирма, може да го оставите празно)',
+            'email': 'Въведете имейл',
+            'phone_number': 'Въведете телефонен номер',
+            'image': 'Снимка'
 
         }
 
@@ -88,12 +88,16 @@ class DevRadarUserBaseForm(forms.ModelForm):
         fields = ['username', 'first_name', 'last_name', 'email']
 
         labels = {
+            'username':'Потребителско име',
             'first_name': 'Собствено име',
             'last_name': 'Фамилно име',
             'email': 'Имейл',
         }
 
         error_messages = {
+            'username': {
+                'required': 'Полето е задължително!'
+            },
             'first_name': {
                 'required': 'Полето е задължително!'
             },
@@ -106,8 +110,9 @@ class DevRadarUserBaseForm(forms.ModelForm):
         }
 
         help_texts = {
-            'first_name': 'Въведете собствено име',
-            'last_name': 'Въведете фамилно име',
+            'username': 'Въведете потребителско име',
+            'first_name': 'Въведете собствено име или име на ИТ фирма',
+            'last_name': 'Въведете фамилно име (ако сте фирма, може да го оставите празно)',
             'email': 'Въведете имейл', #TODO потр. име да е на български
         }
 
@@ -151,7 +156,7 @@ class DevRadarUserCreationForm(SignupForm, DevRadarUserBaseForm):
 
         self.fields['last_name'] = forms.CharField(
             max_length=150,
-            required=True,
+            required=False,
             label=self.Meta.labels['last_name'],
             help_text=self.Meta.help_texts['last_name'],
             error_messages=self.Meta.error_messages['last_name']
@@ -188,6 +193,8 @@ class DevRadarUserCreationForm(SignupForm, DevRadarUserBaseForm):
         user.first_name = self.cleaned_data['first_name']
         user.last_name = self.cleaned_data['last_name']
         user.save()
+
+
 
         return user
 
@@ -285,19 +292,31 @@ class DevRadarUserDeleteForm(DisableFieldsMixin, DevRadarUserBaseForm):
 class UpgradeToProgrammerForm(forms.ModelForm):
     class Meta:
         model = ProgrammerUser
-        fields = ['phone_number', 'image']
+        fields = ['phone_number', 'image', 'site', 'bio']
         widgets = {
             'phone_number': forms.TextInput(attrs={'class': 'form-control', 'placeholder': '+359...'}),
             'image': forms.FileInput(attrs={'class': 'form-control'}),
+            'site': forms.URLInput(attrs={'placeholder':'https://...'})
         }
         labels = {
             'phone_number': 'Телефонен номер',
             'image': 'Профилна снимка',
+            'site': 'Сайт',
+            'bio': 'Малко повече информация за вас',
         }
+
+        help_texts = {
+            'phone_number': 'Телефонният номер НЕ Е ЗАДЪЛЖИТЕЛЕН, но може да е полезен за хората, които искат да се свържат с Вас. Ако го въведете, ще е видим за всички!',
+            'image': 'Не е задължителна снимка. Ако сте фирма, можете да сложите вашето лого, ако сте човек, изображение на вас.',
+            'site': 'Не е задължителен сайт. Ако разполагате с личен сайт, GitHub, Linktree с адреси или др. , сложете пълния му URL адрес в това поле, за да имат клиентите повече информация за вас и работата ви.',
+            'bio': 'Също не е задължително. Свободен текст, например в коя сфера работите, образование, проекти и всичко полезно, за което се сетите :)',
+        }
+
+
 
     def clean_phone_number(self):
         phone_number = self.cleaned_data.get('phone_number')
-        if not phone_number.isnumeric():
+        if phone_number and not phone_number.isnumeric():
             raise ValidationError('Телефонният номер трябва да съдържа само цифри.')
         return phone_number
 

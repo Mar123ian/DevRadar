@@ -47,7 +47,7 @@ ul { list-style: none; }
 /* ================= LAYOUT ================= */
 .content-wrapper {
     max-width: 1200px;
-    margin: 60px auto;
+    margin: 2px auto;
     padding: 0 24px;
     min-height: 70vh;
 }
@@ -197,6 +197,10 @@ ul { list-style: none; }
 
 }
 
+.services-page__list, .programmer-details__services-list, .categories-type__services-list {
+    flex-direction: column;
+}
+
 
 
 .categories-types__item {
@@ -220,6 +224,12 @@ flex: 1 1 200px;    align-items: center;
     border-radius: var(--radius);
     overflow: hidden;
     transition: var(--transition);
+    min-width: 0 !important;
+  max-width: 100% !important;
+}
+.services-page__item {
+  min-width: 0 !important;
+  max-width: 100% !important;
 }
 
 .service-card:hover {
@@ -1284,4 +1294,33 @@ img {
     border-radius: var(--radius);
     border: 1px dashed var(--gray-200);
     font-size: 1rem;
+}
+
+* {
+  word-break: normal; !important;
+  overflow-wrap: break-word; !important;
+  hyphens: auto; !important;
+}
+
+/* коментари */
+.comments-details__rating {
+    font-size: 1.25rem;
+    margin: 0.5rem 0;
+    display: flex;
+    align-items: center;
+    gap: 2px;
+}
+
+.comments-details__rating .star {
+    color: #e0e0e0; /* Неактивни/сиви звезди */
+}
+
+.comments-details__rating .star.active {
+    color: #ffc107; /* Оцветени/жълти звезди */
+}
+
+.comments-details__rating .rating-text {
+    font-size: 0.9rem;
+    color: #666;
+    margin-left: 8px;
 }

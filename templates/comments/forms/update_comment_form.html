@@ -1,7 +1,7 @@
 {% extends 'core/base.html' %}
 
 {% block title %}
-    <title>DevRadar | Редактиране на коментар</title>
+    <title>DevRadar | Редактиране на отзив</title>
 {% endblock %}
 
 {% block main_content %}
@@ -13,15 +13,110 @@
 >
     {% csrf_token %}
 
-    <div class="comments-delete-form__fields">
-        {{ form }}
+    <div class="comments-update-form__fields">
+
+         <!-- Поле за рейтинг със звездички -->
+        <div class="comments-update-form__field">
+            <label>{{ form.rating.label }}</label>
+
+            <div class="star-rating" id="star-rating">
+                <span class="star" data-value="1">&#9733;</span>
+                <span class="star" data-value="2">&#9733;</span>
+                <span class="star" data-value="3">&#9733;</span>
+                <span class="star" data-value="4">&#9733;</span>
+                <span class="star" data-value="5">&#9733;</span>
+                <span class="star" data-value="6">&#9733;</span>
+                <span class="star" data-value="7">&#9733;</span>
+                <span class="star" data-value="8">&#9733;</span>
+                <span class="star" data-value="9">&#9733;</span>
+                <span class="star" data-value="10">&#9733;</span>
+            </div>
+
+            <!-- Скритото Django поле за оценката -->
+            {{ form.rating }}
+            {{ form.rating.errors }}
+        </div>
+
+        <!-- Поле за съдържание -->
+        <div class="comments-update-form__field">
+            <label for="{{ form.content.id_for_label }}">{{ form.content.label }}</label>
+            {{ form.content }}
+            {{ form.content.errors }}
+        </div>
+
+
     </div>
 
     <button
         type="submit"
-        class="comments-delete-form__button comments-delete-form__button--danger"
+        class="comments-update-form__button comments-update-form__button--primary"
     >
         Запази
     </button>
 </form>
+
+    <!-- CSS Стилизиране -->
+<style>
+.star-rating {
+    font-size: 2rem;
+    cursor: pointer;
+    display: inline-flex;
+    gap: 4px;
+    user-select: none;
+    margin: 8px 0;
+}
+
+.star-rating .star {
+    color: #e0e0e0;
+    transition: color 0.15s ease-in-out;
+}
+
+.star-rating .star.active {
+    color: #ffc107;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const stars = document.querySelectorAll('.star-rating .star');
+    const ratingInput = document.getElementById('id_rating');
+    const container = document.getElementById('star-rating');
+
+    if (!ratingInput || !container) return;
+
+    function updateStars(value) {
+        stars.forEach(star => {
+            const starValue = parseInt(star.getAttribute('data-value'));
+            if (starValue <= value) {
+                star.classList.add('active');
+            } else {
+                star.classList.remove('active');
+            }
+        });
+    }
+
+    stars.forEach(star => {
+        star.addEventListener('click', function () {
+            const value = parseInt(this.getAttribute('data-value'));
+            ratingInput.value = value;
+            updateStars(value);
+        });
+
+        star.addEventListener('mouseenter', function () {
+            const value = parseInt(this.getAttribute('data-value'));
+            updateStars(value);
+        });
+    });
+
+    container.addEventListener('mouseleave', function () {
+        const currentValue = parseInt(ratingInput.value) || 0;
+        updateStars(currentValue);
+    });
+
+    // Оцветява текущо записаната стойност на коментара при зареждане
+    if (ratingInput.value) {
+        updateStars(parseInt(ratingInput.value));
+    }
+});
+</script>
 {% endblock %}

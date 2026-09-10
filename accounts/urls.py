@@ -10,6 +10,7 @@ from accounts.views import RegisterProgrammerUserView, RegisterDevRadarUserView,
     ProfileView, ResendEmailView, RestoreOldEmail
 
 urlpatterns = [
+    path('finalize_registration/', TemplateView.as_view(template_name='accounts/finalize_registration.html'), name='finalize_registration'),
     path('restore_old_email/', RestoreOldEmail.as_view(), name='restore_old_email'),
     path(
         "resend-confirmation-email/",

@@ -1,9 +1,11 @@
 from django.urls import path
+from django.views.generic import TemplateView
 
 from moderation.views import AllUsers, BanUser, DeleteBan, UpdateBan, AppealsView, \
     CreateBanAppeal, UserViolationsAndBansView
 
 urlpatterns = [
+    path('appeal_success/', TemplateView.as_view(template_name='moderation/appeal_success.html'), name='appeal_success'),
 path("appeal_ban/<int:pk>/", CreateBanAppeal.as_view(), name='appeal_ban'),
 
     path(

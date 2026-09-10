@@ -19,13 +19,23 @@
 
         <p><strong>Име:</strong> {{ user.get_full_name }}</p>
         <p><strong>Имейл:</strong> {{ user.email }}</p>
-        {% if user|has_group:"Programmers" %}
+        {% if user|has_group:"Programmers" and user.phone_number %}
             <p><strong>Телефон:</strong> {{ user.phone_number }}</p>
         {% endif %}
 
         <br>
+    {% if user.is_authenticated %}
+                {% if not user.is_programmer %}
+                    <a href="{% url 'upgrade_to_programmer' %}">
+                        <button class="update-button upgrade-button" style="font-size: 1.2em; padding: 1em;">Регистрация
+                            на програмист или ИТ фирма
+                        </button>
+                    </a>
+                {% endif %}
+            {% endif %}
 
-        <div style="display: flex; flex-direction: row; gap: 1em;" class="programmer-details__buttons">
+        <div style="display: flex; flex-direction: row; gap: 1em; flex-wrap: wrap; " class="programmer-details__buttons">
+
             {% if user.has_usable_password %}
                 <a href="{% url 'account_change_password' %}"><button class="update-button">Промяна на парола</button></a>
             {% else %}
@@ -35,6 +45,8 @@
             {% if user|has_group:"Programmers" %}
                 <a href="{% url 'update_programmer' user.slug%}"><button class="update-button">Редактирай</button></a>
                 <a href="{% url 'delete_programmer' user.slug%}"><button class="delete-button">Изтрий профила</button></a>
+                <a href="{% url 'programmer_details' user.slug%}"><button class="update-button">Виж публичния си профил</button></a>
+
             {% else %}
                 <a href="{% url 'update_user' user.id %}"><button class="update-button">Редактирай</button></a>
                 <a href="{% url 'delete_user' user.id %}"><button class="delete-button">Изтрий профила</button></a>
@@ -48,11 +60,7 @@
                 <button type="submit">Изход</button>
             </form>
 
-            {% if user.is_authenticated %}
-                {% if not user.is_programmer %}
-                    <a href="{% url 'upgrade_to_programmer' %}"><button class="update-button upgrade-button">Стани Програмист</button></a>
-                {% endif %}
-            {% endif %}
+
         </div>
     </div>
 
