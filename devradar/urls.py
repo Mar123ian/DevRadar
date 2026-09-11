@@ -17,6 +17,7 @@ Including another URLconf
 from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import path, include, re_path
+from django.views.generic import TemplateView
 from django.views.static import serve
 
 from devradar import settings
@@ -32,6 +33,9 @@ urlpatterns = [
     path('api/', include('services_api.urls')),
     path('chat/', include('chat.urls')),
     path('moderation/', include('moderation.urls')),
+    path('cookies/', TemplateView.as_view(template_name='cookies.html'), name='cookies'),
+    path('privacy-policy/', TemplateView.as_view(template_name='privacy_policy.html'), name='privacy_policy'),
+    path('terms-of-service/', TemplateView.as_view(template_name='terms_of_service.html'), name='terms_of_service')
 
 ] #+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 

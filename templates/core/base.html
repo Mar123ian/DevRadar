@@ -15,6 +15,8 @@
 
     <link rel="apple-touch-icon" href="{% static 'logo.png' %}">
 
+    <script id="Cookiebot" src="https://consent.cookiebot.com/uc.js" data-cbid="3f53a164-27cc-42bb-98e8-e5073b863471" data-blockingmode="auto" type="text/javascript"></script>
+
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'styles.css' %}" />
     <script src="{% static 'scripts.js' %}" type="module"></script>
@@ -163,6 +165,9 @@
                 <h4>Бързи връзки</h4>
                 <a href="{% url 'all_services' %}">Всички услуги</a>
                 <a href="{% url 'all_programmers' %}">Топ програмисти</a>
+                <a href="{% url 'terms_of_service' %}">Общи условия</a>
+                <a href="{% url 'privacy_policy' %}">Политика за поверителност</a>
+                <a href="{% url 'cookies' %}">Политика за бисквитките</a>
             </div>
             <div class="footer-social">
                 <h4>Контакти</h4>

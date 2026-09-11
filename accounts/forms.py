@@ -124,8 +124,8 @@ class DevRadarUserBaseForm(forms.ModelForm):
 
 
 TERMS_LABEL = mark_safe(
-    'Прочетох и съм съгласен с <a href="/terms/" target="_blank">Общите условия</a> '
-    'и <a href="/privacy/" target="_blank">Политиката за поверителност</a>.'
+    'Прочетох и съм съгласен с <a href="/terms-of-service/" target="_blank">Общите условия</a> '
+    'и <a href="/privacy-policy/" target="_blank">Политиката за поверителност</a>.'
 )
 
 

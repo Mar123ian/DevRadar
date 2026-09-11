@@ -256,6 +256,16 @@ flex: 1 1 200px;    align-items: center;
     color: var(--text-muted);
 }
 
+.service-card__name {
+    padding: 0 20px 0px;
+    font-size: 0.95rem;
+    color: var(--text-muted);
+}
+
+p.categories-technology__name{
+    font-size: 0.8em;
+}
+
 .programmers-list {
     display: flex;
     flex-direction: row;
@@ -372,6 +382,7 @@ flex: 1 1 200px;    align-items: center;
     flex-wrap: wrap;
     align-items: center;
     align-content: center;
+    gap: 0.5em;
 
 }
 
@@ -379,7 +390,7 @@ flex: 1 1 200px;    align-items: center;
     display: flex;
     flex-direction: column;
     margin-top: 0.5em;
-    width: 5em;
+    width: auto;
     align-items: center;
     align-content: center;
 }
@@ -394,7 +405,7 @@ flex: 1 1 200px;    align-items: center;
 }
 
 .categories-technology img {
-    width: 3em;
+    width: 1.5em;
 }
 
 .categories-types__item {
@@ -403,6 +414,10 @@ flex: 1 1 200px;    align-items: center;
     border-radius: var(--radius);
     padding: 1em;
     align-items: center;
+}
+
+.categories-technology{
+    margin-bottom: 0px;
 }
 
 .categories-types__item:hover {

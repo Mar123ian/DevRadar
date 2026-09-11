@@ -50,12 +50,13 @@
 <!-- CSS Стилизиране -->
 <style>
 .star-rating {
-    font-size: 2rem;
+    font-size: clamp(1.2rem, 5vw, 2rem); /* Автоматично намалява размера при по-тесни екрани */
     cursor: pointer;
     display: inline-flex;
     gap: 4px;
     user-select: none;
     margin: 8px 0;
+    max-width: 100%;
 }
 
 .star-rating .star {
