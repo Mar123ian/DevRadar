@@ -33,7 +33,7 @@ urlpatterns = [
     path('api/', include('services_api.urls')),
     path('chat/', include('chat.urls')),
     path('moderation/', include('moderation.urls')),
-    path('cookies/', TemplateView.as_view(template_name='cookies.html'), name='cookies'),
+    path('cookies-policy/', TemplateView.as_view(template_name='cookies.html'), name='cookies_policy'),
     path('privacy-policy/', TemplateView.as_view(template_name='privacy_policy.html'), name='privacy_policy'),
     path('terms-of-service/', TemplateView.as_view(template_name='terms_of_service.html'), name='terms_of_service')
 

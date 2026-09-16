@@ -15,13 +15,115 @@
 
     <link rel="apple-touch-icon" href="{% static 'logo.png' %}">
 
-    <script id="Cookiebot" src="https://consent.cookiebot.com/uc.js" data-cbid="3f53a164-27cc-42bb-98e8-e5073b863471" data-blockingmode="auto" type="text/javascript"></script>
+<!-- CookieConsent v3 CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orestbida/cookieconsent@3.0.1/dist/cookieconsent.css">
+
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-SC9K2W1WHP"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-SC9K2W1WHP');
+</script>
+
+<!-- Meta Pixel Code -->
+<script type="text/plain" data-category="marketing">
+!function(f,b,e,v,n,t,s)
+{if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+n.queue=[];t=b.createElement(e);t.async=!0;
+t.src=v;s=b.getElementsByTagName(e)[0];
+s.parentNode.insertBefore(t,s)}(window, document,'script',
+'https://connect.facebook.net/en_US/fbevents.js');
+fbq('init', '1015321851553282');
+fbq('track', 'PageView');
+</script>
+
+<!-- End Meta Pixel Code -->
+
+<!-- Задействане при завършена регистрация -->
+{% if trigger_pixel_registration %}
+<script type="text/plain" data-category="marketing">
+    fbq('track', 'CompleteRegistration');
+</script>
+{% endif %}
+
 
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'styles.css' %}" />
     <script src="{% static 'scripts.js' %}" type="module"></script>
 </head>
 <body>
+
+<!-- CookieConsent v3 JS -->
+    <script src="https://cdn.jsdelivr.net/gh/orestbida/cookieconsent@3.0.1/dist/cookieconsent.umd.js"></script>
+
+    <!-- Настройка и Конфигурация на CookieConsent -->
+    <script>
+        CookieConsent.run({
+            // Конфигуриране на категориите бисквитки
+            categories: {
+                necessary: {
+                    enabled: true,  // Винаги включени (Django session, csrf)
+                    readOnly: true
+                },
+                analytics: {
+                    enabled: false  // Иска съгласие за Google Analytics / Statcounter
+                },
+                marketing: {
+                    enabled: false  // Иска съгласие за Facebook Pixel / Ads
+                }
+            },
+
+            // Текстове и превод (на Български)
+            language: {
+                default: 'bg',
+                translations: {
+                    bg: {
+                        consentModal: {
+                            title: 'Ние използваме бисквитки',
+description: 'Използваме бисквитки за подобряване на сайта. Прочетете нашата <a href="/cookies-policy/" target="_blank">Политика за бисквитки</a> за повече подробности.',                            acceptAllBtn: 'Приемам всички',
+                            acceptNecessaryBtn: 'Отказвам незадължителните',
+                            showPreferencesBtn: 'Настройки'
+                        },
+                        preferencesModal: {
+
+                            title: 'Център за настройки на бисквитките',
+                            acceptAllBtn: 'Приемам всички',
+                            acceptNecessaryBtn: 'Отказвам незадължителните',
+                            savePreferencesBtn: 'Запази настройките',
+                            closeIconLabel: 'Затвори',
+                            sections: [
+                                {
+                                    title: 'Задължителни бисквитки',
+                                    description: 'Тези бисквитки са необходими за правилната работа на сайта (напр. за вход в профила или сесията) и не могат да бъдат изключени.',
+                                    linkedCategory: 'necessary'
+                                },
+                                {
+                                    title: 'Аналитични бисквитки',
+                                    description: 'Помагат ни да разберем как посетителите взаимодействат със сайта (напр. Google Analytics).',
+                                    linkedCategory: 'analytics'
+                                },
+                                {
+                                    title: 'Маркетингови бисквитки',
+                                    description: 'Използват се за проследяване на посетителите с цел показване на подходящи реклами (напр. Facebook Pixel).',
+                                    linkedCategory: 'marketing'
+                                },
+                                {
+        title: 'Повече информация',
+        description: 'За повече детайли относно бисквитките и вашите лични данни, моля прочетете нашата <a href="/cookies-policy/" class="cc-link" target="_blank">Политика за бисквитки</a>.'
+    }
+                            ]
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+
     <header class="main-header">
     {% if False %}
     <div class="alert alert-warning">
@@ -167,7 +269,8 @@
                 <a href="{% url 'all_programmers' %}">Топ програмисти</a>
                 <a href="{% url 'terms_of_service' %}">Общи условия</a>
                 <a href="{% url 'privacy_policy' %}">Политика за поверителност</a>
-                <a href="{% url 'cookies' %}">Политика за бисквитките</a>
+                <a href="{% url 'cookies_policy' %}">Политика за бисквитките</a>
+<a href="#" onclick="CookieConsent.showPreferences(); return false;">Настройки за бисквитките</a>
             </div>
             <div class="footer-social">
                 <h4>Контакти</h4>

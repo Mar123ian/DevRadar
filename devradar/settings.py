@@ -138,6 +138,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'accounts.context_processors.meta_pixel_events'
             ],
         },
     },
@@ -252,7 +253,7 @@ AUTHENTICATION_BACKENDS = [
 
 SITE_ID = 1
 LOGOUT_REDIRECT_URL = '/accounts/login/'
-LOGIN_REDIRECT_URL = '/profile/'
+LOGIN_REDIRECT_URL = '/accounts/profile/'
 LOGIN_URL = '/accounts/login/'
 ACCOUNT_SET_PASSWORD_REDIRECT_URL = '/accounts/profile/'
 ACCOUNT_CHANGE_PASSWORD_REDIRECT_URL = '/accounts/profile/'

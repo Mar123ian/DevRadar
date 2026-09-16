@@ -181,18 +181,19 @@ class DevRadarUserCreationForm(SignupForm, DevRadarUserBaseForm):
         self.fields["turnstile"] = captcha
 
     def save(self, request):
-        # Извикваме вградения save на allauth, който създава потребителя и паролата
         user = super().save(request)
         user.terms_accepted_at = timezone.now()
 
         request.session["pending_verification_email"] = user.email
-        print("cookie set with", request.COOKIES)
 
-        # Записваме допълнителните полета от формуляра в потребителския модел
+
+
         user.username = self.cleaned_data['username']
         user.first_name = self.cleaned_data['first_name']
         user.last_name = self.cleaned_data['last_name']
         user.save()
+
+        return user
 
 
 
@@ -243,6 +244,9 @@ class CustomSocialSignupForm(SocialSignupForm):
         user = super().save(request)
         user.terms_accepted_at = timezone.now()
         user.save()
+
+
+
         return user
 
 class DevRadarUserUpdateForm(DevRadarUserBaseForm):

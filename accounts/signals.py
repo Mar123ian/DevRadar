@@ -21,3 +21,15 @@ def email_confirmed_sync(sender, request, email_address, **kwargs):
     user.email = email_address.email
     user.save()
 
+from django.dispatch import receiver
+from allauth.account.signals import user_signed_up
+
+@receiver(user_signed_up)
+def track_meta_pixel_registration(request, user, **kwargs):
+    if request:
+        request.session['pixel_complete_registration'] = True
+        # Изрично указваме на Django да запази промяната в сесията
+        request.session.modified = True
+        print("in user_signed_up")
+        print(request.session.items())
+

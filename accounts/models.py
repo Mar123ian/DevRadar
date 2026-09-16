@@ -23,6 +23,10 @@ class DevRadarUser(PolymorphicModel,AbstractUser):
     favourites = models.ManyToManyField('services.Service', related_name='users', blank=True)
     email = models.EmailField(_("email address"), unique=True, error_messages={'unique': 'Потребител с този имейл вече съществува!'})
     terms_accepted_at = models.DateTimeField(null=True, blank=True)
+    pixel_registration_tracked = models.BooleanField(
+        default=False,
+        help_text="Определя дали CompleteRegistration събитието за Meta Pixel е било задействано."
+    )
 
     objects = DevRadarUserManager()
 
