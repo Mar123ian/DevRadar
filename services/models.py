@@ -15,7 +15,7 @@ class Service(ViolationSoftDeleteMixin, CreatedAndUpdatedAtMixin, models.Model):
     name = models.CharField(max_length=255, error_messages={'max_length': 'Максималната дължина е 255 символа!'})
     programmer = models.ForeignKey('accounts.ProgrammerUser', on_delete=models.CASCADE, related_name='services')
     description = models.TextField()
-    image = models.ImageField(upload_to='services/')
+    image = models.ImageField(upload_to='services/', blank=True, null=True)
     slug = models.SlugField(max_length=255, unique=True, blank=True)
     type = models.ForeignKey('categories.Type', on_delete=models.CASCADE, related_name='services')
     technologies = models.ManyToManyField('categories.Technology', related_name='services')

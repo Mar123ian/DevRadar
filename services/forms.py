@@ -11,7 +11,7 @@ class ServiceForm(forms.ModelForm):
     class Meta:
         model = Service
 
-        fields = ['name', 'description', 'image', 'type', 'technologies', 'min_price', 'max_price']
+        fields = ['name', 'description', 'type', 'technologies', 'min_price', 'max_price']
 
         labels = {
             'name': 'Име',
@@ -54,7 +54,7 @@ class ServiceForm(forms.ModelForm):
             'description': 'Въведете описание на услугата',
             'image': 'Изберете изображение за услугата',
             'type': 'Изберете типа на услугата',
-            'technologies': 'Изберете технологиите, които ще се ползват',
+            'technologies': 'Изберете технологиите, които ще се ползват (подредени са по азбучен ред)',
             'min_price': 'Въведете минимална цена',
             'max_price': 'Въведете максимална цена'
 
@@ -62,7 +62,12 @@ class ServiceForm(forms.ModelForm):
 
 
         widgets = {
+            'description':forms.Textarea(attrs={'placeholder': 'Опишете по-подробно своята услуга, така че да стане ясно какво точно представлява...'}),
+            'name':forms.TextInput(attrs={'placeholder': 'Например Изработка на сайт...'}),
             'technologies': forms.CheckboxSelectMultiple(),
+            'min_price': forms.NumberInput(attrs={'placeholder': 'Например 1000...'}),
+            'max_price': forms.NumberInput(attrs={'placeholder': 'Например 3000...'}),
+
         }
 
 
