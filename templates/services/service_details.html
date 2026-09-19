@@ -112,10 +112,12 @@
     </p>
 
 <br>
+{% if user != service.programmer %}
 <a href="{% url 'programmer_details' service.programmer.slug %}" class="pulse-btn">
     СВЪРЖИ СЕ СЕГА
 </a>
     <br><br>
+{% endif %}
 
         {% include 'services/forms/add_to_favourites_form.html' %}
 <br>
