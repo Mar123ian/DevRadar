@@ -278,7 +278,7 @@ def upgrade_to_programmer(request):
             login(request, programmer, backend='django.contrib.auth.backends.ModelBackend')
 
             messages.success(request, "Успешно надградихте профила си!")
-            return redirect('home')
+            return redirect('profile')
     else:
         form = UpgradeToProgrammerForm()
 

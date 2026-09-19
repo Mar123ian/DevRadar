@@ -31,7 +31,14 @@
                             на програмист или ИТ фирма
                         </button>
                     </a>
+
+                {% else %}
+                    <a href="{% url 'create_service' %}">
+                        <button class="update-button upgrade-button" style="font-size: 1.2em; padding: 1em;">Предложи услуга</button>
+                    </a>
                 {% endif %}
+
+
             {% endif %}
 
         <div style="display: flex; flex-direction: row; gap: 1em; flex-wrap: wrap; " class="programmer-details__buttons">
