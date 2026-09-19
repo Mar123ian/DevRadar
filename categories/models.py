@@ -30,6 +30,9 @@ class Type(CategoryBase):
     def active_services(self):
         return self.services.filter(is_deleted_due_to_violation=False, is_deleted_due_to_ban=False)
 
+    class Meta:
+        ordering = ['id']
+
 
 class Technology(CategoryBase):
     name = models.CharField(unique=True, max_length=100, error_messages={'max_length': 'Максималната дължина е 100 символа!', 'unique': 'Технологията вече съществува!'})
