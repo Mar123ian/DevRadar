@@ -215,16 +215,26 @@ description: 'Използваме бисквитки за подобряван�
 
 
             <button class="menu-toggle" id="mobile-toggle" aria-label="Toggle Menu">
-                <span></span>
-            </button>
+    <span></span>
+
+    {% if unseen_chats_count > 0 %}
+        <div class="chat-badge chat-badge--mobile">{{ unseen_chats_count }}</div>
+    {% endif %}
+</button>
 
             <div class="nav-inner" id="nav-content">
                 <ul class="nav-menu">
                     <li><a href="{% url 'all_services' %}" class="nav-link">Услуги</a></li>
                     <li><a href="{% url 'all_programmers' %}" class="nav-link">Програмисти и фирми</a></li>
                     <li><a href="{% url 'all_types' %}" class="nav-link">Типове услуги</a></li>
-                    <li><a href="{% url 'users_chats' %}" class="nav-link">Моите чатове</a></li>
-
+<li>
+    <a href="{% url 'users_chats' %}" class="nav-link">
+        Моите чатове
+        {% if unseen_chats_count > 0 %}
+            <span class="chat-badge">{{ unseen_chats_count }}</span>
+        {% endif %}
+    </a>
+</li>
                     {% if not user.is_authenticated %}
                     <li><a href="{% url 'login' %}" class="nav-link">ВХОД</a></li>
                     {% else %}
@@ -291,6 +301,42 @@ description: 'Използваме бисквитки за подобряван�
 </body>
 
 <style>
+
+    .nav-link {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.chat-badge {
+    background-color: #e74c3c; /* Червен цвят */
+    color: #ffffff;
+    font-size: 0.75rem;
+    font-weight: bold;
+    padding: 2px 6px;
+    border-radius: 50%; /* Направи го кръгло */
+    min-width: 18px;
+    height: 18px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+}
+
+/* Специфично позициониране за мобилния бутон */
+.chat-badge--mobile {
+    position: absolute !important;
+    top: -8px !important;               /* Подига баджа НАД чертичките */
+    right: -10px !important;            /* Избутва баджа ВДЯСНО от чертичките */
+    z-index: 1200 !important; /* По-висок z-index от чертичките и от .menu-toggle */
+    pointer-events: none !important;    /* За да не пречи на клика върху бутона */
+    font-size: 0.65rem !important;
+    min-width: 16px !important;
+    height: 16px !important;
+    padding: 1px 4px !important;
+}
+
     .p-pulse-btn {
   position: relative;
   display: inline-block;

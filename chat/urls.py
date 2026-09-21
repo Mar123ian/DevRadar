@@ -3,10 +3,11 @@ from django.urls import path, include
 
 from chat import views
 from chat.views import CreateMessageReport, MessageReportListView, DeleteMessage, UpdateMessage, UsersChats, \
-    DeleteMessageDueToViolation, RestoreMessageFromViolation, CreateMessageAppeal, load_older_messages
+    DeleteMessageDueToViolation, RestoreMessageFromViolation, CreateMessageAppeal, load_older_messages, MarkAsSeenView
 from devradar import settings
 
 urlpatterns = [
+path('<int:pk>/mark-as-seen/', MarkAsSeenView.as_view(), name='mark_as_seen'),
 path("appeal_message_violation/<int:pk>/", CreateMessageAppeal.as_view(), name='appeal_message_violation'),
 
     path("chats/", UsersChats.as_view(), name='users_chats'),

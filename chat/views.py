@@ -337,3 +337,20 @@ class UsersChats(LoginRequiredMixin, ListView):
         ).filter(
             message__isnull=False
         ).order_by('-latest_message_time')
+
+
+from django.http import JsonResponse
+from django.shortcuts import get_object_or_404
+from django.views import View
+from .models import Thread
+
+
+class MarkAsSeenView(View):
+    def post(self, request, pk, *args, **kwargs):
+        thread = get_object_or_404(Thread, pk=pk)
+
+        if not thread.seen:
+            thread.seen = True
+            thread.save(update_fields=['seen'])
+
+        return JsonResponse({'status': 'success', 'seen': True})

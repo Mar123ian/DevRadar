@@ -138,7 +138,9 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
-                'accounts.context_processors.meta_pixel_events'
+                'accounts.context_processors.meta_pixel_events',
+                'chat.context_processors.unseen_threads_count'
+
             ],
         },
     },

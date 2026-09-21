@@ -16,7 +16,10 @@
     <br>
     <div class="chats">
     {% for thread in threads %}
-        <a href="{% url 'chat_room' thread.id %}">
+        <!-- Добавяме class="chat-link" и data-mark-seen-url за AJAX заявката -->
+        <a href="{% url 'chat_room' thread.id %}"
+           class="chat-link"
+           data-mark-seen-url="{% url 'mark_as_seen' thread.id %}">
             <div class="chat-item__header">
                 <span class="chat-item__name">
                     {% if thread.users.all.first.username != user.username %}
@@ -26,6 +29,10 @@
                     {% endif %}
                 </span>
                 <span class="chat-item__time">
+                    <!-- Показваме "Ново" само ако нишката е unseen И последното съобщение е от другия потребител -->
+                    {% if not thread.seen and thread.message_set.last.sender != user %}
+                        <span class="badge-new">Ново</span>
+                    {% endif %}
                     {{ thread.message_set.last.timestamp|date:"H:i, d.m.Y" }}
                 </span>
             </div>
@@ -63,4 +70,68 @@
     {% endif %}
 
 </section>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    // Взимаме CSRF токена от бисквитките на Django
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    const csrftoken = getCookie('csrftoken');
+    const chatLinks = document.querySelectorAll('.chat-link');
+
+    chatLinks.forEach(link => {
+        link.addEventListener('click', function (e) {
+            e.preventDefault(); // Спираме незабавното отваряне на линка
+
+            const targetUrl = this.getAttribute('href');
+            const markSeenUrl = this.dataset.markSeenUrl;
+
+            // Изпращаме AJAX POST заявка
+            fetch(markSeenUrl, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': csrftoken,
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(() => {
+                // След успех пренасочваме към чат стаята
+                window.location.href = targetUrl;
+            })
+            .catch(error => {
+                console.error('Грешка при маркиране като видян:', error);
+                // При грешка все пак пренасочваме потребителя
+                window.location.href = targetUrl;
+            });
+        });
+    });
+});
+</script>
+
+    <style>
+    .badge-new {
+    background-color: #e74c3c; /* Червен акцент */
+    color: #ffffff;
+    font-size: 0.7rem;
+    font-weight: bold;
+    padding: 2px 6px;
+    border-radius: 4px;
+    margin-right: 6px;
+    text-transform: uppercase;
+    display: inline-block;
+}
+    </style>
 {% endblock %}

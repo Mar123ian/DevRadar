@@ -9,6 +9,7 @@ from moderation.models import BaseReport, BaseAppeal
 class Thread(models.Model):
     users = models.ManyToManyField(settings.AUTH_USER_MODEL)
     is_deleted = models.BooleanField(default=False)
+    seen = models.BooleanField(default=False)
 
 
 class Message(ViolationSoftDeleteMixin, models.Model):

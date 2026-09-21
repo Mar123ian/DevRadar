@@ -158,6 +158,7 @@
     const IS_SUPERUSER = {{ request.user.is_superuser|yesno:"true,false" }};
     const IS_EDITOR = {{ request.user|has_group:"Editors"|yesno:"true,false" }};
     const threadId = "{{ thread.id }}";
+    const markSeenUrl = "{% url 'mark_as_seen' thread.id %}";
 
     let hasMoreMessages = {{ has_more|yesno:"true,false" }};
     let isLoading = false;
@@ -165,6 +166,44 @@
 
     const chatBox = document.getElementById("chat-box");
     chatBox.scrollTop = chatBox.scrollHeight;
+
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let cookie of cookies) {
+                cookie = cookie.trim();
+                if (cookie.startsWith(name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    const csrftoken = getCookie('csrftoken');
+
+    // ------------------------------------
+    // МАРКИРАНЕ НА НИШКАТА КАТО ВИДЯНА
+    // ------------------------------------
+    async function markThreadAsSeen() {
+        try {
+            await fetch(markSeenUrl, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': csrftoken,
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+        } catch (err) {
+            console.error("Грешка при маркиране на нишката като видяна:", err);
+        }
+    }
+
+    // Маркираме чата като видян веднага след зареждане на страницата
+    //markThreadAsSeen();
 
     // ------------------------------------
     // INFINITE SCROLL UP
@@ -469,24 +508,19 @@
         chatBox.appendChild(row);
 
         chatBox.scrollTop = chatBox.scrollHeight;
-    };
 
-    function getCookie(name) {
-        let cookieValue = null;
-        if (document.cookie && document.cookie !== '') {
-            const cookies = document.cookie.split(';');
-            for (let cookie of cookies) {
-                cookie = cookie.trim();
-                if (cookie.startsWith(name + '=')) {
-                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                    break;
-                }
-            }
+        // Определяме дали авторът на новопостъпилото съобщение е друг човек
+        const senderId = data.sender_id ? parseInt(data.sender_id, 10) : null;
+        const senderDisplayName = data.username || data.sender_name || "";
+        const isOwn = (senderId && senderId === CURRENT_USER_ID) ||
+                      (senderDisplayName === CURRENT_USER_FULL_NAME && CURRENT_USER_FULL_NAME !== "") ||
+                      (senderDisplayName === CURRENT_USER_NAME);
+
+        // Ако съобщението НЕ е от мен -> маркираме като видяно асинхронно
+        if (!isOwn) {
+            markThreadAsSeen();
         }
-        return cookieValue;
-    }
-
-    const csrftoken = getCookie('csrftoken');
+    };
 
     async function sendMessage() {
         const msgInput = document.getElementById("message-input");

@@ -92,6 +92,9 @@ class ChatConsumer(AsyncWebsocketConsumer):
             text=message,
         )
 
+        thread.seen = False
+        thread.save()
+
         if file_url:
             msg.file = file_url
             msg.save()
