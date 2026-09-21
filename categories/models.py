@@ -17,12 +17,19 @@ class CategoryBase(CreatedAndUpdatedAtMixin, models.Model):
         abstract = True
 
     def save(self, *args, **kwargs):
+        
+        count = 0
+        base_slug = slugify(unidecode(self.get_full_name()))
 
-        if not self.slug:
-            try:
-                self.slug = slugify(unidecode(self.name))
-            except Exception as e:
-                self.slug = f"{slugify(unidecode(self.name))}_{random.randint(1, 10000)}"
+        while True:
+            slug = f"{base_slug}{count + 1}" if count > 0 else base_slug
+
+            if self.__class__.objects.filter(slug=slug).exists():
+
+                count += 1
+            else:
+                self.slug = slug
+                break
 
         super().save(*args, **kwargs)
 
