@@ -1,3 +1,5 @@
+import random
+
 from django.db import models
 from django.utils.text import slugify
 from unidecode import unidecode
@@ -15,8 +17,13 @@ class CategoryBase(CreatedAndUpdatedAtMixin, models.Model):
         abstract = True
 
     def save(self, *args, **kwargs):
+
         if not self.slug:
-            self.slug = slugify(unidecode(self.name))
+            try:
+                self.slug = slugify(unidecode(self.name))
+            except Exception as e:
+                self.slug = f"{slugify(unidecode(self.name))}_{random.randint(1, 10000)}"
+
         super().save(*args, **kwargs)
 
     def __str__(self):
