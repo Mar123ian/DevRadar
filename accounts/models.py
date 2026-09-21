@@ -107,18 +107,20 @@ class ProgrammerUser(DevRadarUser):
         #     else:
         #         self.slug = slugify(unidecode(self.get_full_name()))
 
-        count = 0
-        base_slug = slugify(unidecode(self.get_full_name()))
+        if not self.pk or (self.get_full_name() != ProgrammerUser.objects.filter(pk=self.pk).first().get_full_name()):
+            
+            count = 0
+            base_slug = slugify(unidecode(self.get_full_name()))
 
-        while True:
-            slug = f"{base_slug}{count + 1}" if count > 0 else base_slug
+            while True:
+                slug = f"{base_slug}{count + 1}" if count > 0 else base_slug
 
-            if ProgrammerUser.objects.filter(slug=slug).exists():
+                if ProgrammerUser.objects.exclude(pk=self.pk).filter(slug=slug).exists():
 
-                count += 1
-            else:
-                self.slug = slug
-                break
+                    count += 1
+                else:
+                    self.slug = slug
+                    break
 
         super().save(*args, **kwargs)
 
