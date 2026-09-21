@@ -18,18 +18,20 @@ class CategoryBase(CreatedAndUpdatedAtMixin, models.Model):
 
     def save(self, *args, **kwargs):
         
-        count = 0
-        base_slug = slugify(unidecode(self.get_full_name()))
+        if not self.pk or (self.name != self.__class__.objects.filter(pk=self.pk).first().name):
+            
+            count = 0
+            base_slug = slugify(unidecode(self.name))
 
-        while True:
-            slug = f"{base_slug}{count + 1}" if count > 0 else base_slug
+            while True:
+                slug = f"{base_slug}{count + 1}" if count > 0 else base_slug
 
-            if self.__class__.objects.filter(slug=slug).exists():
+                if self.__class__.objects.exclude(pk=self.pk).filter(slug=slug).exists():
 
-                count += 1
-            else:
-                self.slug = slug
-                break
+                    count += 1
+                else:
+                    self.slug = slug
+                    break
 
         super().save(*args, **kwargs)
 
