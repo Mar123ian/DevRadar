@@ -336,7 +336,7 @@
         document.getElementById("delete-modal").style.display = "none";
         document.getElementById("edit-modal").style.display = "none";
         document.getElementById("report-modal").style.display = "none";
-        document.getElementById("edit-file-input").value = "";
+        //document.getElementById("edit-file-input").value = "";
         activeTargetMsgId = null;
     }
 
@@ -376,7 +376,7 @@
         const textElement = msgRow ? msgRow.querySelector(".chat-text") : null;
 
         document.getElementById("edit-message-text").value = textElement ? textElement.textContent : "";
-        document.getElementById("edit-file-input").value = "";
+        //document.getElementById("edit-file-input").value = "";
         document.getElementById("edit-modal").style.display = "flex";
     }
 
@@ -385,7 +385,7 @@
 
     const newText = document.getElementById("edit-message-text").value;
     const fileInput = document.getElementById("edit-file-input");
-    const file = fileInput.files[0];
+    const file = fileInput ? fileInput.files[0] : null;
 
     try {
         const formData = new FormData();
@@ -497,10 +497,29 @@
 }
 
     // ----------------------
-    // WEBSOCKET LOGIC
-    // ----------------------
-    const protocol = window.location.protocol === "https:" ? "wss" : "ws";
-    const socket = new WebSocket(protocol + "://" + window.location.host + "/ws/chat/" + threadId + "/");
+// WEBSOCKET LOGIC WITH RECONNECT
+// ----------------------
+const protocol = window.location.protocol === "https:" ? "wss" : "ws";
+const wsUrl = protocol + "://" + window.location.host + "/ws/chat/" + threadId + "/";
+
+let socket = null;
+let reconnectTimer = null;
+
+function connectWebSocket() {
+    // Ако вече има отворена връзка, не правим нищо
+    if (socket && (socket.readyState === WebSocket.CONNECTING || socket.readyState === WebSocket.OPEN)) {
+        return;
+    }
+
+    socket = new WebSocket(wsUrl);
+
+    socket.onopen = function() {
+        console.log("WebSocket connected.");
+        if (reconnectTimer) {
+            clearTimeout(reconnectTimer);
+            reconnectTimer = null;
+        }
+    };
 
     socket.onmessage = function(e) {
         const data = JSON.parse(e.data);
@@ -509,53 +528,83 @@
 
         chatBox.scrollTop = chatBox.scrollHeight;
 
-        // Определяме дали авторът на новопостъпилото съобщение е друг човек
         const senderId = data.sender_id ? parseInt(data.sender_id, 10) : null;
         const senderDisplayName = data.username || data.sender_name || "";
         const isOwn = (senderId && senderId === CURRENT_USER_ID) ||
                       (senderDisplayName === CURRENT_USER_FULL_NAME && CURRENT_USER_FULL_NAME !== "") ||
                       (senderDisplayName === CURRENT_USER_NAME);
 
-        // Ако съобщението НЕ е от мен -> маркираме като видяно асинхронно
         if (!isOwn) {
             markThreadAsSeen();
         }
     };
 
-    async function sendMessage() {
-        const msgInput = document.getElementById("message-input");
-        const msg = msgInput.value;
-        const fileInput = document.getElementById("file-input");
-        const file = fileInput?.files?.[0] || null;
-
-
-
-        if (!msg.trim() && !file) return;
-
-        let fileUrl = null;
-
-        if (file) {
-            const formData = new FormData();
-            formData.append("file", file);
-            formData.append("thread", threadId);
-
-            const res = await fetch("/chat/upload/", {
-                method: "POST",
-                headers: { "X-CSRFToken": csrftoken },
-                body: formData
-            });
-
-            const data = await res.json();
-            fileUrl = data.url;
+    socket.onclose = function(e) {
+        console.warn("WebSocket closed. Attempting to reconnect...");
+        // Опит за повторно свързване след 2 секунди
+        if (!reconnectTimer) {
+            reconnectTimer = setTimeout(connectWebSocket, 2000);
         }
+    };
 
-        socket.send(JSON.stringify({
-            message: msg,
-            file: fileUrl
-        }));
+    socket.onerror = function(err) {
+        console.error("WebSocket error: ", err);
+        socket.close();
+    };
+}
 
-        msgInput.value = "";
-        fileInput.value = "";
+// Първоначално свързване
+connectWebSocket();
+
+// Автоматична проверка при завръщане в браузъра (особено важно за мобилни устройства)
+document.addEventListener("visibilitychange", function() {
+    if (document.visibilityState === "visible") {
+        if (!socket || socket.readyState === WebSocket.CLOSED || socket.readyState === WebSocket.CLOSING) {
+            console.log("Page visible again, reconnecting WebSocket...");
+            connectWebSocket();
+        }
     }
+});
+
+async function sendMessage() {
+    const msgInput = document.getElementById("message-input");
+    const msg = msgInput.value;
+    const fileInput = document.getElementById("file-input");
+    const file = fileInput?.files?.[0] || null;
+
+    if (!msg.trim() && !file) return;
+
+    // Уверяваме се, че socket-ът е отворен преди изпращане
+    if (!socket || socket.readyState !== WebSocket.OPEN) {
+        alert("Връзката се възстановява, моля опитайте отново след секунда.");
+        connectWebSocket();
+        return;
+    }
+
+    let fileUrl = null;
+
+    if (file) {
+        const formData = new FormData();
+        formData.append("file", file);
+        formData.append("thread", threadId);
+
+        const res = await fetch("/chat/upload/", {
+            method: "POST",
+            headers: { "X-CSRFToken": csrftoken },
+            body: formData
+        });
+
+        const data = await res.json();
+        fileUrl = data.url;
+    }
+
+    socket.send(JSON.stringify({
+        message: msg,
+        file: fileUrl
+    }));
+
+    msgInput.value = "";
+    if (fileInput) fileInput.value = "";
+}
 </script>
 {% endblock %}
