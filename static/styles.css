@@ -747,7 +747,7 @@ button[class*="--primary"], .update-button, .delete-button, #toggleSearchBtn {
         width: 100%;
         margin-top: auto;
         flex-direction: column;
-        margin-bottom: 2em;
+        margin-bottom: 5em;
     }
 
     .nav-actions .btn {
