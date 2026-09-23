@@ -566,6 +566,30 @@ document.addEventListener("visibilitychange", function() {
     }
 });
 
+function ensureWebSocketConnected() {
+    return new Promise((resolve, reject) => {
+        if (socket && socket.readyState === WebSocket.OPEN) {
+            resolve();
+            return;
+        }
+
+        // Стартираме свързване, ако сокетът е затворен или липсва
+        connectWebSocket();
+
+        const timeout = setTimeout(() => {
+            reject(new Error("Не можа да се установи връзка със сървъра."));
+        }, 5000); // 5 секунди таймаут
+
+        // Закачаме временно събитие, което да продължи изпълнението веднага щом се свърже
+        const currentOnOpen = socket.onopen;
+        socket.onopen = function(e) {
+            if (currentOnOpen) currentOnOpen(e);
+            clearTimeout(timeout);
+            resolve();
+        };
+    });
+}
+
 async function sendMessage() {
     const msgInput = document.getElementById("message-input");
     const msg = msgInput.value;
@@ -575,10 +599,11 @@ async function sendMessage() {
     if (!msg.trim() && !file) return;
 
     // Уверяваме се, че socket-ът е отворен преди изпращане
-    if (!socket || socket.readyState !== WebSocket.OPEN) {
-        alert("Връзката се възстановява, моля опитайте отново след секунда.");
-        connectWebSocket();
-        return;
+    try {
+        await ensureWebSocketConnected();
+    } catch (err) {
+        console.error("Грешка при изпращане:", err);
+        return; // Ако връзката не може да се възстанови до 5 сек., спираме
     }
 
     let fileUrl = null;
